@@ -1,8 +1,11 @@
+# import pyximport; pyximport.install() # this cannot compile something from numpy
 from genetic.Initializer import Initializer
 from genetic.Mutator import Mutator
 from genetic.Crosser import Crosser
 from genetic.Selector import Selector
 from genetic.StopCondition import StopCondition
+from tree import TreeContainer
+
 
 class GeneticTree:
     """
@@ -55,6 +58,7 @@ class GeneticProcessor:
         self.crosser = Crosser(**kwargs)
         self.selector = Selector(**kwargs)
         self.stop_condition = StopCondition(**kwargs)
+        self.tree_container = TreeContainer(5)
 
     def set_params(self, **kwargs):
         self.initializer.set_params(**kwargs)

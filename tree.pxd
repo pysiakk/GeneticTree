@@ -69,3 +69,16 @@ cdef class Tree:
     # cdef object _decision_path_sparse_csr(self, object X)
 
     # cpdef compute_feature_importances(self, normalize=*)
+
+    cpdef test_function_with_args(self, char* name, int size, int print_size)
+
+    cdef time_test_function(self)
+
+cdef class TreeContainer:
+    # Class containing all trees
+    
+    cdef Tree[:] trees
+
+    cpdef initial_function(self)
+
+    cpdef function_to_test_nogil(self)
