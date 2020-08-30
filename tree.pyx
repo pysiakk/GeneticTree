@@ -33,6 +33,8 @@ from libc.stdint cimport SIZE_MAX
 from _utils cimport safe_realloc
 from _utils cimport sizet_ptr_to_ndarray
 
+import multiprocessing
+
 import numpy as np
 cimport numpy as np
 np.import_array()
@@ -258,13 +260,22 @@ cdef class Tree:
         arr.base = <PyObject*> self
         return arr
 
-    # reference how to use functions with arguments
-    cpdef test_function_with_args(self, char* name, int size, int print_size):
-        cdef int x = 0
+
+    cpdef test_function_with_args_core(self, char* name, long long size, int print_size):
+        cdef long long x = 0
         for j in range(print_size):
             for i in range(size):
                 x += 1
+                for _ in range(1000000000):
+                    for _ in range(1000000000):
+                        x += 100000000
+                        for _ in range(100000000):
+                            x -= 1
             print(name, x)
+
+    # reference how to use functions with arguments
+    cpdef test_function_with_args(self, char* name, long long size, int print_size):
+        multiprocessing.Process(target=self.test_function_with_args_core, args=(name, size, print_size)).start()
 
     # function to test time because of many iterations
     cdef time_test_function(self):

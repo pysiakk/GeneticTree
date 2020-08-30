@@ -70,7 +70,9 @@ cdef class Tree:
 
     # cpdef compute_feature_importances(self, normalize=*)
 
-    cpdef test_function_with_args(self, char* name, int size, int print_size)
+    cpdef test_function_with_args(self, char* name, long long size, int print_size)
+
+    cpdef test_function_with_args_core(self, char* name, long long size, int print_size)
 
     cdef time_test_function(self)
 

@@ -1,10 +1,16 @@
 # import pyximport; pyximport.install() # this cannot compile something from numpy
+import numpy as np
+
 from genetic.Initializer import Initializer
 from genetic.Mutator import Mutator
 from genetic.Crosser import Crosser
 from genetic.Selector import Selector
 from genetic.StopCondition import StopCondition
 from tree import TreeContainer
+from scipy.sparse import issparse
+
+from numpy import float32 as DTYPE
+from numpy import float64 as DOUBLE
 
 
 class GeneticTree:
@@ -37,13 +43,32 @@ class GeneticTree:
     def predict(self):
         if not self.__can_predict__:
             #TODO write warning/exception
-            return
+            raise Exception('Cannot predict. Model not prepared.')
         #TODO
         pass
 
     def check_input(self, X, y):
         #TODO write metainformation about X, y or check if provided are the same as metainformation
         #TODO check if X and y are proper type of Object and have the same number of observations
+        if issparse(X):
+            X = X.tocsc()
+            X.sort_indices()
+
+            if X.data.dtype != DTYPE:
+                X.data = np.ascontiguousarray(X.data, dtype=DTYPE)
+
+            if X.indices.dtype != np.int32 or X.indptr.dtype != np.int32:
+                raise ValueError("No support for np.int64 index based "
+                                 "sparse matrices")
+
+        elif X.dtype != DTYPE:
+            # since we have to copy we will make it fortran for efficiency
+            X = np.asfortranarray(X, dtype=DTYPE)
+
+        if y.dtype != DOUBLE or not y.flags.contiguous:
+            y = np.ascontiguousarray(y, dtype=DOUBLE)
+
+        return X, y
         pass
 
 
