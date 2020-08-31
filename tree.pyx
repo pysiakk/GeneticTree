@@ -35,6 +35,7 @@ from _utils cimport safe_realloc
 from _utils cimport sizet_ptr_to_ndarray
 
 import multiprocessing
+from cython.parallel cimport parallel
 
 import numpy as np
 cimport numpy as np
@@ -278,19 +279,49 @@ cdef class Tree:
     cpdef test_function_with_args(self, char* name, long long size, int print_size):
         multiprocessing.Process(target=self.test_function_with_args_core, args=(name, size, print_size)).start()
 
-    cpdef time_test(self):
-        self.time_test_function()
+    cpdef time_test(self, long long size):
+        cdef int x = 2
+        for i in range(size):
+            x *= 2
+            x += 1
+        printf("", x)
+
+    cpdef time_test_nogil(self, long long size):
+        self._time_test_nogil_(size)
 
     # function to test time because of many iterations
-    cdef void time_test_function(self) nogil:
-        cdef long long size=1000000000
+    cdef void _time_test_nogil_(self, long long size) nogil:
         cdef int x = 2
         with nogil:
             for i in range(size):
                 x *= 2
                 x += 1
-            printf("%d\n", x)
+            printf("", x)
 
+    cpdef time_test_nogil_many_threads(self, long long size):
+        self._time_test_nogil_many_threads_(size)
+
+    # function to test time because of many iterations
+    cdef void _time_test_nogil_many_threads_(self, long long size) nogil:
+        cdef long long this_size = size
+        cdef int* x[10]
+        cdef int y = 2
+        x[0] = &y
+        cdef int y1 = 2
+        x[1] = &y1
+        cdef int y2 = 2
+        x[2] = &y2
+        cdef int y3 = 2
+        x[3] = &y3
+        cdef int j
+        cdef int i
+        with nogil, parallel():
+            for j in range(4):
+                for i in range(this_size):
+                    printf("%d\n", x[j])
+                    # x[j] = &(*x[j] * 2)
+                    # x += 1
+                # printf("%d", *x)
 
 cdef class TreeContainer:
     property trees:
@@ -303,12 +334,12 @@ cdef class TreeContainer:
 
     # initialize some trees to not nulls
     cpdef initial_function(self):
-        print("Run initial_function of TreeContainer")
+        # print("Run initial_function of TreeContainer")
         # create some random objects
         for i in range(4):
             self.trees[i] = Tree(5, np.zeros(2, dtype=np.int), 1)
         # print one of them
-        print(self.trees[0])
+        # print(self.trees[0])
 
     # main function to test how to process many trees in one time using few cores
     cpdef function_to_test_nogil(self):

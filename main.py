@@ -2,26 +2,49 @@ from GeneticTree import GeneticTree
 from timeit import timeit
 from functools import partial
 import multiprocessing
+from enum import Enum
 
 
-def test_run(name="my_name", size=100, multi=True):
+class ThreadType(Enum):
+    multiprocessing = 1,
+    nogil = 2,
+    nogil_multi = 3,
+    single = 4
+
+
+def test_time(size: int = 10**6, thread_type: ThreadType = ThreadType.single):
     gt = GeneticTree()
     tc = gt.genetic_processor.tree_container
-    if multi:
+    if thread_type is ThreadType.multiprocessing:
         threads = []
         for i in range(10):
-            t = multiprocessing.Process(target=tc.trees[0].time_test, args=())
+            t = multiprocessing.Process(target=tc.trees[0].time_test, args=(size,))
             t.start()
             threads.append(t)
         for thread in threads:
             thread.join()
-    else:
+    elif thread_type is ThreadType.nogil_multi:
+        threads = []
         for i in range(10):
-            target = tc.trees[0].time_test()
+            t = multiprocessing.Process(target=tc.trees[0].time_test_nogil, args=(size,))
+            t.start()
+            threads.append(t)
+        for thread in threads:
+            thread.join()
+    elif thread_type is ThreadType.nogil:
+        tc.trees[0].time_test_nogil_many_threads(size)
+    elif thread_type is ThreadType.single:
+        for i in range(10):
+            target = tc.trees[0].time_test(size)
 
 
 if __name__ == "__main__":
-    multi_time = timeit(partial(test_run, "one", 10000000000, True), number=1)
-    single_time = timeit(partial(test_run, "one", 10000000000, False), number=1)
-    print(f'Multiprocessing time: {multi_time:0.04f}')
-    print(f'Single thread time: {single_time:0.04f}')
+    test_time(2, ThreadType.nogil)
+    for power in range(6, 8):
+        iterations: int = 10 ** power
+        multi_time = timeit(partial(test_time, iterations, ThreadType.multiprocessing), number=100)
+        nogil_multi_time = timeit(partial(test_time, iterations, ThreadType.nogil_multi), number=100)
+        single_time = timeit(partial(test_time, iterations, ThreadType.single), number=100)
+        print(f'Multiprocessing time: {multi_time:0.04f} for 10^{power} iterations')
+        print(f'Nogil with multiprocessing time: {nogil_multi_time:0.04f} for 10^{power} iterations')
+        print(f'Single thread time: {single_time:0.04f} for 10^{power} iterations')

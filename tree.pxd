@@ -74,9 +74,13 @@ cdef class Tree:
 
     cpdef test_function_with_args(self, char* name, long long size, int print_size)
 
-    cpdef time_test(self)
+    cpdef time_test(self, long long size)
 
-    cdef void time_test_function(self) nogil
+    cpdef time_test_nogil(self, long long size)
+    cdef void _time_test_nogil_(self, long long size) nogil
+
+    cpdef time_test_nogil_many_threads(self, long long size)
+    cdef void _time_test_nogil_many_threads_(self, long long size) nogil
 
 cdef class TreeContainer:
     # Class containing all trees
