@@ -29,6 +29,7 @@ from cpython cimport Py_INCREF, PyObject, PyTypeObject
 from libc.stdlib cimport free
 from libc.string cimport memset
 from libc.stdint cimport SIZE_MAX
+from libc.stdio cimport printf
 
 from _utils cimport safe_realloc
 from _utils cimport sizet_ptr_to_ndarray
@@ -277,12 +278,18 @@ cdef class Tree:
     cpdef test_function_with_args(self, char* name, long long size, int print_size):
         multiprocessing.Process(target=self.test_function_with_args_core, args=(name, size, print_size)).start()
 
+    cpdef time_test(self):
+        self.time_test_function()
+
     # function to test time because of many iterations
-    cdef time_test_function(self):
-        cdef int size=100
-        cdef int x = 0
-        for i in range(size):
-            x += 1
+    cdef void time_test_function(self) nogil:
+        cdef long long size=1000000000
+        cdef int x = 2
+        with nogil:
+            for i in range(size):
+                x *= 2
+                x += 1
+            printf("%d\n", x)
 
 
 cdef class TreeContainer:
