@@ -35,7 +35,6 @@ from _utils cimport safe_realloc
 from _utils cimport sizet_ptr_to_ndarray
 
 import multiprocessing
-from cython.parallel cimport parallel
 
 import numpy as np
 cimport numpy as np
@@ -279,6 +278,10 @@ cdef class Tree:
     cpdef test_function_with_args(self, char* name, long long size, int print_size):
         multiprocessing.Process(target=self.test_function_with_args_core, args=(name, size, print_size)).start()
 
+    cpdef time_test2(self, long long size):
+        for i in range(10):
+            self.time_test(size)
+
     cpdef time_test(self, long long size):
         cdef int x = 2
         for i in range(size):
@@ -298,30 +301,6 @@ cdef class Tree:
                 x += 1
             printf("", x)
 
-    cpdef time_test_nogil_many_threads(self, long long size):
-        self._time_test_nogil_many_threads_(size)
-
-    # function to test time because of many iterations
-    cdef void _time_test_nogil_many_threads_(self, long long size) nogil:
-        cdef long long this_size = size
-        cdef int* x[10]
-        cdef int y = 2
-        x[0] = &y
-        cdef int y1 = 2
-        x[1] = &y1
-        cdef int y2 = 2
-        x[2] = &y2
-        cdef int y3 = 2
-        x[3] = &y3
-        cdef int j
-        cdef int i
-        with nogil, parallel():
-            for j in range(4):
-                for i in range(this_size):
-                    printf("%d\n", x[j])
-                    # x[j] = &(*x[j] * 2)
-                    # x += 1
-                # printf("%d", *x)
 
 cdef class TreeContainer:
     property trees:
