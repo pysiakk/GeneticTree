@@ -3,11 +3,16 @@ from Cython.Build import cythonize
 import numpy
 
 ext_modules = cythonize([
-    Extension("tree", ["tree.pyx"]),    # probably it has to have first name (tree)
+    Extension("tree", ["tree.pyx"],
+              extra_compile_args=['-fopenmp'],
+              extra_link_args=['-fopenmp']),    # probably it has to have first name (tree)
                                         # the same as second (tree(.pyx))
-    Extension("_utils", ["_utils.pyx"]),
-])
-
+    Extension("_utils", ["_utils.pyx"],
+              extra_compile_args=['-fopenmp'],
+              extra_link_args=['-fopenmp'])
+    ],
+    compiler_directives={'language_level': "3"}
+)
 setup(
     name='Genetic',
     ext_modules=ext_modules,
