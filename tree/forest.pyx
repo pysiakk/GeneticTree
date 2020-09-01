@@ -7,8 +7,13 @@ cdef class Forest:
         def __get__(self):
             return self.trees
 
+    property best_tree:
+        def __get__(self):
+            return self.trees[self.best_tree_number]
+
     def __cinit__(self, int max_trees):
         self.trees = np.empty(max_trees, Tree)
+        self.best_tree_number = 0
         self.initial_function()
 
     # initialize some trees to not nulls

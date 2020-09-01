@@ -29,6 +29,13 @@ cdef struct Node:
     SIZE_t depth                         # the size of path from root to node
 
 
+cdef struct Observation:
+    # Base storage structure of observation metadata
+    SIZE_t proper_class
+    SIZE_t current_class
+    SIZE_t observation_id
+
+
 cdef class Tree:
     # The Tree object is a binary tree structure.
 
@@ -46,12 +53,12 @@ cdef class Tree:
     cdef Node* nodes                     # Array of nodes
     cdef double* value                   # (capacity, n_outputs, max_n_classes) array of values
     cdef SIZE_t value_stride             # = n_outputs * max_n_classes
+    cdef dict observations
 
     # Methods
     cdef SIZE_t _add_node(self, SIZE_t parent, bint is_left, bint is_leaf,
-                          SIZE_t feature, double threshold, double impurity,
-                          SIZE_t n_node_samples,
-                          double weighted_n_samples) nogil except -1
+                          SIZE_t feature, double threshold, SIZE_t depth,
+                          SIZE_t class_number) nogil except -1
     # cdef int _resize(self, SIZE_t capacity) nogil except -1
     cdef int _resize_c(self, SIZE_t capacity=*) nogil except -1
 

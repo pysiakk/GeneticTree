@@ -131,6 +131,7 @@ cdef class Tree:
         self.capacity = 0
         self.value = NULL
         self.nodes = NULL
+        self.observations = {}   # dictionary from node id to list of observation struct
 
     def __dealloc__(self):
         #TODO
@@ -187,10 +188,8 @@ cdef class Tree:
         return 0
 
     cdef SIZE_t _add_node(self, SIZE_t parent, bint is_left, bint is_leaf,
-                          SIZE_t feature, double threshold, double impurity,
-                          SIZE_t n_node_samples,
-                          double weighted_n_node_samples) nogil except -1:
-        #TODO should adding nodes look like this?
+                          SIZE_t feature, double threshold, SIZE_t depth,
+                          SIZE_t class_number) nogil except -1:
         """Add a node to the tree.
         The new node registers itself as the child of its parent.
         Returns (size_t)(-1) on error.
@@ -203,6 +202,9 @@ cdef class Tree:
 
         cdef Node* node = &self.nodes[node_id]
 
+        node.parent = parent
+        node.depth = depth
+
         if parent != _TREE_UNDEFINED:
             if is_left:
                 self.nodes[parent].left_child = node_id
@@ -212,7 +214,7 @@ cdef class Tree:
         if is_leaf:
             node.left_child = _TREE_LEAF
             node.right_child = _TREE_LEAF
-            node.feature = _TREE_UNDEFINED
+            node.feature = class_number             # class instead of feature
             node.threshold = _TREE_UNDEFINED
 
         else:
