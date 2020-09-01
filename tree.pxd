@@ -79,13 +79,3 @@ cdef class Tree:
 
     cpdef time_test_nogil(self, long long size)
     cdef void _time_test_nogil_(self, long long size) nogil
-
-
-cdef class TreeContainer:
-    # Class containing all trees
-    
-    cdef Tree[:] trees
-
-    cpdef initial_function(self)
-
-    cpdef function_to_test_nogil(self)

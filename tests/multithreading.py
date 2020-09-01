@@ -1,4 +1,4 @@
-from GeneticTree import GeneticTree
+from genetic_tree import GeneticTree
 from timeit import timeit
 from functools import partial
 import multiprocessing
@@ -46,7 +46,7 @@ def test_time(size: int = 10**6, thread_type: ThreadType = ThreadType.single):
 
 
 if __name__ == "__main__":
-    for power in range(6, 8):
+    for power in range(5, 7):
         iterations: int = 10 ** power
         multi_time = timeit(partial(test_time, iterations, ThreadType.multiprocessing), number=100)
         multi_less_threads_time = timeit(partial(test_time, iterations, ThreadType.multiprocessing_with_less_threads), number=100)
