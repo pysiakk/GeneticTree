@@ -6,7 +6,7 @@ from genetic.mutator import Mutator
 from genetic.crosser import Crosser
 from genetic.selector import Selector
 from genetic.stop_condition import StopCondition
-from forest import Forest
+from tree.forest import Forest
 from scipy.sparse import issparse
 
 from numpy import float32 as DTYPE

@@ -31,8 +31,8 @@ from libc.string cimport memset
 from libc.stdint cimport SIZE_MAX
 from libc.stdio cimport printf
 
-from _utils cimport safe_realloc
-from _utils cimport sizet_ptr_to_ndarray
+from tree._utils cimport safe_realloc
+from tree._utils cimport sizet_ptr_to_ndarray
 
 import multiprocessing
 

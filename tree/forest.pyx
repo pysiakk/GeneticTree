@@ -1,6 +1,6 @@
 import numpy as np
 cimport numpy as np
-from tree cimport Tree
+from tree.tree cimport Tree
 
 cdef class Forest:
     property trees:

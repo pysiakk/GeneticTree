@@ -1,8 +1,7 @@
-from tree cimport Tree
+from tree.tree cimport Tree
 
 cdef class Forest:
     # Class containing all trees
-
     cdef Tree[:] trees
 
     cpdef initial_function(self)
