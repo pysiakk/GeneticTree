@@ -18,13 +18,18 @@ class GeneticTree:
     High level interface possible to use like scikit-learn class
     """
 
-    def __init__(self, n_trees: int = 1000, max_trees: int = 2000, max_depth: int = 3):
+    def __init__(self, n_trees: int = 1000, max_trees: int = 2000, max_depth: int = 3,
+                 mutate_features: bool = True, change_feature: float = 0.05,
+                 mutate_thresholds: bool = True, change_threshold: float = 0.05,
+                 mutate_classes: bool = True, change_class: float = 0.05
+                 ):
         # TODO check: if any of parameters is None -> write warning / throw error
         # TODO write all kwargs
         self.genetic_processor = \
-            GeneticProcessor(n_trees=n_trees,
-                             max_trees=max_trees,
-                             max_depth=max_depth)
+            GeneticProcessor(n_trees=n_trees, max_trees=max_trees, max_depth=max_depth,
+                             mutate_features=mutate_features, change_feature=change_feature,
+                             mutate_thresholds=mutate_thresholds, change_threshold=change_threshold,
+                             mutate_classes=mutate_classes, change_class=change_class)
         self.__can_predict__ = False
 
     def set_params(self):
