@@ -1,4 +1,7 @@
 from genetic_tree import GeneticTree
+from tree.tree import Tree
+
+import numpy as np
 from timeit import timeit
 from functools import partial
 import multiprocessing
@@ -15,11 +18,12 @@ class ThreadType(Enum):
 
 def test_time(size: int = 10**6, thread_type: ThreadType = ThreadType.single):
     gt = GeneticTree()
-    tc = gt.genetic_processor.tree_container
+    forest = gt.genetic_processor.forest
+    tc = Tree(5, np.zeros(1, dtype=np.int), 1)
     if thread_type is ThreadType.multiprocessing:
         threads = []
         for i in range(100):
-            t = multiprocessing.Process(target=tc.trees[0].time_test, args=(size,))
+            t = multiprocessing.Process(target=tc.time_test, args=(size,))
             t.start()
             threads.append(t)
         for thread in threads:
@@ -27,7 +31,7 @@ def test_time(size: int = 10**6, thread_type: ThreadType = ThreadType.single):
     elif thread_type is ThreadType.multiprocessing_with_less_threads:
         threads = []
         for i in range(10):
-            t = multiprocessing.Process(target=tc.trees[0].time_test2, args=(size,))
+            t = multiprocessing.Process(target=tc.time_test2, args=(size,))
             t.start()
             threads.append(t)
         for thread in threads:
@@ -35,14 +39,14 @@ def test_time(size: int = 10**6, thread_type: ThreadType = ThreadType.single):
     elif thread_type is ThreadType.nogil_multi:
         threads = []
         for i in range(100):
-            t = multiprocessing.Process(target=tc.trees[0].time_test_nogil, args=(size,))
+            t = multiprocessing.Process(target=tc.time_test_nogil, args=(size,))
             t.start()
             threads.append(t)
         for thread in threads:
             thread.join()
     elif thread_type is ThreadType.single:
         for i in range(100):
-            target = tc.trees[0].time_test(size)
+            target = tc.time_test(size)
 
 
 if __name__ == "__main__":
