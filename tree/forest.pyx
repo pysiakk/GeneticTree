@@ -13,6 +13,10 @@ cdef class Forest:
         def __get__(self):
             return self.trees[self.best_tree_number]
 
+    property current_trees:
+        def __get__(self):
+            return self.current_trees
+
     def __cinit__(self, int n_trees, int max_trees):
         self.trees = np.empty(max_trees, Tree)
         self.best_tree_number = 0

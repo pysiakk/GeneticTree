@@ -52,6 +52,7 @@ class Mutator:
             for tree_id in tree_ids:
                 tree: Tree = forest.trees[tree_id]
                 tree.mutate_random_class()
+        return forest
 
     @staticmethod
     def get_random_trees(trees_number: int, probability: float):

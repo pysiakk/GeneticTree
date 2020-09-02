@@ -110,7 +110,7 @@ class GeneticProcessor:
 
     def growth_trees(self):
         while not self.stop_condition.stop():
-            self.mutator.mutate()
+            self.mutator.mutate(self.forest)
             self.crosser.cross_population()
             self.selector.select()
 

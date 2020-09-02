@@ -39,7 +39,7 @@ def initialize_forest(max_depth: int = 3) -> Forest:
     return gt.genetic_processor.forest
 
 
-if __name__ == "__main__":
+def initialization():
     forest: Forest = initialize_forest(7)
     tree: Tree = initialize_tree()
     tree_example: Tree = forest.trees[0]
@@ -47,3 +47,17 @@ if __name__ == "__main__":
     print(f'Features of first forest tree: {tree_example.feature},\n'
           f'First 100 features: {tree_example.feature[:100]},\n'
           f'And number of features {tree_example.feature.shape}')
+
+
+def mutate_feature():
+    gt = GeneticTree(change_feature=1, max_depth=1)
+    gt.fit(X, y)
+    forest_before = gt.genetic_processor.forest
+    print(f'Features of tree before mutation: {forest_before.trees[0].feature}')
+    forest_after = gt.genetic_processor.mutator.mutate(forest_before)
+    print(f'Features of tree in previous forest: {forest_before.trees[0].feature}')
+    print(f'Features of tree after mutation: {forest_after.trees[0].feature}')
+
+
+if __name__ == "__main__":
+    mutate_feature()
