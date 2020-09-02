@@ -12,29 +12,34 @@ cdef class Forest:
         def __get__(self):
             return self.trees[self.best_tree_number]
 
-    def __cinit__(self, int population_size, int max_trees):
+    def __cinit__(self, int n_trees, int max_trees):
         self.trees = np.empty(max_trees, Tree)
         self.best_tree_number = 0
 
-        self.population_size = population_size
+        self.n_trees = n_trees
         self.max_trees = max_trees
         self.current_trees = 0
 
-    # basic initialization function
-    cpdef initialize_population(self, object X, np.ndarray y, int depth):
+    cpdef set_X_y(self, object X, np.ndarray y):
         self.X = X
         self.y = y
 
+    cpdef remove_X_y(self):
+        self.X = None
+        self.y = None
+
+    # basic initialization function
+    cpdef initialize_population(self, int max_depth):
         # TODO initialize this parameters with X and y
         cdef int n_features = 5
         cdef np.ndarray[SIZE_t, ndim=1] n_classes = np.zeros(1, dtype=np.int)
         cdef int n_outputs = 1
 
-        cdef Builder builder = Builder(depth)
+        cdef Builder builder = Builder(max_depth)
 
-        for i in range(self.population_size):
+        for i in range(self.n_trees):
             self.trees[i] = Tree(n_features, n_classes, n_outputs)
-            builder.build(self.trees[i], X, y)
+            builder.build(self.trees[i], self.X, self.y)
             self.current_trees += 1
 
     # main function to test how to process many trees in one time using few cores

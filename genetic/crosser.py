@@ -5,7 +5,7 @@ class Crosser:
     Class responsible for crossing random individuals to get new ones
     """
 
-    def __init__(self, cross_probability=0.05):
+    def __init__(self, cross_probability=0.05, **kwargs):
         self.cross_probability: float = cross_probability
 
     def set_params(self, cross_probability=None):

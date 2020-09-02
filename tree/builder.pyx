@@ -29,7 +29,7 @@ cdef class Builder:
         """Build a decision tree from the training set (X, y)."""
         pass
 
-    # TODO move check input to forest to do it only once
+    # TODO move check input to forest.set_X_y() to do it only once
     cdef inline _check_input(self, object X, np.ndarray y):
         """Check input dtype, layout and format"""
         if issparse(X):

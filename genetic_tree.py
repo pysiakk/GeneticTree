@@ -18,9 +18,12 @@ class GeneticTree:
     High level interface possible to use like scikit-learn class
     """
 
-    def __init__(self):
-        #TODO write all kwargs
-        self.genetic_processor = GeneticProcessor()
+    def __init__(self, n_trees: int = 1000, max_trees: int = 2000):
+        # TODO check: if any of parameters is None -> write warning / throw error
+        # TODO write all kwargs
+        self.genetic_processor = \
+            GeneticProcessor(n_trees=n_trees,
+                             max_trees=max_trees)
         self.__can_predict__ = False
 
     def set_params(self):
@@ -42,7 +45,6 @@ class GeneticTree:
 
     def predict(self):
         if not self.__can_predict__:
-            #TODO write warning/exception
             raise Exception('Cannot predict. Model not prepared.')
         #TODO
         pass
@@ -83,7 +85,7 @@ class GeneticProcessor:
         self.crosser = Crosser(**kwargs)
         self.selector = Selector(**kwargs)
         self.stop_condition = StopCondition(**kwargs)
-        self.tree_container = Forest(5)
+        self.forest = Forest(kwargs["n_trees"], kwargs["max_trees"])
 
     def set_params(self, **kwargs):
         self.initializer.set_params(**kwargs)
@@ -93,8 +95,9 @@ class GeneticProcessor:
         self.stop_condition.set_params(**kwargs)
 
     def prepare_new_training(self, X, y):
+        self.forest.set_X_y(X, y)
         self.stop_condition.reset_private_variables()
-        self.initializer.initialize(X, y)
+        self.initializer.initialize(self.forest)
 
     def growth_trees(self):
         while not self.stop_condition.stop():

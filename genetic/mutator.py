@@ -5,7 +5,7 @@ class Mutator:
     Class responsible for mutation of individuals
     """
 
-    def __init__(self, mutate_attributes=True, change_attribute=0.05, mutate_thresholds=True, change_threshold=0.05):
+    def __init__(self, mutate_attributes=True, change_attribute=0.05, mutate_thresholds=True, change_threshold=0.05, **kwargs):
         self.mutate_attributes: bool = mutate_attributes
         self.change_attribute: float = change_attribute
         self.mutate_thresholds: bool = mutate_thresholds

@@ -10,7 +10,7 @@ cdef class Forest:
     cdef Tree[:] trees
     cdef int best_tree_number
 
-    cdef int population_size
+    cdef int n_trees
     cdef int current_trees
     cdef int max_trees
 
@@ -18,6 +18,9 @@ cdef class Forest:
     cdef object X
     cdef np.ndarray y
 
-    cpdef initialize_population(self, object X, np.ndarray y, int depth)
+    cpdef set_X_y(self, object X, np.ndarray y)
+    cpdef remove_X_y(self)
+
+    cpdef initialize_population(self, int depth)
 
     cpdef function_to_test_nogil(self)

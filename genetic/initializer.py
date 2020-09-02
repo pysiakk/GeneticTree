@@ -1,14 +1,17 @@
 from enum import Enum, auto
+from tree.forest import Forest
+
 
 class InitializationType(Enum):
     Random = auto()
+
 
 class Initializer:
     """
     Class responsible for initializing population
     """
 
-    def __init__(self, n_trees=1000, max_depth=3, initialization_type=InitializationType.Random):
+    def __init__(self, n_trees=1000, max_depth=3, initialization_type=InitializationType.Random, **kwargs):
         self.n_trees: int = n_trees
         self.max_depth: int = max_depth
         self.initialization_type: InitializationType = initialization_type
@@ -21,6 +24,5 @@ class Initializer:
         if initialization_type is not None:
             self.initialization_type = initialization_type
 
-    def initialize(self):
-        #TODO
-        pass
+    def initialize(self, forest: Forest):
+        forest.initialize_population(self.max_depth)

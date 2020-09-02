@@ -22,7 +22,7 @@ class Selector:
     before selection policy is used
     """
 
-    def __init__(self, n_trees=1000, selection_type=SelectionType.RankSelection, metric=Metric.Accuracy, elitarysm=5):
+    def __init__(self, n_trees=1000, selection_type=SelectionType.RankSelection, metric=Metric.Accuracy, elitarysm=5, **kwargs):
         self.n_trees: int = n_trees
         self.selection_type: SelectionType = selection_type
         self.metric: Metric = metric
