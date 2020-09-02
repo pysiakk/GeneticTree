@@ -253,7 +253,6 @@ cdef class Tree:
         return arr
 
     cdef np.ndarray _get_node_ndarray(self):
-        #TODO
         """Wraps nodes as a NumPy struct array.
         The array keeps a reference to this Tree, which manages the underlying
         memory. Individual fields are publicly accessible as properties of the
@@ -273,6 +272,58 @@ cdef class Tree:
         arr.base = <PyObject*> self
         return arr
 
+    cpdef mutate_random_threshold(self):
+        if self.node_count <= 1:  # there is only one or 0 leaf
+            return
+        cdef SIZE_t node_id = self._get_random_node()
+        cdef DOUBLE_t threshold = self._get_random_threshold()
+        self._change_threshold(node_id, threshold)
+        # TODO change observations
+
+    cpdef mutate_random_feature(self):
+        if self.node_count <= 1:  # there is only one or 0 leaf
+            return
+        cdef SIZE_t node_id = self._get_random_node()
+        cdef SIZE_t feature = self._get_random_feature()
+        self._change_feature(node_id, feature)
+        # TODO change observations
+
+    cpdef mutate_random_class(self):
+        if self.node_count == 0:  # empty tree
+            return
+        cdef SIZE_t node_id = self._get_random_leaf()
+        cdef SIZE_t new_class = self._get_random_class()
+        self._change_feature(node_id, new_class)
+        # TODO change observations
+
+    cdef SIZE_t _get_random_node(self):
+        cdef SIZE_t random_id = np.random.randint(0, self.node_count)
+        while self.nodes[random_id].left_child == _TREE_LEAF:
+            random_id = np.random.randint(0, self.node_count)
+        return random_id
+
+    cdef SIZE_t _get_random_leaf(self):
+        cdef SIZE_t random_id = np.random.randint(0, self.node_count)
+        while self.nodes[random_id].left_child != _TREE_LEAF:
+            random_id = np.random.randint(0, self.node_count)
+        return random_id
+
+    cdef SIZE_t _get_random_feature(self):
+        return np.random.randint(0, self.n_features)
+
+    # TODO
+    cdef DOUBLE_t _get_random_threshold(self):
+        return 0.0
+
+    # TODO
+    cdef SIZE_t _get_random_class(self):
+        return 0
+
+    cdef _change_feature(self, SIZE_t node_id, SIZE_t new_feature):
+        self.nodes[node_id].feature = new_feature
+
+    cdef _change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold):
+        self.nodes[node_id].threshold = new_threshold
 
     cpdef test_function_with_args_core(self, char* name, long long size, int print_size):
         cdef long long x = 0

@@ -69,6 +69,20 @@ cdef class Tree:
     cdef np.ndarray _get_value_ndarray(self)
     cdef np.ndarray _get_node_ndarray(self)
 
+    cpdef mutate_random_threshold(self)
+    cpdef mutate_random_feature(self)
+    cpdef mutate_random_class(self)
+
+    cdef SIZE_t _get_random_node(self)
+    cdef SIZE_t _get_random_leaf(self)
+
+    cdef SIZE_t _get_random_feature(self)
+    cdef DOUBLE_t _get_random_threshold(self)
+    cdef SIZE_t _get_random_class(self)
+
+    cdef _change_feature(self, SIZE_t node_id, SIZE_t new_feature)
+    cdef _change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold)
+
     # cpdef np.ndarray predict(self, object X)
 
     # cpdef np.ndarray apply(self, object X)

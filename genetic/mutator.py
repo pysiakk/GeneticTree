@@ -1,3 +1,7 @@
+from tree.forest import Forest
+from tree.tree import Tree
+import math
+import numpy as np
 
 
 class Mutator:
@@ -31,6 +35,24 @@ class Mutator:
         if change_class is not None:
             self.change_class = change_class
 
-    def mutate(self):
-        #TODO
-        pass
+    def mutate(self, forest: Forest):
+        trees_number: int = forest.current_trees
+        if self.mutate_features:
+            tree_ids: np.array = self.get_random_trees(trees_number, self.change_feature)
+            for tree_id in tree_ids:
+                tree: Tree = forest.trees[tree_id]
+                tree.mutate_random_feature()
+        if self.mutate_thresholds:
+            tree_ids: np.array = self.get_random_trees(trees_number, self.change_threshold)
+            for tree_id in tree_ids:
+                tree: Tree = forest.trees[tree_id]
+                tree.mutate_random_threshold()
+        if self.mutate_classes:
+            tree_ids: np.array = self.get_random_trees(trees_number, self.change_class)
+            for tree_id in tree_ids:
+                tree: Tree = forest.trees[tree_id]
+                tree.mutate_random_class()
+
+    @staticmethod
+    def get_random_trees(trees_number: int, probability: float):
+        return np.random.choice(trees_number, math.ceil(trees_number * probability), replace=False)
