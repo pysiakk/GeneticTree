@@ -11,12 +11,14 @@ class Initializer:
     Class responsible for initializing population
     """
 
-    def __init__(self, n_trees=1000, max_depth=3, initialization_type=InitializationType.Random, **kwargs):
+    def __init__(self, n_trees: int = 1000, max_depth: int = 3,
+                 initialization_type: InitializationType = InitializationType.Random, **kwargs):
         self.n_trees: int = n_trees
         self.max_depth: int = max_depth
         self.initialization_type: InitializationType = initialization_type
 
-    def set_params(self, n_trees=None, max_depth=None, initialization_type=None):
+    def set_params(self, n_trees: int = None, max_depth: int = None,
+                   initialization_type: InitializationType = None):
         if n_trees is not None:
             self.n_trees = n_trees
         if max_depth is not None:
@@ -25,4 +27,5 @@ class Initializer:
             self.initialization_type = initialization_type
 
     def initialize(self, forest: Forest):
-        forest.initialize_population(self.max_depth)
+        if self.initialization_type == InitializationType.Random:
+            forest.initialize_population(self.max_depth)
