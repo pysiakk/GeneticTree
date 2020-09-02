@@ -168,7 +168,6 @@ cdef class Tree:
                 raise MemoryError()
 
     cdef int _resize_c(self, SIZE_t capacity=SIZE_MAX) nogil except -1:
-        #TODO is the function useful?
         """Guts of _resize
         Returns -1 in case of failure to allocate memory (and raise MemoryError)
         or 0 otherwise.
