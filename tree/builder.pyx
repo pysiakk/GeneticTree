@@ -24,6 +24,8 @@ cdef SIZE_t _TREE_LEAF = TREE_LEAF
 cdef SIZE_t _TREE_UNDEFINED = TREE_UNDEFINED
 
 cdef class Builder:
+    def __cinit__(self, int depth):
+        self.depth = depth
 
     cpdef build(self, Tree tree, object X, np.ndarray y):
         """Build a decision tree from the training set (X, y)."""
@@ -67,6 +69,8 @@ cdef class FullTreeBuilder(Builder):
         # Initial capacity
         cdef int init_capacity
 
+        if tree.max_depth == 0:
+            tree.max_depth = self.depth
         if tree.max_depth <= 10:
             init_capacity = (2 ** (tree.max_depth + 1)) - 1
         else:

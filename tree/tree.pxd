@@ -59,7 +59,7 @@ cdef class Tree:
     cdef SIZE_t _add_node(self, SIZE_t parent, bint is_left, bint is_leaf,
                           SIZE_t feature, double threshold, SIZE_t depth,
                           SIZE_t class_number) nogil except -1
-    # cdef int _resize(self, SIZE_t capacity) nogil except -1
+    cdef int _resize(self, SIZE_t capacity) nogil except -1
     cdef int _resize_c(self, SIZE_t capacity=*) nogil except -1
 
     cdef np.ndarray _get_value_ndarray(self)

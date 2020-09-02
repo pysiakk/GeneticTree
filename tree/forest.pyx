@@ -2,6 +2,7 @@ import numpy as np
 cimport numpy as np
 from tree.tree cimport Tree
 from tree.builder cimport Builder
+from tree.builder import FullTreeBuilder
 
 cdef class Forest:
     property trees:
@@ -31,11 +32,11 @@ cdef class Forest:
     # basic initialization function
     cpdef initialize_population(self, int max_depth):
         # TODO initialize this parameters with X and y
-        cdef int n_features = 5
+        cdef int n_features = self.X.shape[1]
         cdef np.ndarray[SIZE_t, ndim=1] n_classes = np.zeros(1, dtype=np.int)
         cdef int n_outputs = 1
 
-        cdef Builder builder = Builder(max_depth)
+        cdef Builder builder = FullTreeBuilder(max_depth)
 
         for i in range(self.n_trees):
             self.trees[i] = Tree(n_features, n_classes, n_outputs)
