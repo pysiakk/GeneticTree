@@ -57,7 +57,10 @@ def mutate_feature():
     forest_after = gt.genetic_processor.mutator.mutate(forest_before)
     print(f'Features of tree in previous forest: {forest_before.trees[0].feature}')
     print(f'Features of tree after mutation: {forest_after.trees[0].feature}')
+    return forest_before
 
 
 if __name__ == "__main__":
-    mutate_feature()
+    forest: Forest = mutate_feature()
+    for tree in forest.trees[1000:1050]:
+        print(tree.feature)
