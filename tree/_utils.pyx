@@ -89,9 +89,10 @@ cdef class Stack:
     cdef bint is_empty(self) nogil:
         return self.top <= 0
 
-    cdef int push(self, SIZE_t parent, bint is_left, bint is_leaf,
+    cdef int push(self, SIZE_t new_parent_id, SIZE_t old_self_id,
+                  bint is_left,
                   SIZE_t feature, double threshold, SIZE_t depth,
-                  SIZE_t class_number) nogil except -1:
+                  ) nogil except -1:
         """Push a new element onto the stack.
         Return -1 in case of failure to allocate memory (and raise MemoryError)
         or 0 otherwise.
@@ -106,13 +107,12 @@ cdef class Stack:
             safe_realloc(&self.stack_, self.capacity)
 
         stack = self.stack_
-        stack[top].parent = parent
+        stack[top].new_parent_id = new_parent_id
+        stack[top].old_self_id = old_self_id
         stack[top].is_left = is_left
-        stack[top].is_leaf = is_leaf
         stack[top].feature = feature
         stack[top].threshold = threshold
         stack[top].depth = depth
-        stack[top].class_number = class_number
 
         # Increment stack pointer
         self.top = top + 1
