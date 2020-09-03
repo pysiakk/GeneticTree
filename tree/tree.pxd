@@ -41,9 +41,8 @@ cdef class Tree:
 
     # Input/Output layout
     cdef public SIZE_t n_features        # Number of features in X
-    cdef SIZE_t* n_classes               # Number of classes in y[:, k]
+    cdef public SIZE_t n_classes         # Number of classes in y
     cdef public SIZE_t n_outputs         # Number of outputs in y
-    cdef public SIZE_t max_n_classes     # max(n_classes)
 
     # Inner structures: values are stored separately from node structure,
     # since size is determined at runtime.
@@ -51,8 +50,8 @@ cdef class Tree:
     cdef public SIZE_t node_count        # Counter for node IDs
     cdef public SIZE_t capacity          # Capacity of tree, in terms of nodes
     cdef Node* nodes                     # Array of nodes
-    cdef double* value                   # (capacity, n_outputs, max_n_classes) array of values
-    cdef SIZE_t value_stride             # = n_outputs * max_n_classes
+    cdef double* value                   # (capacity, 1, n_classes) array of values
+    cdef SIZE_t value_stride             # = 1 * n_classes
     # TODO PoC of dictionary structure
     # TODO create dictionary during initialization of trees
     # TODO update dictionary during mutation

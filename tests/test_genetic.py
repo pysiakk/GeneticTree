@@ -27,7 +27,7 @@ y = iris.target
 
 
 def initialize_tree() -> Tree:
-    tree: Tree = Tree(5, np.zeros(1, dtype=np.int), 1)
+    tree: Tree = Tree(5, 3)
     builder: FullTreeBuilder = FullTreeBuilder(3)
     builder.build(tree, X, y)
     return tree

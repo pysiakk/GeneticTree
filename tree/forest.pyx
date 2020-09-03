@@ -37,13 +37,12 @@ cdef class Forest:
     cpdef initialize_population(self, int max_depth):
         # TODO initialize this parameters with X and y
         cdef int n_features = self.X.shape[1]
-        cdef np.ndarray[SIZE_t, ndim=1] n_classes = np.zeros(1, dtype=np.int)
-        cdef int n_outputs = 1
+        cdef int n_classes = np.unique(self.y).shape[0]
 
         cdef Builder builder = FullTreeBuilder(max_depth)
 
         for i in range(self.n_trees):
-            self.trees[i] = Tree(n_features, n_classes, n_outputs)
+            self.trees[i] = Tree(n_features, n_classes)
             builder.build(self.trees[i], self.X, self.y)
             self.current_trees += 1
 

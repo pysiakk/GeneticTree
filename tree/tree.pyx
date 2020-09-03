@@ -70,10 +70,6 @@ NODE_DTYPE = np.dtype({
 })
 
 cdef class Tree:
-    property n_classes:
-        def __get__(self):
-            return sizet_ptr_to_ndarray(self.n_classes, self.n_outputs)
-
     property children_left:
         def __get__(self):
             return self._get_node_ndarray()['left_child'][:self.node_count]
@@ -108,22 +104,14 @@ cdef class Tree:
         def __get__(self):
             return self._get_value_ndarray()[:self.node_count]
 
-    def __cinit__(self, int n_features, np.ndarray[SIZE_t, ndim=1] n_classes,
-                  int n_outputs):
+    def __cinit__(self, int n_features, int n_classes):
         #TODO think if everything is useful and if should add anything
         """Constructor."""
         # Input/Output layout
         self.n_features = n_features
-        self.n_outputs = n_outputs
-        self.n_classes = NULL
-        safe_realloc(&self.n_classes, n_outputs)
+        self.n_classes = n_classes
 
-        self.max_n_classes = np.max(n_classes)
-        self.value_stride = n_outputs * self.max_n_classes
-
-        cdef SIZE_t k
-        for k in range(n_outputs):
-            self.n_classes[k] = n_classes[k]
+        self.value_stride = 1 * self.n_classes
 
         # Inner structures
         self.max_depth = 0
@@ -134,10 +122,8 @@ cdef class Tree:
         self.observations = {}   # dictionary from node id to list of observation struct
 
     def __dealloc__(self):
-        #TODO
         """Destructor."""
         # Free all inner structures
-        free(self.n_classes)
         free(self.value)
         free(self.nodes)
 
@@ -244,8 +230,8 @@ cdef class Tree:
         """
         cdef np.npy_intp shape[3]
         shape[0] = <np.npy_intp> self.node_count
-        shape[1] = <np.npy_intp> self.n_outputs
-        shape[2] = <np.npy_intp> self.max_n_classes
+        shape[1] = <np.npy_intp> 1
+        shape[2] = <np.npy_intp> self.n_classes
         cdef np.ndarray arr
         arr = np.PyArray_SimpleNewFromData(3, shape, np.NPY_DOUBLE, self.value)
         Py_INCREF(self)
@@ -315,9 +301,8 @@ cdef class Tree:
     cdef DOUBLE_t _get_random_threshold(self):
         return 0.0
 
-    # TODO
     cdef SIZE_t _get_random_class(self):
-        return 0
+        return np.random.randint(0, self.n_classes)
 
     cdef _change_feature(self, SIZE_t node_id, SIZE_t new_feature):
         self.nodes[node_id].feature = new_feature
