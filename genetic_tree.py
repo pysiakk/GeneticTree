@@ -23,7 +23,8 @@ class GeneticTree:
                  max_depth: int = 3, initialization_type: InitializationType = InitializationType.Random,
                  mutate_features: bool = True, change_feature: float = 0.05,
                  mutate_thresholds: bool = True, change_threshold: float = 0.05,
-                 mutate_classes: bool = True, change_class: float = 0.05
+                 mutate_classes: bool = True, change_class: float = 0.05,
+                 cross_probability: float = 0.05
                  ):
         # TODO check: if any of parameters is None -> write warning / throw error
         # TODO write all kwargs
@@ -32,7 +33,8 @@ class GeneticTree:
                              max_depth=max_depth, initialization_type=initialization_type,
                              mutate_features=mutate_features, change_feature=change_feature,
                              mutate_thresholds=mutate_thresholds, change_threshold=change_threshold,
-                             mutate_classes=mutate_classes, change_class=change_class)
+                             mutate_classes=mutate_classes, change_class=change_class,
+                             cross_probability=cross_probability)
         self.__can_predict__ = False
 
     def set_params(self):
@@ -111,7 +113,7 @@ class GeneticProcessor:
     def growth_trees(self):
         while not self.stop_condition.stop():
             self.mutator.mutate(self.forest)
-            self.crosser.cross_population()
+            self.crosser.cross_population(self.forest)
             self.selector.select()
 
     def prepare_to_predict(self):
