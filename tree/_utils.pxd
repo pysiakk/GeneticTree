@@ -37,10 +37,35 @@ ctypedef fused realloc_ptr:
     (Node*)
     # (Cell*)
     (Node**)
-    # (StackRecord*)
+    (StackRecord*)
     # (PriorityHeapRecord*)
 
 cdef realloc_ptr safe_realloc(realloc_ptr* p, size_t nelems) nogil except *
 
-
 cdef np.ndarray sizet_ptr_to_ndarray(SIZE_t* data, SIZE_t size)
+
+# =============================================================================
+# Stack data structure - copied from sklearn.tree._utils
+# but changed to contain relevant information
+# =============================================================================
+
+# A record on the stack for depth-first tree growing
+cdef struct StackRecord:
+    SIZE_t parent
+    bint is_left
+    bint is_leaf
+    SIZE_t feature
+    double threshold
+    SIZE_t depth
+    SIZE_t class_number
+
+cdef class Stack:
+    cdef SIZE_t capacity
+    cdef SIZE_t top
+    cdef StackRecord* stack_
+
+    cdef bint is_empty(self) nogil
+    cdef int push(self, SIZE_t parent, bint is_left, bint is_leaf,
+                  SIZE_t feature, double threshold, SIZE_t depth,
+                  SIZE_t class_number) nogil except -1
+    cdef int pop(self, StackRecord* res) nogil
