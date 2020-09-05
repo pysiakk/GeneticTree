@@ -69,6 +69,14 @@ NODE_DTYPE = np.dtype({
     ]
 })
 
+cdef class Observation:
+    def __cinit__(self, SIZE_t proper_class, SIZE_t current_class,
+                  SIZE_t observation_id, SIZE_t last_node_id):
+        self.proper_class = proper_class
+        self.current_class = current_class
+        self.observation_id = observation_id
+        self.last_node_id = last_node_id
+
 cdef class Tree:
     property children_left:
         def __get__(self):
@@ -350,6 +358,45 @@ cdef class Tree:
 # ===========================================================================================================
 # Observations functions
 # ===========================================================================================================
+    cpdef initialize_observations(self, object X, np.ndarray y):
+        cdef SIZE_t node_id
+        cdef SIZE_t proper_class
+        cdef SIZE_t current_class
+        cdef SIZE_t observation_id
+        cdef Observation observation
+
+        # TODO check X is in proper format
+        cdef DTYPE_t[:, :] X_ndarray = X
+
+        for observation_id in range(y.shape[0]):
+            node_id = self._find_leaf_for_observation(observation_id, X_ndarray, 0)
+            proper_class = y[observation_id]
+            current_class = self.nodes[node_id].feature
+            observation = Observation(proper_class, current_class, observation_id, node_id)
+            self._assign_leaf_for_observation(observation, node_id)
+
+    cdef _assign_leaf_for_observation(self, Observation observation, SIZE_t node_id):
+        if self.observations.__contains__(node_id):
+            self.observations[node_id].append(observation)
+        else:
+            self.observations[node_id] = [observation]
+
+    cdef SIZE_t _find_leaf_for_observation(self, SIZE_t observation_id, DTYPE_t[:, :] X_ndarray,
+                                               SIZE_t node_id_to_start) nogil:
+        cdef DTYPE_t[:] X_row = X_ndarray[observation_id, :]
+        cdef SIZE_t current_node_id = node_id_to_start
+        cdef SIZE_t feature
+        cdef DOUBLE_t threshold
+        with nogil:
+            while self.nodes[current_node_id].left_child != _TREE_LEAF:
+                feature = self.nodes[current_node_id].feature
+                threshold = self.nodes[current_node_id].threshold
+                if X_row[feature] <= threshold:
+                    current_node_id = self.nodes[current_node_id].left_child
+                else:
+                    current_node_id = self.nodes[current_node_id].right_child
+        return current_node_id
+
     cdef _remove_observations_below_node(self, SIZE_t node_id):
         self._remove_observations_of_node_recurrent(node_id, node_id)
 
@@ -410,3 +457,7 @@ cdef class Tree:
                 x *= 2
                 x += 1
             printf("", x)
+
+a = {}
+a.__contains__("s")
+a.get("s")

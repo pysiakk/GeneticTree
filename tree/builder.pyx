@@ -142,6 +142,8 @@ cdef class FullTreeBuilder(Builder):
                         rc = -1
                         break
 
+        tree.initialize_observations(X, y)
+
     # function and usage from https://numpy.org/devdocs/reference/random/examples/cython/extending.pyx.html
     cdef SIZE_t bounded_uint(self, SIZE_t lb, SIZE_t ub, bitgen_t *rng) nogil:
         cdef SIZE_t mask, delta, val
