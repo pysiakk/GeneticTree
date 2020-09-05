@@ -88,7 +88,7 @@ cdef class Tree:
     cdef DOUBLE_t _get_random_threshold(self)
     cdef SIZE_t _get_random_class(self)
 
-    cdef _change_feature(self, SIZE_t node_id, SIZE_t new_feature)
+    cdef _change_feature_or_class(self, SIZE_t node_id, SIZE_t new_feature)
     cdef _change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold)
 
     # Observations functions
