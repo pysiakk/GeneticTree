@@ -10,9 +10,12 @@ ctypedef np.npy_intp SIZE_t              # Type for indices and counters
 cdef struct CrossoverPoint:
     SIZE_t new_parent_id
     bint is_left
+    SIZE_t depth_addition
 
 cdef class TreeCrosser:
     cpdef Tree cross_trees(self, Tree first_parent, Tree second_parent)
+    cpdef Tree _cross_trees(self, Tree first_parent, Tree second_parent,
+                            SIZE_t first_node_id, SIZE_t second_node_id)
 
     cdef _add_tree_nodes(self, Tree master, SIZE_t crossover_point,
                          Tree slave, bint is_first, CrossoverPoint* result)

@@ -4,6 +4,7 @@ from tree._utils cimport Stack, StackRecord
 
 from libc.stdlib cimport free
 from libc.stdlib cimport malloc
+from libc.stdio cimport printf
 
 TREE_LEAF = -1
 TREE_UNDEFINED = -2
@@ -20,6 +21,12 @@ cdef class TreeCrosser:
         cdef SIZE_t first_node_id = self._get_random_node(first_parent)
         cdef SIZE_t second_node_id = self._get_random_node(second_parent)
 
+        return self._cross_trees(first_parent, second_parent,
+                                 first_node_id, second_node_id)
+
+    # function to not random tests
+    cpdef Tree _cross_trees(self, Tree first_parent, Tree second_parent,
+                            SIZE_t first_node_id, SIZE_t second_node_id):
         cdef Tree child = self._initialize_new_tree(first_parent)
 
         cdef CrossoverPoint* result = <CrossoverPoint*> malloc(sizeof(StackRecord))
@@ -64,7 +71,8 @@ cdef class TreeCrosser:
             is_left = result[0].is_left
             feature = master.nodes[crossover_point].feature
             threshold = master.nodes[crossover_point].threshold
-            depth_addition = master.nodes[crossover_point].depth
+            depth = master.nodes[crossover_point].depth
+            depth_addition = result[0].depth_addition - master.nodes[crossover_point].depth
 
         cdef SIZE_t max_depth_seen = 0
         cdef SIZE_t success_code = 0
@@ -96,8 +104,6 @@ cdef class TreeCrosser:
                 is_leaf = 1
                 if master.nodes[old_self_id].right_child != _TREE_LEAF:
                     is_leaf = 0
-                if master.nodes[old_self_id].left_child != _TREE_LEAF:
-                    is_leaf = 0
 
                 if is_leaf == 1:
                     class_number = feature
@@ -108,17 +114,18 @@ cdef class TreeCrosser:
                     # and not register node
                     result[0].new_parent_id = new_parent_id
                     result[0].is_left = is_left
+                    result[0].depth_addition = depth
                     continue
 
-                new_parent_id = slave._add_node(new_parent_id, is_leaf, is_left,
+                new_parent_id = slave._add_node(new_parent_id, is_left, is_leaf,
                                                 feature, threshold, depth, class_number)
 
                 self._register_node_in_stack(master, new_parent_id,
-                                             master.nodes[old_self_id].right_child, 0,
+                                             master.nodes[old_self_id].left_child, 1,
                                              stack)
 
                 self._register_node_in_stack(master, new_parent_id,
-                                             master.nodes[old_self_id].left_child, 1,
+                                             master.nodes[old_self_id].right_child, 0,
                                              stack)
 
                 if depth > max_depth_seen:
