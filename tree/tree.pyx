@@ -258,31 +258,68 @@ cdef class Tree:
         arr.base = <PyObject*> self
         return arr
 
-    cpdef mutate_random_threshold(self):
-        if self.node_count <= 1:  # there is only one or 0 leaf
+# ===========================================================================================================
+# Mutation functions
+# ===========================================================================================================
+
+    """
+    Function to mutate random node in tree (it can be leaf or decision node)
+    In case the selected node is leaf it changes class
+    In other case it changes feature and threshold
+    """
+    cpdef mutate_random_node(self):
+        if self.node_count == 0:  # empty tree
             return
         cdef SIZE_t node_id = self._get_random_node()
-        cdef DOUBLE_t threshold = self._get_random_threshold()
-        self._change_threshold(node_id, threshold)
-        # TODO change observations
+        if self.nodes[node_id].left_child == _TREE_LEAF:
+            self._mutate_class(node_id)
+        else:
+            self._mutate_feature(node_id)
 
+    """
+    Function to mutate random decision node by changing feature and threshold
+    """
     cpdef mutate_random_feature(self):
         if self.node_count <= 1:  # there is only one or 0 leaf
             return
-        cdef SIZE_t node_id = self._get_random_node()
-        cdef SIZE_t feature = self._get_random_feature()
-        self._change_feature(node_id, feature)
-        # TODO change observations
+        self._mutate_feature(self._get_random_decision_node())
 
+    """
+    Function to mutate random decision node by changing only threshold
+    """
+    cpdef mutate_random_threshold(self):
+        if self.node_count <= 1:  # there is only one or 0 leaf
+            return
+        self._mutate_threshold(self._get_random_decision_node())
+
+    """
+    Function to mutate random leaf by changing class
+    """
     cpdef mutate_random_class(self):
         if self.node_count == 0:  # empty tree
             return
-        cdef SIZE_t node_id = self._get_random_leaf()
+        self._mutate_class(self._get_random_leaf())
+
+    cdef _mutate_feature(self, SIZE_t node_id):
+        cdef SIZE_t feature = self._get_random_feature()
+        self._change_feature_or_class(node_id, feature)
+        self._mutate_threshold(node_id)
+
+    cdef _mutate_threshold(self, SIZE_t node_id):
+        cdef DOUBLE_t threshold = self._get_random_threshold()
+        self._change_threshold(node_id, threshold)
+        self._remove_observations_below_node(node_id)
+
+    cdef _mutate_class(self, SIZE_t node_id):
         cdef SIZE_t new_class = self._get_random_class()
-        self._change_feature(node_id, new_class)
-        # TODO change observations
+        self._change_feature_or_class(node_id, new_class)
+        self._remove_observations_below_node(node_id)
 
     cdef SIZE_t _get_random_node(self):
+        cdef SIZE_t random_id = np.random.randint(0, self.node_count)
+        return random_id
+
+    cdef SIZE_t _get_random_decision_node(self):
         cdef SIZE_t random_id = np.random.randint(0, self.node_count)
         while self.nodes[random_id].left_child == _TREE_LEAF:
             random_id = np.random.randint(0, self.node_count)
@@ -304,11 +341,36 @@ cdef class Tree:
     cdef SIZE_t _get_random_class(self):
         return np.random.randint(0, self.n_classes)
 
-    cdef _change_feature(self, SIZE_t node_id, SIZE_t new_feature):
+    cdef _change_feature_or_class(self, SIZE_t node_id, SIZE_t new_feature):
         self.nodes[node_id].feature = new_feature
 
     cdef _change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold):
         self.nodes[node_id].threshold = new_threshold
+
+# ===========================================================================================================
+# Observations functions
+# ===========================================================================================================
+    cdef _remove_observations_below_node(self, SIZE_t node_id):
+        self._remove_observations_of_node_recurrent(node_id, node_id)
+
+    cdef _remove_observations_of_node_recurrent(self, SIZE_t current_node_id, SIZE_t node_id_as_last):
+        self._remove_observations_of_node(current_node_id, node_id_as_last)
+        cdef Node node = self.nodes[current_node_id]
+        if node.left_child != _TREE_LEAF:
+            self._remove_observations_of_node_recurrent(node.left_child, node_id_as_last)
+        if node.right_child != _TREE_LEAF:
+            self._remove_observations_of_node_recurrent(node.right_child, node_id_as_last)
+
+    cdef _remove_observations_of_node(self, SIZE_t current_node_id, SIZE_t node_id_as_last):
+        # get all observations
+        # for each:
+            # change observation.last_node_id = node_id_as_last
+            # observations[NOT_REGISTERED].append(observation)
+        pass
+
+# ===========================================================================================================
+# Multithreading test functions
+# ===========================================================================================================
 
     cpdef test_function_with_args_core(self, char* name, long long size, int print_size):
         cdef long long x = 0

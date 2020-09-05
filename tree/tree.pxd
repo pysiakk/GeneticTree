@@ -31,9 +31,11 @@ cdef struct Node:
 
 cdef struct Observation:
     # Base storage structure of observation metadata
-    SIZE_t proper_class
-    SIZE_t current_class
-    SIZE_t observation_id
+    SIZE_t proper_class                 # the class of observation in y
+    SIZE_t current_class                # the class of current node
+    SIZE_t observation_id               # id of observation
+    SIZE_t last_node_id                 # node id that observation must be below
+                                        # usually the last node_id before mutation or crossover
 
 
 cdef class Tree:
@@ -68,11 +70,18 @@ cdef class Tree:
     cdef np.ndarray _get_value_ndarray(self)
     cdef np.ndarray _get_node_ndarray(self)
 
-    cpdef mutate_random_threshold(self)
+    # Mutation functions
+    cpdef mutate_random_node(self)
     cpdef mutate_random_feature(self)
+    cpdef mutate_random_threshold(self)
     cpdef mutate_random_class(self)
 
+    cdef _mutate_feature(self, SIZE_t node_id)
+    cdef _mutate_threshold(self, SIZE_t node_id)
+    cdef _mutate_class(self, SIZE_t node_id)
+
     cdef SIZE_t _get_random_node(self)
+    cdef SIZE_t _get_random_decision_node(self)
     cdef SIZE_t _get_random_leaf(self)
 
     cdef SIZE_t _get_random_feature(self)
@@ -82,6 +91,12 @@ cdef class Tree:
     cdef _change_feature(self, SIZE_t node_id, SIZE_t new_feature)
     cdef _change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold)
 
+    # Observations functions
+    cdef _remove_observations_below_node(self, SIZE_t node_id)
+    cdef _remove_observations_of_node_recurrent(self, SIZE_t current_node_id, SIZE_t node_id_as_last)
+    cdef _remove_observations_of_node(self, SIZE_t current_node_id, SIZE_t node_id_as_last)
+
+    # commented out functions
     # cpdef np.ndarray predict(self, object X)
 
     # cpdef np.ndarray apply(self, object X)
@@ -94,8 +109,8 @@ cdef class Tree:
 
     # cpdef compute_feature_importances(self, normalize=*)
 
+    # Multithreading test functions
     cpdef test_function_with_args_core(self, char* name, long long size, int print_size)
-
     cpdef test_function_with_args(self, char* name, long long size, int print_size)
 
     cpdef time_test2(self, long long size)
