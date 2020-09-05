@@ -13,7 +13,7 @@ ctypedef np.npy_uint32 UINT32_t          # Unsigned 32 bit integer
 
 cdef class Builder:
     # Interface to building trees
-    cdef int depth
+    cdef public int depth
 
     # Methods
     cdef inline _check_input(self, object X, np.ndarray y)
