@@ -47,13 +47,36 @@ def test_crosser():
     trees = build(2, 10)
     crosser: TreeCrosser = TreeCrosser()
     tree: Tree = crosser._cross_trees(trees[0][0], trees[1][0], 2, 0)
-    new_features = np.append(np.append(np.append(np.append(np.append(trees[0][1][0:2], [0, 0])
-                                                           , trees[1][1][0]), trees[1][1][2:5])
-                                       , trees[1][1][1])
-                             , [0, 0])
+    new_features = np.append(np.append(np.append(trees[0][1][0:2], np.array([trees[0][1][4], trees[0][1][3], trees[1][1][0]])),
+                                       np.array([trees[1][1][2], trees[1][1][6], trees[1][1][5]])),
+                             np.array([trees[1][1][1], trees[1][1][4], trees[1][1][3]]))
     new_depth = np.array([0, 1, 2, 2, 1, 2, 3, 3, 2, 3, 3])
     assert_array_equal(new_features, tree.feature)
     assert_array_equal(new_depth, tree.depth)
+
+
+def test_independence_of_created_trees_by_crosser(crosses: int = 3, mutations: int = 10):
+    trees = build(1, 10)
+    crosser: TreeCrosser = TreeCrosser()
+
+    # cross tree many times with the same tree
+    tree: Tree = crosser._cross_trees(trees[0][0], trees[1][0], 1, 0)
+    for i in range(1, crosses):
+        tree = crosser._cross_trees(trees[0][0], tree, 1, 0)
+
+    # check if crossing is proper
+    new_features = np.repeat(np.array([[trees[0][1][0], trees[0][1][2]]]).transpose(), crosses, axis=1).reshape(crosses*2, order='F')
+    new_features = np.append(new_features, np.array([trees[1][1][0], trees[1][1][2], trees[1][1][1]]))
+    assert_array_equal(new_features, tree.feature)
+
+    # each mutation should mutate maximum one place in genom
+    # if there are no two pointers for exactly the same node it should not mutate more than one place in genom
+    old_features = np.array(tree.feature)
+    for i in range(mutations):
+        tree.mutate_random_node()
+        new_features = np.array(tree.feature)
+        assert_array_not_the_same_in_one_index(new_features, old_features)
+        old_features = new_features
 
 
 if __name__ == "__main__":
@@ -64,3 +87,4 @@ if __name__ == "__main__":
     test_mutator(Tree.mutate_random_feature, assertion_mutator, assertion_mutator)
     test_mutator(Tree.mutate_random_threshold, 0, assertion_mutator)
     test_crosser()
+    test_independence_of_created_trees_by_crosser(10, 10)
