@@ -24,7 +24,9 @@ class GeneticTree:
                  mutate_features: bool = True, change_feature: float = 0.05,
                  mutate_thresholds: bool = True, change_threshold: float = 0.05,
                  mutate_classes: bool = True, change_class: float = 0.05,
-                 cross_probability: float = 0.05
+                 cross_probability: float = 0.05,
+                 max_iterations: int = 1000,
+                 max_iterations_without_improvement: int = 100, use_without_improvement: bool = False,
                  ):
         # TODO check: if any of parameters is None -> write warning / throw error
         # TODO write all kwargs
@@ -34,7 +36,9 @@ class GeneticTree:
                              mutate_features=mutate_features, change_feature=change_feature,
                              mutate_thresholds=mutate_thresholds, change_threshold=change_threshold,
                              mutate_classes=mutate_classes, change_class=change_class,
-                             cross_probability=cross_probability)
+                             cross_probability=cross_probability,
+                             max_iterations=max_iterations, use_without_improvement=use_without_improvement,
+                             max_iterations_without_improvement=max_iterations_without_improvement,)
         self.__can_predict__ = False
 
     def set_params(self):

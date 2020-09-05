@@ -11,7 +11,9 @@ class StopCondition:
     maximum number of iterations without improvement of best individual
     """
 
-    def __init__(self, max_iterations=1000, max_iterations_without_improvement=100, use_without_improvement=False, **kwargs):
+    def __init__(self, max_iterations: int = 1000,
+                 max_iterations_without_improvement: int = 100, use_without_improvement: bool = False,
+                 **kwargs):
         self.max_iterations: int = max_iterations
         self.max_iterations_without_improvement: int = max_iterations_without_improvement
         self.use_without_improvement: bool = use_without_improvement
@@ -19,7 +21,8 @@ class StopCondition:
         #private variables
         self.reset_private_variables()
 
-    def set_params(self, max_iterations=None, max_iterations_without_improvement=None, use_without_improvement=None):
+    def set_params(self, max_iterations: int = None,
+                   max_iterations_without_improvement: int = None, use_without_improvement: bool = None):
         if max_iterations is not None:
             self.max_iterations = max_iterations
         if max_iterations_without_improvement is not None:
