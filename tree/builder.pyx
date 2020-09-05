@@ -127,9 +127,9 @@ cdef class FullTreeBuilder(Builder):
                         current_node_number = 2**current_depth + node_number
                         parent = <SIZE_t> ((current_node_number-2+is_left) / 2)
 
-                    #TODO get random feature, threshold or class
+                    #TODO get random threshold
                     if current_depth == self.depth:
-                        class_number = 0
+                        class_number = self.bounded_uint(0, tree.n_classes, rng)
                         # class_number = self.bounded_uint(0, tree.n_classes, rng)
                     else:
                         feature = self.bounded_uint(0, tree.n_features, rng)
