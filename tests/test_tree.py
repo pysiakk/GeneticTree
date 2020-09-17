@@ -1,5 +1,8 @@
 from tests.set_up_variables_and_imports import *
 
+forest: Forest = Forest(10, 20)
+X, y = forest._check_input(X, y)
+
 
 def test_builder_tree_size():
     builder: FullTreeBuilder = FullTreeBuilder(1)

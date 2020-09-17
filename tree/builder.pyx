@@ -1,6 +1,7 @@
 # (LICENSE) based on the same file as tree.pyx
 
 from tree.tree cimport Tree
+from tree.forest cimport Forest
 
 from libc.stdint cimport SIZE_MAX
 from libc.stdint cimport uint32_t
@@ -12,11 +13,6 @@ import cython
 from numpy.random cimport bitgen_t
 from numpy.random import PCG64
 np.import_array()
-
-from scipy.sparse import issparse
-
-from numpy import float32 as DTYPE
-from numpy import float64 as DOUBLE
 
 TREE_LEAF = -1
 TREE_UNDEFINED = -2
@@ -31,29 +27,6 @@ cdef class Builder:
         """Build a decision tree from the training set (X, y)."""
         pass
 
-    # TODO move check input to forest.set_X_y() to do it only once
-    cdef inline _check_input(self, object X, np.ndarray y):
-        """Check input dtype, layout and format"""
-        if issparse(X):
-            X = X.tocsc()
-            X.sort_indices()
-
-            if X.data.dtype != DTYPE:
-                X.data = np.ascontiguousarray(X.data, dtype=DTYPE)
-
-            if X.indices.dtype != np.int32 or X.indptr.dtype != np.int32:
-                raise ValueError("No support for np.int64 index based "
-                                 "sparse matrices")
-
-        elif X.dtype != DTYPE:
-            # since we have to copy we will make it fortran for efficiency
-            X = np.asfortranarray(X, dtype=DTYPE)
-
-        if y.dtype != DOUBLE or not y.flags.contiguous:
-            y = np.ascontiguousarray(y, dtype=DOUBLE)
-
-        return X, y
-
 cdef class FullTreeBuilder(Builder):
     """Build a full random tree."""
     property depth:
@@ -67,9 +40,6 @@ cdef class FullTreeBuilder(Builder):
 
     cpdef build(self, Tree tree, object X, np.ndarray y):
         """Build a decision tree from the training set (X, y)."""
-
-        # check input
-        X, y = self._check_input(X, y)
 
         # Initial capacity
         cdef int init_capacity

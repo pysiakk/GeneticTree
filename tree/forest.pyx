@@ -1,8 +1,13 @@
-import numpy as np
-cimport numpy as np
 from tree.tree cimport Tree
 from tree.builder cimport Builder
 from tree.builder import FullTreeBuilder
+
+import numpy as np
+cimport numpy as np
+from scipy.sparse import issparse
+
+from numpy import float32 as DTYPE
+from numpy import float64 as DOUBLE
 
 cdef class Forest:
     property trees:
@@ -26,12 +31,36 @@ cdef class Forest:
         self.current_trees = 0
 
     cpdef set_X_y(self, object X, np.ndarray y):
+        X, y = self._check_input(X, y)
         self.X = X
         self.y = y
 
     cpdef remove_X_y(self):
         self.X = None
         self.y = None
+
+    cpdef _check_input(self, object X, np.ndarray y):
+        """Check input dtype, layout and format"""
+        if issparse(X):
+            X = X.tocsc()
+            X.sort_indices()
+
+            if X.data.dtype != DTYPE:
+                X.data = np.ascontiguousarray(X.data, dtype=DTYPE)
+
+            if X.indices.dtype != np.int32 or X.indptr.dtype != np.int32:
+                raise ValueError("No support for np.int64 index based "
+                                 "sparse matrices")
+
+        elif X.dtype != DTYPE:
+            # since we have to copy we will make it fortran for efficiency
+            X = np.asfortranarray(X, dtype=DTYPE)
+
+        if y.dtype != DOUBLE or not y.flags.contiguous:
+            y = np.ascontiguousarray(y, dtype=DOUBLE)
+
+        return X, y
+
 
     # basic initialization function
     cpdef initialize_population(self, int max_depth):

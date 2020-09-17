@@ -21,6 +21,8 @@ cdef class Forest:
     cpdef set_X_y(self, object X, np.ndarray y)
     cpdef remove_X_y(self)
 
+    cpdef _check_input(self, object X, np.ndarray y)
+
     cpdef initialize_population(self, int depth)
 
     cpdef function_to_test_nogil(self)

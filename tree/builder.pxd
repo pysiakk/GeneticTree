@@ -16,5 +16,4 @@ cdef class Builder:
     cdef public int depth
 
     # Methods
-    cdef inline _check_input(self, object X, np.ndarray y)
     cpdef build(self, Tree tree, object X, np.ndarray y)
