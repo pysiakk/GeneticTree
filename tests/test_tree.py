@@ -79,6 +79,21 @@ def test_independence_of_created_trees_by_crosser(crosses: int = 3, mutations: i
         old_features = new_features
 
 
+def test_observation_creation():
+    trees = build(2, 10)
+    tree: Tree = trees[0][0]
+    print("\n Observation existence test: ")
+    node_id: int = 6
+    for k, val in tree.observations.items():
+        node_id = k
+        print(f'Node id: {k}, observations assigned: {len(val)}')
+    observation: Observation = tree.observations[node_id][0]
+    print(f'Observation id: {observation.observation_id}')
+    print(f'Last node id: {observation.last_node_id}')
+    print(f'Proper class: {observation.proper_class}')
+    print(f'Current class: {observation.current_class}')
+
+
 if __name__ == "__main__":
     test_builder_tree_size()
     assertion_mutator: int = 6
@@ -88,3 +103,4 @@ if __name__ == "__main__":
     test_mutator(Tree.mutate_random_threshold, 0, assertion_mutator)
     test_crosser()
     test_independence_of_created_trees_by_crosser(10, 10)
+    test_observation_creation()
