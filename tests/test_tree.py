@@ -97,6 +97,16 @@ def test_observation_creation():
     print(f'Current class: {observation.current_class}')
 
 
+def test_observations_reassigning():
+    trees = build(2, 10)
+    tree: Tree = trees[0][0]
+    for i in range(10):
+        tree.mutate_random_node()
+    print(f'Observations not assigned just after mutation: {len(tree.observations[-1])}')
+    tree.assign_all_not_registered_observations(X)
+    assert len(tree.observations[-1]) == 0
+
+
 if __name__ == "__main__":
     test_builder_tree_size()
     assertion_mutator: int = 10
@@ -107,3 +117,4 @@ if __name__ == "__main__":
     test_crosser()
     test_independence_of_created_trees_by_crosser(10, 10)
     test_observation_creation()
+    test_observations_reassigning()
