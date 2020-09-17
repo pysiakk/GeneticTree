@@ -94,6 +94,8 @@ cdef class Tree:
 
     # Observations functions
     cpdef initialize_observations(self, object X, np.ndarray y)
+    cpdef assign_all_not_registered_observations(self, object X, np.ndarray y)
+
     cdef _assign_leaf_for_observation(self, Observation observation, SIZE_t node_id)
     cdef SIZE_t _find_leaf_for_observation(self, SIZE_t observation_id, DTYPE_t[:, :] X_ndarray,
                                         SIZE_t node_id_to_start) nogil

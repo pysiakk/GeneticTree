@@ -52,8 +52,10 @@ cdef extern from "numpy/arrayobject.h":
 
 TREE_LEAF = -1
 TREE_UNDEFINED = -2
+NOT_REGISTERED = -1
 cdef SIZE_t _TREE_LEAF = TREE_LEAF
 cdef SIZE_t _TREE_UNDEFINED = TREE_UNDEFINED
+cdef SIZE_t _NOT_REGISTERED = NOT_REGISTERED
 
 # Repeat struct definition for numpy
 NODE_DTYPE = np.dtype({
@@ -364,6 +366,7 @@ cdef class Tree:
 # ===========================================================================================================
 # Observations functions
 # ===========================================================================================================
+    # initialization of observations
     cpdef initialize_observations(self, object X, np.ndarray y):
         cdef SIZE_t node_id
         cdef SIZE_t proper_class
@@ -381,12 +384,31 @@ cdef class Tree:
             observation = Observation(proper_class, current_class, observation_id, node_id)
             self._assign_leaf_for_observation(observation, node_id)
 
+    # assigning only not registered observations (because of crossing or mutation)
+    cpdef assign_all_not_registered_observations(self, object X, np.ndarray y):
+        if not self.observations.__contains__(NOT_REGISTERED):
+            return
+        cdef SIZE_t node_id
+        cdef list observations = self.observations[NOT_REGISTERED]
+
+        # TODO check X is in proper format
+        cdef DTYPE_t[:, :] X_ndarray = X
+
+        for observation in observations:
+            node_id = self._find_leaf_for_observation(observation.observation_id,
+                                                      X_ndarray, observation.last_node_id)
+            observation.current_class = self.nodes[node_id].feature
+            observation.last_node_id = node_id
+            self._assign_leaf_for_observation(observation, node_id)
+
+    # adding observation to proper leaf
     cdef _assign_leaf_for_observation(self, Observation observation, SIZE_t node_id):
         if self.observations.__contains__(node_id):
             self.observations[node_id].append(observation)
         else:
             self.observations[node_id] = [observation]
 
+    # finding proper leaf for observation
     cdef SIZE_t _find_leaf_for_observation(self, SIZE_t observation_id, DTYPE_t[:, :] X_ndarray,
                                                SIZE_t node_id_to_start) nogil:
         cdef DTYPE_t[:] X_row = X_ndarray[observation_id, :]
@@ -403,9 +425,11 @@ cdef class Tree:
                     current_node_id = self.nodes[current_node_id].right_child
         return current_node_id
 
+    # remove all observations below node (fe. node changed in mutation)
     cdef _remove_observations_below_node(self, SIZE_t node_id):
         self._remove_observations_of_node_recurrent(node_id, node_id)
 
+    # and the recurrent version of above
     cdef _remove_observations_of_node_recurrent(self, SIZE_t current_node_id, SIZE_t node_id_as_last):
         self._remove_observations_of_node(current_node_id, node_id_as_last)
         cdef Node node = self.nodes[current_node_id]
@@ -414,12 +438,16 @@ cdef class Tree:
         if node.right_child != _TREE_LEAF:
             self._remove_observations_of_node_recurrent(node.right_child, node_id_as_last)
 
+    # the main function to reassign all observations that should be removed to NOT_REGISTERED node id
     cdef _remove_observations_of_node(self, SIZE_t current_node_id, SIZE_t node_id_as_last):
-        # get all observations
-        # for each:
-            # change observation.last_node_id = node_id_as_last
-            # observations[NOT_REGISTERED].append(observation)
-        pass
+        if not self.observations.__contains__(current_node_id):
+            return
+        cdef list observations = self.observations[current_node_id]
+        if not self.observations.__contains__(NOT_REGISTERED):
+            self.observations[NOT_REGISTERED] = []
+        for observation in observations:
+            observation.last_node_id = node_id_as_last
+            observations[NOT_REGISTERED].append(observation)
 
 # ===========================================================================================================
 # Multithreading test functions
