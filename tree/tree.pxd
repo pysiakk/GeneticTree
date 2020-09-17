@@ -85,9 +85,9 @@ cdef class Tree:
     cdef SIZE_t _get_random_decision_node(self)
     cdef SIZE_t _get_random_leaf(self)
 
-    cdef SIZE_t _get_random_feature(self)
-    cdef DOUBLE_t _get_random_threshold(self)
-    cdef SIZE_t _get_random_class(self)
+    cdef SIZE_t _get_new_random_feature(self, SIZE_t last_feature)
+    cdef DOUBLE_t _get_new_random_threshold(self, DOUBLE_t last_threshold)
+    cdef SIZE_t _get_new_random_class(self, SIZE_t last_class)
 
     cdef _change_feature_or_class(self, SIZE_t node_id, SIZE_t new_feature)
     cdef _change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold)

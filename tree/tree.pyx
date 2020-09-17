@@ -309,17 +309,17 @@ cdef class Tree:
         self._mutate_class(self._get_random_leaf())
 
     cdef _mutate_feature(self, SIZE_t node_id):
-        cdef SIZE_t feature = self._get_random_feature()
+        cdef SIZE_t feature = self._get_new_random_feature(self.nodes[node_id].feature)
         self._change_feature_or_class(node_id, feature)
         self._mutate_threshold(node_id)
 
     cdef _mutate_threshold(self, SIZE_t node_id):
-        cdef DOUBLE_t threshold = self._get_random_threshold()
+        cdef DOUBLE_t threshold = self._get_new_random_threshold(self.nodes[node_id].threshold)
         self._change_threshold(node_id, threshold)
         self._remove_observations_below_node(node_id)
 
     cdef _mutate_class(self, SIZE_t node_id):
-        cdef SIZE_t new_class = self._get_random_class()
+        cdef SIZE_t new_class = self._get_new_random_class(self.nodes[node_id].feature)
         self._change_feature_or_class(node_id, new_class)
         self._remove_observations_below_node(node_id)
 
@@ -339,15 +339,21 @@ cdef class Tree:
             random_id = np.random.randint(0, self.node_count)
         return random_id
 
-    cdef SIZE_t _get_random_feature(self):
-        return np.random.randint(0, self.n_features)
+    cdef SIZE_t _get_new_random_feature(self, SIZE_t last_feature):
+        cdef SIZE_t new_feature = np.random.randint(0, self.n_features-1)
+        if new_feature >= last_feature:
+            new_feature += 1
+        return new_feature
 
     # TODO
-    cdef DOUBLE_t _get_random_threshold(self):
+    cdef DOUBLE_t _get_new_random_threshold(self, DOUBLE_t last_threshold):
         return 0.0
 
-    cdef SIZE_t _get_random_class(self):
-        return np.random.randint(0, self.n_classes)
+    cdef SIZE_t _get_new_random_class(self, SIZE_t last_class):
+        cdef SIZE_t new_class = np.random.randint(0, self.n_classes-1)
+        if new_class >= last_class:
+            new_class += 1
+        return new_class
 
     cdef _change_feature_or_class(self, SIZE_t node_id, SIZE_t new_feature):
         self.nodes[node_id].feature = new_feature

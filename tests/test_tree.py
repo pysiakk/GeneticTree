@@ -20,7 +20,7 @@ def build(depth: int = 1, n_trees: int = 10):
     return trees
 
 
-def test_mutator(function, features_assertion: int = 7, threshold_assertion: int = 7):
+def test_mutator(function, features_assertion: int = 10, threshold_assertion: int = 10):
     trees = build(3, 10)
     not_same_features: int = 0
     not_same_thresholds: int = 0
@@ -96,7 +96,7 @@ def test_observation_creation():
 
 if __name__ == "__main__":
     test_builder_tree_size()
-    assertion_mutator: int = 6
+    assertion_mutator: int = 10
     test_mutator(Tree.mutate_random_node, assertion_mutator, assertion_mutator)
     test_mutator(Tree.mutate_random_class, assertion_mutator, 0)
     test_mutator(Tree.mutate_random_feature, assertion_mutator, assertion_mutator)
