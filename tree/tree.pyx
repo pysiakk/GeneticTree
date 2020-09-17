@@ -385,7 +385,7 @@ cdef class Tree:
             self._assign_leaf_for_observation(observation, node_id)
 
     # assigning only not registered observations (because of crossing or mutation)
-    cpdef assign_all_not_registered_observations(self, object X, np.ndarray y):
+    cpdef assign_all_not_registered_observations(self, object X):
         if not self.observations.__contains__(NOT_REGISTERED):
             return
         cdef SIZE_t node_id
@@ -400,6 +400,7 @@ cdef class Tree:
             observation.current_class = self.nodes[node_id].feature
             observation.last_node_id = node_id
             self._assign_leaf_for_observation(observation, node_id)
+        self.observations[NOT_REGISTERED] = []
 
     # adding observation to proper leaf
     cdef _assign_leaf_for_observation(self, Observation observation, SIZE_t node_id):
@@ -447,7 +448,8 @@ cdef class Tree:
             self.observations[NOT_REGISTERED] = []
         for observation in observations:
             observation.last_node_id = node_id_as_last
-            observations[NOT_REGISTERED].append(observation)
+            self.observations[NOT_REGISTERED].append(observation)
+        self.observations[current_node_id] = []
 
 # ===========================================================================================================
 # Multithreading test functions
