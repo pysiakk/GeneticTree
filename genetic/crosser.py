@@ -39,6 +39,13 @@ class Crosser:
 
                 # create child and register it in forest
                 child: Tree = crosser.cross_trees(first_parent, second_parent)
+
+                # TODO change below line to more complicated way that should be less time consuming
+                # During copying nodes from first tree copy also all observations dict
+                # and replace observations below changed node as NOT_REGISTERED
+                # Then after completion of all tree only need to run assign_all_not_registered_observations
+                child.initialize_observations(forest.X, forest.y)
+
                 forest.trees[current_trees_number] = child
                 current_trees_number += 1
         forest.current_trees = current_trees_number
