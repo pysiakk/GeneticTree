@@ -55,9 +55,6 @@ cdef class Tree:
     cdef Node* nodes                     # Array of nodes
     cdef double* value                   # (capacity, 1, n_classes) array of values
     cdef SIZE_t value_stride             # = 1 * n_classes
-    # TODO PoC of dictionary structure
-    # TODO create dictionary during initialization of trees
-    # TODO update dictionary during mutation
     # TODO create dictionary for new trees during crossing
     cdef public dict observations
 

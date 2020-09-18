@@ -64,7 +64,6 @@ cdef class Forest:
 
     # basic initialization function
     cpdef initialize_population(self, int max_depth):
-        # TODO initialize this parameters with X and y
         cdef int n_features = self.X.shape[1]
         cdef int n_classes = np.unique(self.y).shape[0]
 

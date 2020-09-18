@@ -374,7 +374,6 @@ cdef class Tree:
         cdef SIZE_t observation_id
         cdef Observation observation
 
-        # TODO check X is in proper format
         cdef DTYPE_t[:, :] X_ndarray = X
 
         for observation_id in range(y.shape[0]):
@@ -391,7 +390,6 @@ cdef class Tree:
         cdef SIZE_t node_id
         cdef list observations = self.observations[NOT_REGISTERED]
 
-        # TODO check X is in proper format
         cdef DTYPE_t[:, :] X_ndarray = X
 
         for observation in observations:
