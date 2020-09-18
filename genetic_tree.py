@@ -113,12 +113,13 @@ class GeneticProcessor:
         self.forest.set_X_y(X, y)
         self.stop_condition.reset_private_variables()
         self.initializer.initialize(self.forest)
+        self.selector.set_n_observations(y.shape[0])
 
     def growth_trees(self):
         while not self.stop_condition.stop():
             self.mutator.mutate(self.forest)
             self.crosser.cross_population(self.forest)
-            self.selector.select()
+            self.selector.select(self.forest)
 
     def prepare_to_predict(self):
         #TODO
