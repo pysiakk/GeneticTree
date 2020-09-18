@@ -60,7 +60,7 @@ class Selector:
     def __evaluate__(self, forest: Forest):
         proper_classified = np.empty(forest.current_trees)
         for i in range(forest.current_trees):
-            proper_classified[i] = self.__evaluate_single_tree__(forest.trees[i])
+            proper_classified[i] = self.__evaluate_single_tree__(forest.trees[i], forest.X)
         self.trees_metric = self.__get_trees_by_metric__(proper_classified)
 
     def __leave_best_population__(self, forest: Forest):
@@ -100,7 +100,8 @@ class Selector:
         # self.selected_population[self.elitarysm:] = indices
         # and indices array should be the size of self.n_trees - self.elitarysm
 
-    def __evaluate_single_tree__(self, tree: Tree):
+    def __evaluate_single_tree__(self, tree: Tree, X):
+        tree.assign_all_not_registered_observations(X)
         observations: dict = tree.observations
         proper_classified: int = 0
         for k, val in observations.items():
