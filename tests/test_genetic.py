@@ -2,8 +2,8 @@ from genetic_tree import GeneticTree
 from tests.set_up_variables_and_imports import *
 
 
-def initialize_tree() -> Tree:
-    tree: Tree = Tree(5, 3, 3)
+def initialize_tree(thresholds) -> Tree:
+    tree: Tree = Tree(5, 3, thresholds, 3)
     builder: FullTreeBuilder = FullTreeBuilder(3)
     builder.build(tree, X, y)
     return tree
@@ -17,7 +17,7 @@ def initialize_forest(max_depth: int = 3) -> Forest:
 
 def initialization():
     forest: Forest = initialize_forest(7)
-    tree: Tree = initialize_tree()
+    tree: Tree = initialize_tree(forest.thresholds)
     tree_example: Tree = forest.trees[0]
     print(f'Features of tree: {tree.feature}\n')
     print(f'Features of first forest tree: {tree_example.feature},\n'

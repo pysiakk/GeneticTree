@@ -1,14 +1,18 @@
 from tests.set_up_variables_and_imports import *
 
-forest: Forest = Forest(10, 20)
-X, y = forest._check_input(X, y)
+n_thresholds: int = 10
+forest: Forest = Forest(1, 2, n_thresholds)
+forest.set_X_y(X, y)
+X, y = forest.X, forest.y
+forest.initialize_population(1)
+thresholds = forest.thresholds
 
 
 def test_builder_tree_size():
     builder: FullTreeBuilder = FullTreeBuilder(1)
     for i in range(5, 0, -1):
         builder.depth = i
-        tree: Tree = Tree(5, 1, 3)
+        tree: Tree = Tree(X.shape[1], np.unique(y).shape[0], thresholds, 3)
         builder.build(tree, X, y)
         assert tree.node_count == tree.feature.shape[0] == tree.threshold.shape[0] == 2 ** (i+1) - 1
 
@@ -17,7 +21,7 @@ def build(depth: int = 1, n_trees: int = 10):
     builder: FullTreeBuilder = FullTreeBuilder(depth)
     trees = []
     for i in range(n_trees):
-        tree: Tree = Tree(X.shape[1], np.unique(y).shape[0], depth)
+        tree: Tree = Tree(X.shape[1], np.unique(y).shape[0], thresholds, depth)
         builder.build(tree, X, y)
         trees.append((tree, np.array(tree.feature), np.array(tree.threshold)))
     return trees
@@ -34,7 +38,7 @@ def test_mutator(function, features_assertion: int = 10, threshold_assertion: in
     assert not_same_features >= features_assertion  # because of random mutation it can be up to 10
                                                     # but also equal 0 with low probability
     # uncomment after creating proper thresholds setting
-    # assert not_same_thresholds >= threshold_assertion
+    assert not_same_thresholds >= threshold_assertion
 
 
 def assert_array_not_the_same_in_one_index(array, other) -> int:
@@ -110,7 +114,7 @@ def test_observations_reassigning():
 if __name__ == "__main__":
     test_builder_tree_size()
     assertion_mutator: int = 10
-    test_mutator(Tree.mutate_random_node, assertion_mutator, assertion_mutator)
+    test_mutator(Tree.mutate_random_node, assertion_mutator, 0)
     test_mutator(Tree.mutate_random_class, assertion_mutator, 0)
     test_mutator(Tree.mutate_random_feature, assertion_mutator, assertion_mutator)
     test_mutator(Tree.mutate_random_threshold, 0, assertion_mutator)

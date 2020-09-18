@@ -154,5 +154,5 @@ cdef class TreeCrosser:
         cdef int n_features = previous_tree.n_features
         cdef int n_classes = previous_tree.n_classes
 
-        cdef Tree tree = Tree(n_features, n_classes, previous_tree.max_depth)
+        cdef Tree tree = Tree(n_features, n_classes, previous_tree.thresholds, previous_tree.max_depth)
         return tree

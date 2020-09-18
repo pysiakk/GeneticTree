@@ -3,6 +3,7 @@ import numpy as np
 cimport numpy as np
 
 ctypedef np.npy_float64 DOUBLE_t         # Type of y
+ctypedef np.npy_float32 DTYPE_t          # Type of X
 ctypedef np.npy_intp SIZE_t              # Type for indices and counters
 
 cdef class Forest:
@@ -14,6 +15,9 @@ cdef class Forest:
     cdef int current_trees
     cdef int max_trees
 
+    cdef public int n_thresholds
+    cdef public DTYPE_t[:, :] thresholds
+
     # temporal data to use once in fit function
     cdef object X
     cdef np.ndarray y
@@ -24,5 +28,6 @@ cdef class Forest:
     cpdef _check_input(self, object X, np.ndarray y)
 
     cpdef initialize_population(self, int depth)
+    cdef prepare_thresholds_array(self, int n_thresholds, int n_features)
 
     cpdef function_to_test_nogil(self)

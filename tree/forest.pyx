@@ -34,13 +34,15 @@ cdef class Forest:
         def __get__(self):
             return self.y
 
-    def __cinit__(self, int n_trees, int max_trees):
+    def __cinit__(self, int n_trees, int max_trees, int n_thresholds):
         self.trees = np.empty(max_trees, Tree)
         self.best_tree_number = 0
 
         self.n_trees = n_trees
         self.max_trees = max_trees
         self.current_trees = 0
+
+        self.n_thresholds = n_thresholds
 
     cpdef set_X_y(self, object X, np.ndarray y):
         X, y = self._check_input(X, y)
@@ -81,10 +83,28 @@ cdef class Forest:
 
         cdef Builder builder = FullTreeBuilder(max_depth)
 
+        self.prepare_thresholds_array(self.n_thresholds, n_features)
+
         for i in range(self.n_trees):
-            self.trees[i] = Tree(n_features, n_classes, max_depth)
+            self.trees[i] = Tree(n_features, n_classes, self.thresholds, max_depth)
             builder.build(self.trees[i], self.X, self.y)
             self.current_trees += 1
+
+    cdef prepare_thresholds_array(self, int n_thresholds, int n_features):
+        cdef DTYPE_t[:, :] thresholds = np.zeros([n_thresholds, n_features], dtype=DTYPE)
+        cdef int i
+        cdef int j
+        cdef int index
+        cdef DTYPE_t[:, :] X_ndarray = self.X
+        cdef DTYPE_t[:] X_column
+
+        for i in range(n_features):
+            X_column = X_ndarray[:, i]
+            X_column = np.sort(X_column)
+            for j in range(n_thresholds):
+                index = int(X_column.shape[0] / (n_thresholds+1) * (j+1))
+                thresholds[j, i] = X_column[index]
+        self.thresholds = thresholds
 
     # main function to test how to process many trees in one time using few cores
     cpdef function_to_test_nogil(self):

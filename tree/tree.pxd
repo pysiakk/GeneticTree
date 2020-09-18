@@ -45,6 +45,8 @@ cdef class Tree:
     # Input/Output layout
     cdef public SIZE_t n_features        # Number of features in X
     cdef public SIZE_t n_classes         # Number of classes in y
+    cdef public SIZE_t n_thresholds      # Number of possible thresholds to mutate between
+
     cdef public SIZE_t n_outputs         # Number of outputs in y
 
     # Inner structures: values are stored separately from node structure,
@@ -57,6 +59,7 @@ cdef class Tree:
     cdef SIZE_t value_stride             # = 1 * n_classes
     # TODO create dictionary for new trees during crossing
     cdef public dict observations
+    cdef public DTYPE_t[:, :] thresholds
 
     # Methods
     cdef SIZE_t _add_node(self, SIZE_t parent, bint is_left, bint is_leaf,
@@ -75,7 +78,7 @@ cdef class Tree:
     cpdef mutate_random_class(self)
 
     cdef _mutate_feature(self, SIZE_t node_id)
-    cdef _mutate_threshold(self, SIZE_t node_id)
+    cdef _mutate_threshold(self, SIZE_t node_id, bint feature_changed)
     cdef _mutate_class(self, SIZE_t node_id)
 
     cdef SIZE_t _get_random_node(self)
@@ -83,7 +86,7 @@ cdef class Tree:
     cdef SIZE_t _get_random_leaf(self)
 
     cdef SIZE_t _get_new_random_feature(self, SIZE_t last_feature)
-    cdef DOUBLE_t _get_new_random_threshold(self, DOUBLE_t last_threshold)
+    cdef DOUBLE_t _get_new_random_threshold(self, DOUBLE_t last_threshold, SIZE_t feature, bint feature_changed)
     cdef SIZE_t _get_new_random_class(self, SIZE_t last_class)
 
     cdef _change_feature_or_class(self, SIZE_t node_id, SIZE_t new_feature)

@@ -114,13 +114,16 @@ cdef class Tree:
         def __get__(self):
             return self._get_value_ndarray()[:self.node_count]
 
-    def __cinit__(self, int n_features, int n_classes, int max_depth):
+    def __cinit__(self, int n_features, int n_classes, DTYPE_t[:, :] thresholds, int max_depth):
         #TODO is max_depth useful??
         #TODO think if everything is useful and if should add anything
         """Constructor."""
         # Input/Output layout
         self.n_features = n_features
         self.n_classes = n_classes
+
+        self.n_thresholds = thresholds.shape[0]
+        self.thresholds = thresholds
 
         self.value_stride = 1 * self.n_classes
 
@@ -309,7 +312,7 @@ cdef class Tree:
     cpdef mutate_random_threshold(self):
         if self.node_count <= 1:  # there is only one or 0 leaf
             return
-        self._mutate_threshold(self._get_random_decision_node())
+        self._mutate_threshold(self._get_random_decision_node(), 0)
 
     """
     Function to mutate random leaf by changing class
@@ -322,10 +325,10 @@ cdef class Tree:
     cdef _mutate_feature(self, SIZE_t node_id):
         cdef SIZE_t feature = self._get_new_random_feature(self.nodes[node_id].feature)
         self._change_feature_or_class(node_id, feature)
-        self._mutate_threshold(node_id)
+        self._mutate_threshold(node_id, 1)
 
-    cdef _mutate_threshold(self, SIZE_t node_id):
-        cdef DOUBLE_t threshold = self._get_new_random_threshold(self.nodes[node_id].threshold)
+    cdef _mutate_threshold(self, SIZE_t node_id, bint feature_changed):
+        cdef DOUBLE_t threshold = self._get_new_random_threshold(self.nodes[node_id].threshold, self.nodes[node_id].feature, feature_changed)
         self._change_threshold(node_id, threshold)
         self._remove_observations_below_node(node_id)
 
@@ -356,9 +359,15 @@ cdef class Tree:
             new_feature += 1
         return new_feature
 
-    # TODO
-    cdef DOUBLE_t _get_new_random_threshold(self, DOUBLE_t last_threshold):
-        return 0.0
+    cdef DOUBLE_t _get_new_random_threshold(self, DOUBLE_t last_threshold, SIZE_t feature, bint feature_changed):
+        cdef SIZE_t new_threshold_index
+        if feature_changed == 1:
+            new_threshold_index = np.random.randint(0, self.n_thresholds)
+        else:
+            new_threshold_index = np.random.randint(0, self.n_thresholds-1)
+            if self.thresholds[new_threshold_index, feature] >= last_threshold:
+                new_threshold_index += 1
+        return self.thresholds[new_threshold_index, feature]
 
     cdef SIZE_t _get_new_random_class(self, SIZE_t last_class):
         cdef SIZE_t new_class = np.random.randint(0, self.n_classes-1)
