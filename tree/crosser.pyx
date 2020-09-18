@@ -18,8 +18,8 @@ cdef class TreeCrosser:
         pass
 
     cpdef Tree cross_trees(self, Tree first_parent, Tree second_parent):
-        cdef SIZE_t first_node_id = self._get_random_node(first_parent)
-        cdef SIZE_t second_node_id = self._get_random_node(second_parent)
+        cdef SIZE_t first_node_id = first_parent.get_random_node()
+        cdef SIZE_t second_node_id = second_parent.get_random_node()
 
         return self._cross_trees(first_parent, second_parent,
                                  first_node_id, second_node_id)
@@ -145,10 +145,6 @@ cdef class TreeCrosser:
                        master.nodes[old_self_id].feature,
                        master.nodes[old_self_id].threshold,
                        master.nodes[old_self_id].depth)
-
-    cdef SIZE_t _get_random_node(self, Tree tree):
-        cdef SIZE_t node_count = tree.node_count
-        return np.random.randint(0, node_count)
 
     cdef Tree _initialize_new_tree(self, Tree previous_tree):
         cdef int n_features = previous_tree.n_features

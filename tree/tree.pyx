@@ -292,7 +292,7 @@ cdef class Tree:
     cpdef mutate_random_node(self):
         if self.node_count == 0:  # empty tree
             return
-        cdef SIZE_t node_id = self._get_random_node()
+        cdef SIZE_t node_id = self.get_random_node()
         if self.nodes[node_id].left_child == _TREE_LEAF:
             self._mutate_class(node_id)
         else:
@@ -337,7 +337,7 @@ cdef class Tree:
         self._change_feature_or_class(node_id, new_class)
         self._remove_observations_below_node(node_id)
 
-    cdef SIZE_t _get_random_node(self):
+    cdef public SIZE_t get_random_node(self):
         cdef SIZE_t random_id = np.random.randint(0, self.node_count)
         return random_id
 

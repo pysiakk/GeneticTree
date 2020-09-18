@@ -23,6 +23,5 @@ cdef class TreeCrosser:
                                       SIZE_t new_parent_id, SIZE_t old_self_id,
                                       bint is_left, Stack stack) nogil
 
-    cdef SIZE_t _get_random_node(self, Tree tree)
     cdef Tree _initialize_new_tree(self, Tree previous_tree)
 
