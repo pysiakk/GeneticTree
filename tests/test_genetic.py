@@ -29,6 +29,7 @@ def mutate_feature():
     gt = GeneticTree(change_feature=1, max_depth=1, max_iterations=1)
     gt.fit(X, y)
     forest_before = gt.genetic_processor.forest
+    gt.genetic_processor.crosser.cross_population(forest_before)
     print(f'Features of tree before mutation: {forest_before.trees[0].feature}')
     forest_after = gt.genetic_processor.mutator.mutate(forest_before)
     print(f'Features of tree in previous forest: {forest_before.trees[0].feature}')

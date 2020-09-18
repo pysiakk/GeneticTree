@@ -41,6 +41,7 @@ class Crosser:
                 child: Tree = crosser.cross_trees(first_parent, second_parent)
                 forest.trees[current_trees_number] = child
                 current_trees_number += 1
+        forest.current_trees = current_trees_number
 
     """
     Function to choose another individual from uniform distribution of other individuals
