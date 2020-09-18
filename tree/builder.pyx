@@ -29,11 +29,6 @@ cdef class Builder:
 
 cdef class FullTreeBuilder(Builder):
     """Build a full random tree."""
-    property depth:
-        def __get__(self):
-            return self.depth
-        def __set__(self, int depth):
-            self.depth = depth
 
     def __cinit__(self, int depth):
         self.depth = depth

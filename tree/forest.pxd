@@ -8,19 +8,20 @@ ctypedef np.npy_intp SIZE_t              # Type for indices and counters
 
 cdef class Forest:
     # Class containing all trees
-    cdef Tree[:] trees
+    cdef public Tree[:] trees
+    cdef public Tree best_tree
     cdef int best_tree_number
 
     cdef int n_trees
-    cdef int current_trees
+    cdef public int current_trees
     cdef int max_trees
 
     cdef public int n_thresholds
     cdef public DTYPE_t[:, :] thresholds
 
     # temporal data to use once in fit function
-    cdef object X
-    cdef np.ndarray y
+    cdef public object X
+    cdef public np.ndarray y
 
     cpdef set_X_y(self, object X, np.ndarray y)
     cpdef remove_X_y(self)

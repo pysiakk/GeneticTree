@@ -10,30 +10,6 @@ from numpy import float32 as DTYPE
 from numpy import float64 as DOUBLE
 
 cdef class Forest:
-    property trees:
-        def __get__(self):
-            return self.trees
-        def __set__(self, trees):
-            self.trees = trees
-
-    property best_tree:
-        def __get__(self):
-            return self.trees[self.best_tree_number]
-
-    property current_trees:
-        def __get__(self):
-            return self.current_trees
-        def __set__(self, current_trees):
-            self.current_trees = current_trees
-
-    property X:
-        def __get__(self):
-            return self.X
-
-    property y:
-        def __get__(self):
-            return self.y
-
     def __cinit__(self, int n_trees, int max_trees, int n_thresholds):
         self.trees = np.empty(max_trees, Tree)
         self.best_tree_number = 0
