@@ -40,19 +40,6 @@ cdef class FullTreeBuilder(Builder):
 
     cpdef build(self, Tree tree, object X, np.ndarray y):
         """Build a decision tree from the training set (X, y)."""
-
-        # Initial capacity
-        cdef int init_capacity
-
-        if tree.max_depth == 0:
-            tree.max_depth = self.depth
-        if tree.max_depth <= 10:
-            init_capacity = (2 ** (tree.max_depth + 1)) - 1
-        else:
-            init_capacity = 2047
-
-        tree._resize(init_capacity)
-
         cdef SIZE_t parent = TREE_UNDEFINED
         cdef bint is_left = 0
         cdef bint is_leaf = 0

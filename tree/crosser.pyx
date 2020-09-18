@@ -154,17 +154,5 @@ cdef class TreeCrosser:
         cdef int n_features = previous_tree.n_features
         cdef int n_classes = previous_tree.n_classes
 
-        cdef Tree tree = Tree(n_features, n_classes)
-
-        # TODO move this code to Tree.__cinit__
-        # because the same code is in builder during initialization
-        if tree.max_depth == 0:
-            tree.max_depth = previous_tree.max_depth
-        if tree.max_depth <= 10:
-            init_capacity = (2 ** (tree.max_depth + 1)) - 1
-        else:
-            init_capacity = 2047
-
-        tree._resize(init_capacity)
-
+        cdef Tree tree = Tree(n_features, n_classes, previous_tree.max_depth)
         return tree

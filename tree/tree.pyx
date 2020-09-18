@@ -114,7 +114,8 @@ cdef class Tree:
         def __get__(self):
             return self._get_value_ndarray()[:self.node_count]
 
-    def __cinit__(self, int n_features, int n_classes):
+    def __cinit__(self, int n_features, int n_classes, int max_depth):
+        #TODO is max_depth useful??
         #TODO think if everything is useful and if should add anything
         """Constructor."""
         # Input/Output layout
@@ -130,6 +131,14 @@ cdef class Tree:
         self.value = NULL
         self.nodes = NULL
         self.observations = {}   # dictionary from node id to list of observation struct
+
+        self.max_depth = max_depth
+        if self.max_depth <= 10:
+            init_capacity = (2 ** (self.max_depth + 1)) - 1
+        else:
+            init_capacity = 2047
+
+        self._resize(init_capacity)
 
     def __dealloc__(self):
         """Destructor."""

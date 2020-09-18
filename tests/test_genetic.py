@@ -3,7 +3,7 @@ from tests.set_up_variables_and_imports import *
 
 
 def initialize_tree() -> Tree:
-    tree: Tree = Tree(5, 3)
+    tree: Tree = Tree(5, 3, 3)
     builder: FullTreeBuilder = FullTreeBuilder(3)
     builder.build(tree, X, y)
     return tree

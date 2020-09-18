@@ -19,7 +19,7 @@ class ThreadType(Enum):
 def test_time(size: int = 10**6, thread_type: ThreadType = ThreadType.single):
     gt = GeneticTree()
     forest = gt.genetic_processor.forest
-    tc = Tree(5, 3)
+    tc = Tree(5, 3, 10)
     if thread_type is ThreadType.multiprocessing:
         threads = []
         for i in range(100):

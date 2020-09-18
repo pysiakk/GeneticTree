@@ -70,7 +70,7 @@ cdef class Forest:
         cdef Builder builder = FullTreeBuilder(max_depth)
 
         for i in range(self.n_trees):
-            self.trees[i] = Tree(n_features, n_classes)
+            self.trees[i] = Tree(n_features, n_classes, max_depth)
             builder.build(self.trees[i], self.X, self.y)
             self.current_trees += 1
 
