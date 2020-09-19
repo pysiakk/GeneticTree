@@ -1,4 +1,4 @@
-from tree.tree cimport Tree
+from tree.tree cimport Tree, Observation
 import numpy as np
 from tree._utils cimport Stack, StackRecord
 
@@ -8,8 +8,10 @@ from libc.stdio cimport printf
 
 TREE_LEAF = -1
 TREE_UNDEFINED = -2
+NOT_REGISTERED = -1
 cdef SIZE_t _TREE_LEAF = TREE_LEAF
 cdef SIZE_t _TREE_UNDEFINED = TREE_UNDEFINED
+cdef SIZE_t _NOT_REGISTERED = NOT_REGISTERED
 cdef SIZE_t INITIAL_STACK_SIZE = 10
 
 cdef class TreeCrosser:
@@ -80,6 +82,16 @@ cdef class TreeCrosser:
         cdef Stack stack = Stack(INITIAL_STACK_SIZE)
         cdef StackRecord stack_record
 
+        cdef Observation observation
+        cdef Observation last_observation
+        cdef SIZE_t observation_node_id
+        cdef set old_observations
+        if is_first == 1:
+            old_observations = set()
+            for k, val in master.observations.items():
+                if len(val) > 0:
+                    old_observations.add(k)
+
         with nogil:
             # push root node onto stack
             success_code = stack.push(new_parent_id, old_self_id, is_left,
@@ -115,10 +127,21 @@ cdef class TreeCrosser:
                     result[0].new_parent_id = new_parent_id
                     result[0].is_left = is_left
                     result[0].depth_addition = depth
+                    observation_node_id = new_parent_id
                     continue
 
                 new_parent_id = slave._add_node(new_parent_id, is_left, is_leaf,
                                                 feature, threshold, depth, class_number)
+
+                # rewrite all observations in leaf
+                if is_first == 1 and is_leaf == 1:
+                    with gil:
+                        if old_observations.__contains__(old_self_id):
+                            slave.observations[new_parent_id] = []
+                            for last_observation in master.observations[old_self_id]:
+                                observation = self.create_new_observation(last_observation, new_parent_id)
+                                slave.observations[new_parent_id].append(observation)
+                            old_observations.remove(old_self_id)
 
                 self._register_node_in_stack(master, new_parent_id,
                                              master.nodes[old_self_id].left_child, 1,
@@ -136,6 +159,19 @@ cdef class TreeCrosser:
 
                 if success_code >= 0:
                     slave.max_depth = max_depth_seen
+
+        # rewrite other observations to NOT_REGISTERED in order to find proper node later
+        if is_first == 1:
+            slave.observations[_NOT_REGISTERED] = []
+            while old_observations:
+                old_self_id = old_observations.pop()
+                for last_observation in master.observations[old_self_id]:
+                    observation = self.create_new_observation(last_observation, observation_node_id)
+                    slave.observations[_NOT_REGISTERED].append(observation)
+
+    cdef create_new_observation(self, Observation observation, SIZE_t new_last_node_id):
+        return Observation(observation.proper_class, observation.current_class,
+                           observation.observation_id, new_last_node_id)
 
     cdef void _register_node_in_stack(self, Tree master,
                                       SIZE_t new_parent_id, SIZE_t old_self_id,

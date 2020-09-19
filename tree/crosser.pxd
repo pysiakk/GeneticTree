@@ -1,4 +1,4 @@
-from tree.tree cimport Tree
+from tree.tree cimport Tree, Observation
 from tree._utils cimport Stack
 
 import numpy as np
@@ -19,6 +19,7 @@ cdef class TreeCrosser:
 
     cdef _add_tree_nodes(self, Tree master, SIZE_t crossover_point,
                          Tree slave, bint is_first, CrossoverPoint* result)
+    cdef create_new_observation(self, Observation observation, SIZE_t new_last_node_id)
     cdef void _register_node_in_stack(self, Tree master,
                                       SIZE_t new_parent_id, SIZE_t old_self_id,
                                       bint is_left, Stack stack) nogil
