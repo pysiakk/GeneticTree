@@ -476,7 +476,3 @@ cdef class Tree:
                 x *= 2
                 x += 1
             printf("", x)
-
-a = {}
-a.__contains__("s")
-a.get("s")
