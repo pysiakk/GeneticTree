@@ -11,7 +11,7 @@ thresholds = forest.thresholds
 def test_builder_tree_size():
     builder: FullTreeBuilder = FullTreeBuilder(1)
     for i in range(5, 0, -1):
-        builder.depth = i
+        builder.initial_depth = i
         tree: Tree = Tree(X.shape[1], np.unique(y).shape[0], thresholds, 3)
         builder.build(tree, X, y)
         assert tree.node_count == tree.feature.shape[0] == tree.threshold.shape[0] == 2 ** (i+1) - 1
@@ -59,7 +59,7 @@ def test_crosser():
                              np.array([trees[1][1][1], trees[1][1][4], trees[1][1][3]]))
     new_depth = np.array([0, 1, 2, 2, 1, 2, 3, 3, 2, 3, 3])
     assert_array_equal(new_features, tree.feature)
-    assert_array_equal(new_depth, tree.depth)
+    assert_array_equal(new_depth, tree.nodes_depth)
 
 
 def test_independence_of_created_trees_by_crosser(crosses: int = 3, mutations: int = 10):

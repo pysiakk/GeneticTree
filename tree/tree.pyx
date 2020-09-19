@@ -104,7 +104,7 @@ cdef class Tree:
         def __get__(self):
             return self._get_node_ndarray()['threshold'][:self.node_count]
 
-    property depth:
+    property nodes_depth:
         def __get__(self):
             return self._get_node_ndarray()['depth'][:self.node_count]
 
