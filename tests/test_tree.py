@@ -1,9 +1,10 @@
 from tests.set_up_variables_and_imports import *
+from genetic_tree import GeneticTree
 
 n_thresholds: int = 10
 forest: Forest = Forest(1, 2, n_thresholds)
+X, y = GeneticTree.check_input(X, y)
 forest.set_X_y(X, y)
-X, y = forest.X, forest.y
 forest.initialize_population(1)
 thresholds = forest.thresholds
 
