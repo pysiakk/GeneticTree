@@ -1,4 +1,3 @@
-# import pyximport; pyximport.install() # this cannot compile something from numpy
 import numpy as np
 
 from genetic.initializer import Initializer
@@ -49,7 +48,7 @@ class GeneticTree:
         self.__can_predict__ = False
         self.genetic_processor.set_params(**kwargs)
         if check_input:
-            self.check_input(X, y)
+            X, y = self.check_input(X, y)
         self.genetic_processor.prepare_new_training(X, y)
         self.genetic_processor.growth_trees()
         self.__prepare_to_predict__()
@@ -62,9 +61,9 @@ class GeneticTree:
         if not self.__can_predict__:
             raise Exception('Cannot predict. Model not prepared.')
         #TODO
-        pass
 
-    def check_input(self, X, y):
+    @staticmethod
+    def check_input(X, y):
         #TODO write metainformation about X, y or check if provided are the same as metainformation
         #TODO check if X and y are proper type of Object and have the same number of observations
         if issparse(X):
@@ -86,7 +85,6 @@ class GeneticTree:
             y = np.ascontiguousarray(y, dtype=DOUBLE)
 
         return X, y
-        pass
 
 
 class GeneticProcessor:
