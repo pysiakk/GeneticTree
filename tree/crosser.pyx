@@ -135,7 +135,7 @@ cdef class TreeCrosser:
                     success_code = slave._resize_c(slave.node_count)
 
                 if success_code >= 0:
-                    slave.max_depth = max_depth_seen
+                    slave.depth = max_depth_seen
 
     cdef void _register_node_in_stack(self, Tree master,
                                       SIZE_t new_parent_id, SIZE_t old_self_id,
@@ -150,5 +150,5 @@ cdef class TreeCrosser:
         cdef int n_features = previous_tree.n_features
         cdef int n_classes = previous_tree.n_classes
 
-        cdef Tree tree = Tree(n_features, n_classes, previous_tree.thresholds, previous_tree.max_depth)
+        cdef Tree tree = Tree(n_features, n_classes, previous_tree.thresholds, previous_tree.depth)
         return tree

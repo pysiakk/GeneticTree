@@ -16,59 +16,56 @@
 import numpy as np
 cimport numpy as np
 
-ctypedef np.npy_float64 DOUBLE_t         # Type of y, sample_weight
-ctypedef np.npy_float32 DTYPE_t          # Type of X
-ctypedef np.npy_intp SIZE_t              # Type for indices and counters
+ctypedef np.npy_float64 DOUBLE_t        # Type of y
+ctypedef np.npy_float32 DTYPE_t         # Type of X
+ctypedef np.npy_intp SIZE_t             # Type for indices and counters
 
 cdef struct Node:
     # Base storage structure for the nodes in a Tree object
-    SIZE_t left_child                    # id of the left child of the node
-    SIZE_t right_child                   # id of the right child of the node
-    SIZE_t parent                        # id of the parent of the node
-    SIZE_t feature                       # Feature used for splitting the node
-    DOUBLE_t threshold                   # Threshold value at the node
-    SIZE_t depth                         # the size of path from root to node
+    SIZE_t left_child                   # id of the left child of the node
+    SIZE_t right_child                  # id of the right child of the node
+    SIZE_t parent                       # id of the parent of the node
+    SIZE_t feature                      # Feature used for splitting the node
+                                        # or predicted class if the node is leaf
+    DOUBLE_t threshold                  # Threshold value at the node
+    SIZE_t depth                        # the size of path from root to node
 
 
 cdef class Observation:
     # Base storage structure of observation metadata
-    cdef public SIZE_t proper_class                 # the class of observation in y
-    cdef public SIZE_t current_class                # the class of current node
-    cdef public SIZE_t observation_id               # id of observation
-    cdef public SIZE_t last_node_id                 # node id that observation must be below
-                                                    # usually the last node_id before mutation or crossover
+    cdef public SIZE_t proper_class     # the class of observation in y
+    cdef public SIZE_t current_class    # the class of current node
+    cdef public SIZE_t observation_id   # id of observation
+    cdef public SIZE_t last_node_id     # node id that observation must be below
+                                        # usually the last node_id before mutation or crossover
 
 
 cdef class Tree:
     # The Tree object is a binary tree structure.
 
     # Input/Output layout
-    cdef public SIZE_t n_features        # Number of features in X
-    cdef public SIZE_t n_classes         # Number of classes in y
-    cdef public SIZE_t n_thresholds      # Number of possible thresholds to mutate between
-
-    cdef public SIZE_t n_outputs         # Number of outputs in y
+    cdef public SIZE_t n_features       # Number of features in X
+    cdef public SIZE_t n_classes        # Number of classes in y
+    cdef public SIZE_t n_thresholds     # Number of possible thresholds to mutate between
 
     # Inner structures: values are stored separately from node structure,
     # since size is determined at runtime.
-    cdef public SIZE_t max_depth         # Max depth of the tree
-    cdef public SIZE_t node_count        # Counter for node IDs
-    cdef public SIZE_t capacity          # Capacity of tree, in terms of nodes
-    cdef Node* nodes                     # Array of nodes
-    cdef double* value                   # (capacity, 1, n_classes) array of values
-    cdef SIZE_t value_stride             # = 1 * n_classes
-    # TODO create dictionary for new trees during crossing
-    cdef public dict observations
-    cdef public DTYPE_t[:, :] thresholds
+    cdef public SIZE_t depth            # Max depth seen of the tree
+    cdef public SIZE_t node_count       # Counter for node IDs
+    cdef public SIZE_t capacity         # Capacity of tree, in terms of nodes
+    cdef Node* nodes                    # Array of nodes
+
+    cdef public dict observations           # Dictionary with y array metadata
+    cdef public DTYPE_t[:, :] thresholds    # Array with possible thresholds for each feature
 
     # Methods
-    cdef SIZE_t _add_node(self, SIZE_t parent, bint is_left, bint is_leaf,
-                          SIZE_t feature, double threshold, SIZE_t depth,
-                          SIZE_t class_number) nogil except -1
+    cdef _resize_by_initial_depth(self, int initial_depth)
     cdef int _resize(self, SIZE_t capacity) nogil except -1
     cdef int _resize_c(self, SIZE_t capacity=*) nogil except -1
 
-    cdef np.ndarray _get_value_ndarray(self)
+    cdef SIZE_t _add_node(self, SIZE_t parent, bint is_left, bint is_leaf,
+                          SIZE_t feature, double threshold, SIZE_t depth,
+                          SIZE_t class_number) nogil except -1
     cdef np.ndarray _get_node_ndarray(self)
 
     # Mutation functions

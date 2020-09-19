@@ -53,16 +53,16 @@ cdef class Forest:
 
 
     # basic initialization function
-    cpdef initialize_population(self, int max_depth):
+    cpdef initialize_population(self, int initial_depth):
         cdef int n_features = self.X.shape[1]
         cdef int n_classes = np.unique(self.y).shape[0]
 
-        cdef Builder builder = FullTreeBuilder(max_depth)
+        cdef Builder builder = FullTreeBuilder(initial_depth)
 
         self.prepare_thresholds_array(self.n_thresholds, n_features)
 
         for i in range(self.n_trees):
-            self.trees[i] = Tree(n_features, n_classes, self.thresholds, max_depth)
+            self.trees[i] = Tree(n_features, n_classes, self.thresholds, initial_depth)
             builder.build(self.trees[i], self.X, self.y)
             self.current_trees += 1
 

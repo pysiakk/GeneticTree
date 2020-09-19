@@ -20,8 +20,8 @@ cdef SIZE_t _TREE_LEAF = TREE_LEAF
 cdef SIZE_t _TREE_UNDEFINED = TREE_UNDEFINED
 
 cdef class Builder:
-    def __cinit__(self, int depth):
-        self.depth = depth
+    def __cinit__(self, int initial_depth):
+        self.initial_depth = initial_depth
 
     cpdef build(self, Tree tree, object X, np.ndarray y):
         """Build a decision tree from the training set (X, y)."""
@@ -30,8 +30,8 @@ cdef class Builder:
 cdef class FullTreeBuilder(Builder):
     """Build a full random tree."""
 
-    def __cinit__(self, int depth):
-        self.depth = depth
+    def __cinit__(self, int initial_depth):
+        self.initial_depth = initial_depth
 
     cpdef build(self, Tree tree, object X, np.ndarray y):
         """Build a decision tree from the training set (X, y)."""
@@ -57,8 +57,8 @@ cdef class FullTreeBuilder(Builder):
         rng = <bitgen_t *>PyCapsule_GetPointer(capsule, capsule_name)
 
         with nogil:
-            for current_depth in range(self.depth+1):
-                if current_depth == self.depth:
+            for current_depth in range(self.initial_depth+1):
+                if current_depth == self.initial_depth:
                     is_leaf = 1
 
                 if rc == -1:
@@ -79,7 +79,7 @@ cdef class FullTreeBuilder(Builder):
                         current_node_number = 2**current_depth + node_number
                         parent = <SIZE_t> ((current_node_number-2+is_left) / 2)
 
-                    if current_depth == self.depth:
+                    if current_depth == self.initial_depth:
                         class_number = self.bounded_uint(0, tree.n_classes-1, rng)
                     else:
                         feature = self.bounded_uint(0, tree.n_features-1, rng)
@@ -92,6 +92,7 @@ cdef class FullTreeBuilder(Builder):
                         rc = -1
                         break
 
+        tree.depth = self.initial_depth
         tree.initialize_observations(X, y)
 
     # function and usage from https://numpy.org/devdocs/reference/random/examples/cython/extending.pyx.html

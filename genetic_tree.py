@@ -20,7 +20,7 @@ class GeneticTree:
     """
 
     def __init__(self, n_trees: int = 1000, max_trees: int = 2000, n_thresholds: int = 10,
-                 max_depth: int = 3, initialization_type: InitializationType = InitializationType.Random,
+                 initial_depth: int = 3, initialization_type: InitializationType = InitializationType.Random,
                  mutate_features: bool = True, change_feature: float = 0.05,
                  mutate_thresholds: bool = True, change_threshold: float = 0.05,
                  mutate_classes: bool = True, change_class: float = 0.05,
@@ -32,7 +32,7 @@ class GeneticTree:
         # TODO write all kwargs
         self.genetic_processor = \
             GeneticProcessor(n_trees=n_trees, max_trees=max_trees, n_thresholds=n_thresholds,
-                             max_depth=max_depth, initialization_type=initialization_type,
+                             initial_depth=initial_depth, initialization_type=initialization_type,
                              mutate_features=mutate_features, change_feature=change_feature,
                              mutate_thresholds=mutate_thresholds, change_threshold=change_threshold,
                              mutate_classes=mutate_classes, change_class=change_class,

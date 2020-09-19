@@ -9,8 +9,8 @@ def initialize_tree(thresholds) -> Tree:
     return tree
 
 
-def initialize_forest(max_depth: int = 3) -> Forest:
-    gt = GeneticTree(max_depth=max_depth)
+def initialize_forest(initial_depth: int = 3) -> Forest:
+    gt = GeneticTree(initial_depth=initial_depth)
     gt.fit(X, y)
     return gt.genetic_processor.forest
 
@@ -26,7 +26,7 @@ def initialization():
 
 
 def mutate_feature():
-    gt = GeneticTree(change_feature=1, max_depth=1, max_iterations=1)
+    gt = GeneticTree(change_feature=1, initial_depth=1, max_iterations=1)
     gt.fit(X, y)
     forest_before = gt.genetic_processor.forest
     gt.genetic_processor.crosser.cross_population(forest_before)

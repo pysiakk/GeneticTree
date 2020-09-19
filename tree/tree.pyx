@@ -27,12 +27,10 @@
 from cpython cimport Py_INCREF, PyObject, PyTypeObject
 
 from libc.stdlib cimport free
-from libc.string cimport memset
 from libc.stdint cimport SIZE_MAX
 from libc.stdio cimport printf
 
 from tree._utils cimport safe_realloc
-from tree._utils cimport sizet_ptr_to_ndarray
 
 import multiprocessing
 
@@ -110,13 +108,7 @@ cdef class Tree:
         def __get__(self):
             return self._get_node_ndarray()['depth'][:self.node_count]
 
-    property value:
-        def __get__(self):
-            return self._get_value_ndarray()[:self.node_count]
-
-    def __cinit__(self, int n_features, int n_classes, DTYPE_t[:, :] thresholds, int max_depth):
-        #TODO is max_depth useful??
-        #TODO think if everything is useful and if should add anything
+    def __cinit__(self, int n_features, int n_classes, DTYPE_t[:, :] thresholds, int initial_depth):
         """Constructor."""
         # Input/Output layout
         self.n_features = n_features
@@ -125,28 +117,18 @@ cdef class Tree:
         self.n_thresholds = thresholds.shape[0]
         self.thresholds = thresholds
 
-        self.value_stride = 1 * self.n_classes
-
         # Inner structures
-        self.max_depth = 0
+        self.depth = 0
         self.node_count = 0
         self.capacity = 0
-        self.value = NULL
         self.nodes = NULL
         self.observations = {}   # dictionary from node id to list of observation struct
 
-        self.max_depth = max_depth
-        if self.max_depth <= 10:
-            init_capacity = (2 ** (self.max_depth + 1)) - 1
-        else:
-            init_capacity = 2047
-
-        self._resize(init_capacity)
+        self._resize_by_initial_depth(initial_depth)
 
     def __dealloc__(self):
         """Destructor."""
         # Free all inner structures
-        free(self.value)
         free(self.nodes)
 
     def __reduce__(self):
@@ -163,6 +145,14 @@ cdef class Tree:
         """Setstate re-implementation, for unpickling."""
         #TODO
         pass
+
+    cdef _resize_by_initial_depth(self, int initial_depth):
+        if initial_depth <= 10:
+            init_capacity = (2 ** (initial_depth + 1)) - 1
+        else:
+            init_capacity = 2047
+
+        self._resize(init_capacity)
 
     cdef int _resize(self, SIZE_t capacity) nogil except -1:
         """Resize all inner arrays to `capacity`, if `capacity` == -1, then
@@ -190,13 +180,6 @@ cdef class Tree:
                 capacity = 2 * self.capacity
 
         safe_realloc(&self.nodes, capacity)
-        safe_realloc(&self.value, capacity * self.value_stride)
-
-        # value memory is initialised to 0 to enable classifier argmax
-        if capacity > self.capacity:
-            memset(<void*>(self.value + self.capacity * self.value_stride), 0,
-                   (capacity - self.capacity) * self.value_stride *
-                   sizeof(double))
 
         # if capacity smaller than node_count, adjust the counter
         if capacity < self.node_count:
@@ -243,22 +226,6 @@ cdef class Tree:
         self.node_count += 1
 
         return node_id
-
-    cdef np.ndarray _get_value_ndarray(self):
-        #TODO
-        """Wraps value as a 3-d NumPy array.
-        The array keeps a reference to this Tree, which manages the underlying
-        memory.
-        """
-        cdef np.npy_intp shape[3]
-        shape[0] = <np.npy_intp> self.node_count
-        shape[1] = <np.npy_intp> 1
-        shape[2] = <np.npy_intp> self.n_classes
-        cdef np.ndarray arr
-        arr = np.PyArray_SimpleNewFromData(3, shape, np.NPY_DOUBLE, self.value)
-        Py_INCREF(self)
-        arr.base = <PyObject*> self
-        return arr
 
     cdef np.ndarray _get_node_ndarray(self):
         """Wraps nodes as a NumPy struct array.
