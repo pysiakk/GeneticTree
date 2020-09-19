@@ -44,7 +44,7 @@ class GeneticTree:
         #TODO write all kwargs
         self.genetic_processor.set_params()
 
-    def fit(self, X, y, check_input=True, **kwargs):
+    def fit(self, X, y, check_input: bool = True,  **kwargs):
         self.__can_predict__ = False
         self.genetic_processor.set_params(**kwargs)
         if check_input:
@@ -120,5 +120,8 @@ class GeneticProcessor:
             self.selector.select(self.forest)
 
     def prepare_to_predict(self):
-        #TODO
-        pass
+        best_tree_index: int = self.selector.get_best_tree_index(self.forest)
+        self.forest.prepare_best_tree_to_prediction(best_tree_index)
+        # TODO: remove this data based on some parameters
+        # self.forest.remove_unnecessary_variables()
+        # self.forest.remove_other_trees()

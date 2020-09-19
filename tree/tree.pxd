@@ -101,6 +101,10 @@ cdef class Tree:
     cdef _remove_observations_of_node_recurrent(self, SIZE_t current_node_id, SIZE_t node_id_as_last)
     cdef _remove_observations_of_node(self, SIZE_t current_node_id, SIZE_t node_id_as_last)
 
+    # Prediction functions
+    cdef prepare_tree_to_prediction(self)
+
+
     # commented out functions
     # cpdef np.ndarray predict(self, object X)
 

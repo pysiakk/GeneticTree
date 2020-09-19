@@ -10,7 +10,8 @@ from numpy import float32 as DTYPE
 cdef class Forest:
     def __cinit__(self, int n_trees, int max_trees, int n_thresholds):
         self.trees = np.empty(max_trees, Tree)
-        self.best_tree_number = 0
+        self.best_tree_index = 0
+        self.best_tree = None
 
         self.n_trees = n_trees
         self.max_trees = max_trees
@@ -26,7 +27,7 @@ cdef class Forest:
         self.X = X
         self.y = y
 
-    cpdef remove_X_y(self):
+    cpdef __remove_X_y__(self):
         self.X = None
         self.y = None
 
@@ -59,6 +60,19 @@ cdef class Forest:
                 index = int(X_column.shape[0] / (n_thresholds+1) * (j+1))
                 thresholds[j, i] = X_column[index]
         self.thresholds = thresholds
+
+    cpdef prepare_best_tree_to_prediction(self, int best_tree_index):
+        self.best_tree_index = best_tree_index
+        self.best_tree = self.trees[best_tree_index]
+        self.best_tree.prepare_tree_to_prediction()
+
+    cpdef remove_unnecessary_variables(self):
+        self.__remove_X_y__()
+        self.thresholds = None
+
+    cpdef remove_other_trees(self):
+        self.trees = None
+        self.current_trees = 0
 
     # main function to test how to process many trees in one time using few cores
     cpdef function_to_test_nogil(self):

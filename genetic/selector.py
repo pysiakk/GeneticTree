@@ -53,6 +53,11 @@ class Selector:
             assert elitarysm <= self.n_trees
             self.elitarysm = elitarysm
 
+    def get_best_tree_index(self, forest: Forest) -> int:
+        self.__evaluate__(forest)
+        best_index = np.argmax(self.trees_metric)
+        return best_index
+
     def select(self, forest: Forest):
         self.__evaluate__(forest)
         self.__leave_best_population__(forest)

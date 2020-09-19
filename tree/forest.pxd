@@ -10,7 +10,7 @@ cdef class Forest:
     # Class containing all trees
     cdef public Tree[:] trees
     cdef public Tree best_tree
-    cdef int best_tree_number
+    cdef int best_tree_index
 
     cdef int n_trees
     cdef public int current_trees
@@ -24,9 +24,13 @@ cdef class Forest:
     cdef public np.ndarray y
 
     cpdef set_X_y(self, object X, np.ndarray y)
-    cpdef remove_X_y(self)
+    cpdef __remove_X_y__(self)
 
     cpdef initialize_population(self, int depth)
     cdef prepare_thresholds_array(self, int n_thresholds, int n_features)
+
+    cpdef prepare_best_tree_to_prediction(self, int best_tree_index)
+    cpdef remove_unnecessary_variables(self)
+    cpdef remove_other_trees(self)
 
     cpdef function_to_test_nogil(self)
