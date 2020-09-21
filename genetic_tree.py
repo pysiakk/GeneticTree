@@ -26,6 +26,7 @@ class GeneticTree:
                  cross_probability: float = 0.05,
                  max_iterations: int = 1000,
                  max_iterations_without_improvement: int = 100, use_without_improvement: bool = False,
+                 remove_other_trees: bool = True, remove_variables: bool = True,
                  ):
         # TODO check: if any of parameters is None -> write warning / throw error
         # TODO write all kwargs
@@ -37,14 +38,16 @@ class GeneticTree:
                              mutate_classes=mutate_classes, change_class=change_class,
                              cross_probability=cross_probability,
                              max_iterations=max_iterations, use_without_improvement=use_without_improvement,
-                             max_iterations_without_improvement=max_iterations_without_improvement,)
+                             max_iterations_without_improvement=max_iterations_without_improvement,
+                             remove_variables=remove_variables, remove_other_trees=remove_other_trees,
+                             )
         self.__can_predict__ = False
 
     def set_params(self):
         #TODO write all kwargs
         self.genetic_processor.set_params()
 
-    def fit(self, X, y, check_input: bool = True,  **kwargs):
+    def fit(self, X, y, check_input: bool = True, **kwargs):
         self.__can_predict__ = False
         self.genetic_processor.set_params(**kwargs)
         if check_input:
@@ -92,20 +95,26 @@ class GeneticProcessor:
     Low level interface responsible for communication between all genetic classes
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, remove_other_trees: bool = True, remove_variables: bool = True, **kwargs):
         self.initializer = Initializer(**kwargs)
         self.mutator = Mutator(**kwargs)
         self.crosser = Crosser(**kwargs)
         self.selector = Selector(**kwargs)
         self.stop_condition = StopCondition(**kwargs)
         self.forest = Forest(kwargs["n_trees"], kwargs["max_trees"], kwargs["n_thresholds"])
+        self.remove_other_trees = remove_other_trees
+        self.remove_variables = remove_variables
 
-    def set_params(self, **kwargs):
+    def set_params(self, remove_other_trees: bool = None, remove_variables: bool = None, **kwargs):
         self.initializer.set_params(**kwargs)
         self.mutator.set_params(**kwargs)
         self.crosser.set_params(**kwargs)
         self.selector.set_params(**kwargs)
         self.stop_condition.set_params(**kwargs)
+        if remove_other_trees is not None:
+            self.remove_other_trees = remove_other_trees
+        if remove_variables is not None:
+            self.remove_variables = remove_variables
 
     def prepare_new_training(self, X, y):
         self.forest.set_X_y(X, y)
@@ -122,6 +131,7 @@ class GeneticProcessor:
     def prepare_to_predict(self):
         best_tree_index: int = self.selector.get_best_tree_index(self.forest)
         self.forest.prepare_best_tree_to_prediction(best_tree_index)
-        # TODO: remove this data based on some parameters
-        # self.forest.remove_unnecessary_variables()
-        # self.forest.remove_other_trees()
+        if self.remove_other_trees:
+            self.forest.remove_other_trees()
+        if self.remove_variables:
+            self.forest.remove_unnecessary_variables()

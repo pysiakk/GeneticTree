@@ -7,7 +7,7 @@ X = iris.data
 y = iris.target
 
 n_trees = 200
-gt = GeneticTree(n_trees=n_trees, max_trees=300, max_iterations=300)
+gt = GeneticTree(n_trees=n_trees, max_trees=300, max_iterations=300, remove_other_trees=False, remove_variables=False)
 gt.fit(X, y)
 X = gt.genetic_processor.forest.X
 
