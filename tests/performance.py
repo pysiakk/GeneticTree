@@ -19,7 +19,17 @@ for k, val in tree.observations.items():
         print(f'Current class: {v.current_class}, proper class: {v.proper_class}, observation id: {v.observation_id}')
 
 score_sum = 0
+score_sum_by_prediction = 0
 for i in range(n_trees):
     score_sum += gt.genetic_processor.selector.__evaluate_single_tree__(gt.genetic_processor.forest.trees[i], X)
+    y_pred = gt.genetic_processor.forest.trees[i].predict(X)
+    score_sum_by_prediction += np.sum(y_pred == y)
 
 print(f'Mean score: {score_sum / 150 / n_trees}')
+
+# test if prediction works
+assert score_sum == score_sum_by_prediction
+
+# test if high level predict returns the same array as tree.predict()
+forest: Forest = gt.genetic_processor.forest
+assert_array_equal(gt.predict(X), forest.best_tree.predict(X))
