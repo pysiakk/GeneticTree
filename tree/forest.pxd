@@ -33,4 +33,6 @@ cdef class Forest:
     cpdef remove_unnecessary_variables(self)
     cpdef remove_other_trees(self)
 
+    cpdef np.ndarray predict(self, object X)
+
     cpdef function_to_test_nogil(self)

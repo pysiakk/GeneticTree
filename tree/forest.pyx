@@ -74,6 +74,9 @@ cdef class Forest:
         self.trees = None
         self.current_trees = 0
 
+    cpdef np.ndarray predict(self, object X):
+        return self.best_tree.predict(X)
+
     # main function to test how to process many trees in one time using few cores
     cpdef function_to_test_nogil(self):
         cdef int i

@@ -60,13 +60,14 @@ class GeneticTree:
         self.genetic_processor.prepare_to_predict()
         self.__can_predict__ = True
 
-    def predict(self):
+    def predict(self, X):
         if not self.__can_predict__:
             raise Exception('Cannot predict. Model not prepared.')
-        #TODO
+        X = self.check_input(X)
+        return self.genetic_processor.predict(X)
 
     @staticmethod
-    def check_input(X, y):
+    def check_input(X, y=None):
         #TODO write metainformation about X, y or check if provided are the same as metainformation
         #TODO check if X and y are proper type of Object and have the same number of observations
         if issparse(X):
@@ -84,10 +85,12 @@ class GeneticTree:
             # since we have to copy we will make it fortran for efficiency
             X = np.asfortranarray(X, dtype=DTYPE)
 
-        if y.dtype != DOUBLE or not y.flags.contiguous:
-            y = np.ascontiguousarray(y, dtype=DOUBLE)
-
-        return X, y
+        if y is None:
+            return X
+        else:
+            if y.dtype != DOUBLE or not y.flags.contiguous:
+                y = np.ascontiguousarray(y, dtype=DOUBLE)
+            return X, y
 
 
 class GeneticProcessor:
@@ -135,3 +138,6 @@ class GeneticProcessor:
             self.forest.remove_other_trees()
         if self.remove_variables:
             self.forest.remove_unnecessary_variables()
+
+    def predict(self, X):
+        return self.forest.predict(X)

@@ -442,6 +442,13 @@ cdef class Tree:
         # TODO  consider if should change anything (maybe observations=NULL; thresholds=NULL)
         pass
 
+    cdef np.ndarray predict(self, object X):
+        cdef DTYPE_t[:, :] X_ndarray = X
+        cdef DOUBLE_t[:] y = np.empty(X_ndarray.shape[0], dtype=DOUBLE)
+
+
+        return y
+
 # ===========================================================================================================
 # Multithreading test functions
 # ===========================================================================================================
