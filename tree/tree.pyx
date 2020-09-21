@@ -38,6 +38,9 @@ import numpy as np
 cimport numpy as np
 np.import_array()
 
+from numpy import float32 as DTYPE
+from numpy import float64 as DOUBLE
+
 cdef extern from "numpy/arrayobject.h":
     object PyArray_NewFromDescr(PyTypeObject* subtype, np.dtype descr,
                                 int nd, np.npy_intp* dims,
@@ -442,10 +445,15 @@ cdef class Tree:
         # TODO  consider if should change anything (maybe observations=NULL; thresholds=NULL)
         pass
 
-    cdef np.ndarray predict(self, object X):
+    cpdef np.ndarray predict(self, object X):
         cdef DTYPE_t[:, :] X_ndarray = X
-        cdef DOUBLE_t[:] y = np.empty(X_ndarray.shape[0], dtype=DOUBLE)
+        cdef n_observations = X_ndarray.shape[0]
+        cdef np.ndarray y = np.empty(n_observations, dtype=DOUBLE)
+        cdef int observation_id
 
+        for observation_id in range(n_observations):
+            node_id = self._find_leaf_for_observation(observation_id, X_ndarray, 0)
+            y[observation_id] = self.nodes[node_id].feature  # feature means class for leaf
 
         return y
 

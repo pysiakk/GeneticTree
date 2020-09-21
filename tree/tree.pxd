@@ -16,9 +16,6 @@
 import numpy as np
 cimport numpy as np
 
-from numpy import float32 as DTYPE
-from numpy import float64 as DOUBLE
-
 ctypedef np.npy_float64 DOUBLE_t        # Type of y
 ctypedef np.npy_float32 DTYPE_t         # Type of X
 ctypedef np.npy_intp SIZE_t             # Type for indices and counters
@@ -106,7 +103,7 @@ cdef class Tree:
 
     # Prediction functions
     cdef prepare_tree_to_prediction(self)
-    cdef np.ndarray predict(self, object X)
+    cpdef np.ndarray predict(self, object X)
 
     # commented out functions
     # cpdef np.ndarray predict(self, object X)
