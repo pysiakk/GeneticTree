@@ -5,7 +5,7 @@ name: GeneticTree
 
 on:
   push:
-    branches: [ master, Tests/automatic ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
