@@ -5,6 +5,7 @@ from tree.crosser import TreeCrosser
 
 from sklearn import datasets
 import numpy as np
+import pytest
 
 from sklearn.utils._testing import assert_allclose
 from sklearn.utils._testing import assert_array_equal

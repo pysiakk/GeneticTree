@@ -28,7 +28,7 @@ def build(depth: int = 1, n_trees: int = 10):
     return trees
 
 
-def test_mutator(function, features_assertion: int = 10, threshold_assertion: int = 10):
+def test_mutator(function=Tree.mutate_random_feature, features_assertion: int = 10, threshold_assertion: int = 10):
     trees = build(3, 10)
     not_same_features: int = 0
     not_same_thresholds: int = 0
