@@ -1,21 +1,22 @@
 from tests.set_up_variables_and_imports import *
 from genetic_tree import GeneticTree
 
-n_thresholds: int = 10
+n_thresholds: int = 2
 forest: Forest = Forest(1, 2, n_thresholds)
 X, y = GeneticTree.check_input(X, y)
 forest.set_X_y(X, y)
 forest.initialize_population(1)
-thresholds = forest.thresholds
+thresholds = forest.thresholds  # thresholds array have unique values
+                                # it is needed to proper test mutating thresholds
 
 
 def test_builder_tree_size():
     builder: FullTreeBuilder = FullTreeBuilder(1)
-    for i in range(5, 0, -1):
-        builder.initial_depth = i
-        tree: Tree = Tree(X.shape[1], np.unique(y).shape[0], thresholds, 3)
+    for initial_depth in range(5, 0, -1):
+        builder.initial_depth = initial_depth
+        tree: Tree = Tree(X.shape[1], np.unique(y).shape[0], thresholds, initial_depth)
         builder.build(tree, X, y)
-        assert tree.node_count == tree.feature.shape[0] == tree.threshold.shape[0] == 2 ** (i+1) - 1
+        assert tree.node_count == tree.feature.shape[0] == tree.threshold.shape[0] == 2 ** (initial_depth+1) - 1
 
 
 def build(depth: int = 1, n_trees: int = 10):
@@ -28,21 +29,24 @@ def build(depth: int = 1, n_trees: int = 10):
     return trees
 
 
-def test_mutator(function=Tree.mutate_random_feature, features_assertion: int = 10, threshold_assertion: int = 10):
+@pytest.mark.parametrize("function,features_assertion,threshold_assertion",
+                         [(Tree.mutate_random_node,     10,  0),
+                          (Tree.mutate_random_feature,  10, 10),
+                          (Tree.mutate_random_threshold, 0, 10),
+                          (Tree.mutate_random_class,    10,  0)])
+def test_mutator(function: callable, features_assertion: int, threshold_assertion: int):
     trees = build(3, 10)
     not_same_features: int = 0
     not_same_thresholds: int = 0
     for tree, feature, threshold in trees:
         function(tree)
-        not_same_features += assert_array_not_the_same_in_one_index(feature, tree.feature)
-        not_same_thresholds += assert_array_not_the_same_in_one_index(threshold, tree.threshold)
-    assert not_same_features >= features_assertion  # because of random mutation it can be up to 10
-                                                    # but also equal 0 with low probability
-    # uncomment after creating proper thresholds setting
+        not_same_features += assert_array_not_the_same_in_at_most_one_index(feature, tree.feature)
+        not_same_thresholds += assert_array_not_the_same_in_at_most_one_index(threshold, tree.threshold)
+    assert not_same_features >= features_assertion
     assert not_same_thresholds >= threshold_assertion
 
 
-def assert_array_not_the_same_in_one_index(array, other) -> int:
+def assert_array_not_the_same_in_at_most_one_index(array, other) -> int:
     counter: int = 0
     for before, after in zip(array, other):
         if before != after:
@@ -63,7 +67,7 @@ def test_crosser():
     assert_array_equal(new_depth, tree.nodes_depth)
 
 
-def test_independence_of_created_trees_by_crosser(crosses: int = 3, mutations: int = 10):
+def test_independence_of_created_trees_by_crosser(crosses: int = 10, mutations: int = 10):
     trees = build(1, 10)
     crosser: TreeCrosser = TreeCrosser()
 
@@ -83,7 +87,7 @@ def test_independence_of_created_trees_by_crosser(crosses: int = 3, mutations: i
     for i in range(mutations):
         tree.mutate_random_node()
         new_features = np.array(tree.feature)
-        assert_array_not_the_same_in_one_index(new_features, old_features)
+        assert_array_not_the_same_in_at_most_one_index(new_features, old_features)
         old_features = new_features
 
 
@@ -110,16 +114,3 @@ def test_observations_reassigning():
     print(f'Observations not assigned just after mutation: {len(tree.observations[-1])}')
     tree.assign_all_not_registered_observations(X)
     assert len(tree.observations[-1]) == 0
-
-
-if __name__ == "__main__":
-    test_builder_tree_size()
-    assertion_mutator: int = 10
-    test_mutator(Tree.mutate_random_node, assertion_mutator, 0)
-    test_mutator(Tree.mutate_random_class, assertion_mutator, 0)
-    test_mutator(Tree.mutate_random_feature, assertion_mutator, assertion_mutator)
-    test_mutator(Tree.mutate_random_threshold, 0, assertion_mutator)
-    test_crosser()
-    test_independence_of_created_trees_by_crosser(10, 10)
-    test_observation_creation()
-    test_observations_reassigning()
