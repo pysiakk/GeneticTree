@@ -31,7 +31,7 @@ jobs:
         echo 'Ended install dependencies'
     - name: Compile Cython
       run: |
-        build_tools/compile_cython.py
+        build_tools/compile_cython.sh
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
