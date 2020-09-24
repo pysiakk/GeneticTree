@@ -1,13 +1,10 @@
-from setuptools import setup, Extension
+from setuptools import Extension
 from Cython.Build import cythonize
 import numpy
 
-import numpy as np
 from distutils.core import setup
-from os.path import join, dirname
 
-path = dirname(__file__)
-defs = [('NPY_NO_DEPRECATED_API', 0)]
+defs = [('CYTHON_TRACE_NOGIL', 1)]
 
 ext_modules = cythonize([
     Extension("tree.tree", ["tree/tree.pyx"],      # probably it has to have first name (tree)
@@ -16,15 +13,12 @@ ext_modules = cythonize([
     Extension("tree.forest", ["tree/forest.pyx"],
               extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),
     Extension("tree.crosser", ["tree/crosser.pyx"],
+              define_macros=defs,
               extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),
     Extension("tree.builder", ["tree/builder.pyx"],
-              extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp'],
-                include_dirs = [
-                       np.get_include(),
-                       join(path, '..', '..')
-                   ],
-                   define_macros = defs),
+              extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),
     Extension("tree._utils", ["tree/_utils.pyx"],
+              define_macros=defs,
               extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp'])
     ],
     compiler_directives={'language_level': "3"}
