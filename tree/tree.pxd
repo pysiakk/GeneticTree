@@ -1,3 +1,5 @@
+# distutils: define_macros=CYTHON_TRACE_NOGIL=1
+
 # code copied from https://github.com/scikit-learn/scikit-learn/blob/fd237278e895b42abe8d8d09105cbb82dc2cbba7/sklearn/tree/_tree.pxd
 # notes above this file:
 

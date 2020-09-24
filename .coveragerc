@@ -1,0 +1,11 @@
+[run]
+plugins = Cython.Coverage
+source =
+    tree/
+    genetic_tree
+    genetic/
+
+[report]
+show_missing = true
+omit = *test_*, *__init__.py
+

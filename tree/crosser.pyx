@@ -1,3 +1,5 @@
+# cython: linetrace=True
+
 from tree.tree cimport Tree
 import numpy as np
 from tree._utils cimport Stack, StackRecord

@@ -1,3 +1,5 @@
+# cython: linetrace=True
+
 # (LICENSE) based on the same file as tree.pyx
 
 from tree.tree cimport Tree

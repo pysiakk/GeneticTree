@@ -1,3 +1,5 @@
+# cython: linetrace=True
+
 from tree.tree cimport Tree
 from tree.builder cimport Builder
 from tree.builder import FullTreeBuilder
