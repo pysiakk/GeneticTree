@@ -10,6 +10,7 @@ Welcome to Genetic Tree's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   API Documentation <api/api.rst>
 
 
 Indices and tables
