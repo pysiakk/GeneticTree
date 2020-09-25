@@ -136,3 +136,6 @@ dmypy.json
 
 # Local copied files
 sklearn_tree/
+
+# Documentation builds
+doc/_build
