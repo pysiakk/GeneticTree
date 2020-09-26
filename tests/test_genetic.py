@@ -26,7 +26,7 @@ def initialization():
 
 
 def mutate_feature():
-    gt = GeneticTree(change_feature=1, initial_depth=1, max_iterations=1,
+    gt = GeneticTree(feature_prob=1, initial_depth=1, max_iterations=1,
                      remove_other_trees=False, remove_variables=False)
     gt.fit(X, y)
     forest_before = gt.genetic_processor.forest
