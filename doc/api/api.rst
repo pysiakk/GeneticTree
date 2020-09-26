@@ -9,3 +9,4 @@ API
     :maxdepth: 1
 
     genetic_tree
+    crosser

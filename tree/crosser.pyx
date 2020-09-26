@@ -1,12 +1,10 @@
 # cython: linetrace=True
 
 from tree.tree cimport Tree
-import numpy as np
 from tree._utils cimport Stack, StackRecord
 
 from libc.stdlib cimport free
 from libc.stdlib cimport malloc
-from libc.stdio cimport printf
 
 TREE_LEAF = -1
 TREE_UNDEFINED = -2
@@ -15,10 +13,16 @@ cdef SIZE_t _TREE_UNDEFINED = TREE_UNDEFINED
 cdef SIZE_t INITIAL_STACK_SIZE = 10
 
 cdef class TreeCrosser:
+    """
+    TreeCrosser is responsible for crossing 2 trees with usage of Cython
+    """
 
     def __cinit__(self):
         pass
 
+    """
+    Function to cross 2 trees
+    """
     cpdef Tree cross_trees(self, Tree first_parent, Tree second_parent):
         cdef SIZE_t first_node_id = first_parent.get_random_node()
         cdef SIZE_t second_node_id = second_parent.get_random_node()
@@ -26,20 +30,27 @@ cdef class TreeCrosser:
         return self._cross_trees(first_parent, second_parent,
                                  first_node_id, second_node_id)
 
-    # function to not random tests
+    """
+    Function to cross 2 trees by defining a child tree
+    A child tree is created by replacing 
+    a subtree in first_parent from first_node_id 
+    by a subtree in second_parent from second_node_id
+    """
     cpdef Tree _cross_trees(self, Tree first_parent, Tree second_parent,
                             SIZE_t first_node_id, SIZE_t second_node_id):
         cdef Tree child = self._initialize_new_tree(first_parent)
 
         cdef CrossoverPoint* result = <CrossoverPoint*> malloc(sizeof(StackRecord))
 
-        self._add_tree_nodes(first_parent, first_node_id, child, 1, result)
-        self._add_tree_nodes(second_parent, second_node_id, child, 0, result)
+        self._copy_nodes(first_parent, first_node_id, child, 1, result)
+        self._copy_nodes(second_parent, second_node_id, child, 0, result)
 
         free(result)
         return child
 
     """
+    Function copy nodes from parent to a child
+
     Important note: 
     - master is a parent tree
     - slave is a child tree
@@ -49,13 +60,13 @@ cdef class TreeCrosser:
     1. Add root node from parent to stack
     While stack not empty repeat:
         a) Remove node from Stack
-        b) Register in child tree
+        b) Register in child tree if this node is not crossover point (for first master)
         c) Add right_child of node in parent tree to stack if conditions
         d) Add left_child of node in parent tree to stack if conditions
-        conditions == node exist in parent tree and id of this node is not equal node_id
+        conditions == node exist in parent tree
     """
-    cdef _add_tree_nodes(self, Tree master, SIZE_t crossover_point,
-                         Tree slave, bint is_first, CrossoverPoint* result):
+    cdef _copy_nodes(self, Tree master, SIZE_t crossover_point,
+                     Tree slave, bint is_first, CrossoverPoint* result):
         cdef SIZE_t new_parent_id = _TREE_UNDEFINED
         cdef SIZE_t old_self_id = 0
         cdef bint is_left = 0
@@ -122,13 +133,13 @@ cdef class TreeCrosser:
                 new_parent_id = slave._add_node(new_parent_id, is_left, is_leaf,
                                                 feature, threshold, depth, class_number)
 
-                self._register_node_in_stack(master, new_parent_id,
-                                             master.nodes[old_self_id].left_child, 1,
-                                             stack)
+                self._add_node_to_stack(master, new_parent_id,
+                                        master.nodes[old_self_id].left_child,
+                                        1, stack)
 
-                self._register_node_in_stack(master, new_parent_id,
-                                             master.nodes[old_self_id].right_child, 0,
-                                             stack)
+                self._add_node_to_stack(master, new_parent_id,
+                                        master.nodes[old_self_id].right_child,
+                                        0, stack)
 
                 if depth > max_depth_seen:
                     max_depth_seen = depth
@@ -139,18 +150,25 @@ cdef class TreeCrosser:
                 if success_code >= 0:
                     slave.depth = max_depth_seen
 
-    cdef void _register_node_in_stack(self, Tree master,
-                                      SIZE_t new_parent_id, SIZE_t old_self_id,
-                                      bint is_left, Stack stack) nogil:
+    """
+    Adds node with id old_self_id to Stack
+    """
+    cdef void _add_node_to_stack(self, Tree master,
+                                 SIZE_t new_parent_id, SIZE_t old_self_id,
+                                 bint is_left, Stack stack) nogil:
         if old_self_id != _TREE_LEAF:
             stack.push(new_parent_id, old_self_id, is_left,
                        master.nodes[old_self_id].feature,
                        master.nodes[old_self_id].threshold,
                        master.nodes[old_self_id].depth)
 
+    """
+    Creates new tree with base params as previous tree
+    """
     cdef Tree _initialize_new_tree(self, Tree previous_tree):
         cdef int n_features = previous_tree.n_features
         cdef int n_classes = previous_tree.n_classes
+        cdef int depth = previous_tree.depth
 
-        cdef Tree tree = Tree(n_features, n_classes, previous_tree.thresholds, previous_tree.depth)
+        cdef Tree tree = Tree(n_features, n_classes, previous_tree.thresholds, depth)
         return tree
