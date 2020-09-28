@@ -20,9 +20,9 @@ cdef class TreeCrosser:
     cpdef Tree _cross_trees(self, Tree first_parent, Tree second_parent,
                             SIZE_t first_node_id, SIZE_t second_node_id)
 
-    cdef _copy_nodes(self, Tree master, SIZE_t crossover_point,
-                     Tree slave, bint is_first, CrossoverPoint* result)
-    cdef void _add_node_to_stack(self, Tree master,
+    cdef _copy_nodes(self, Tree donor, SIZE_t crossover_point,
+                     Tree recipient, bint is_first, CrossoverPoint* result)
+    cdef void _add_node_to_stack(self, Tree donor,
                                  SIZE_t new_parent_id, SIZE_t old_self_id,
                                  bint is_left, Stack stack) nogil
 
