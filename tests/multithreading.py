@@ -1,3 +1,6 @@
+import os
+os.chdir("../")
+
 from genetic_tree import GeneticTree
 from tree.tree import Tree
 

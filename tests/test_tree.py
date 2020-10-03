@@ -1,3 +1,6 @@
+import os
+os.chdir("../")
+
 from tests.set_up_variables_and_imports import *
 from genetic_tree import GeneticTree
 
