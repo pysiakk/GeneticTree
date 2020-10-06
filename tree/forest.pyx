@@ -39,13 +39,18 @@ cdef class Forest:
         cdef int n_classes = np.unique(self.y).shape[0]
 
         cdef Builder builder = FullTreeBuilder(initial_depth)
+        cdef Tree tree
+        cdef int tree_index
 
         self.prepare_thresholds_array(self.n_thresholds, n_features)
 
-        for i in range(self.n_trees):
-            self.trees[i] = Tree(n_features, n_classes, self.thresholds, initial_depth)
-            builder.build(self.trees[i], self.X, self.y)
-            self.current_trees += 1
+        for tree_index in range(self.n_trees):
+            tree = Tree(n_features, n_classes, self.thresholds, initial_depth)
+            builder.build(tree)
+            tree.initialize_observations(self.X, self.y)
+            self.trees[tree_index] = tree
+
+        self.current_trees = self.n_trees
 
     cdef prepare_thresholds_array(self, int n_thresholds, int n_features):
         cdef DTYPE_t[:, :] thresholds = np.zeros([n_thresholds, n_features], dtype=DTYPE)

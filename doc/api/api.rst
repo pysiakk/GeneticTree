@@ -11,3 +11,4 @@ API
     genetic_tree
     crosser
     mutator
+    initializer

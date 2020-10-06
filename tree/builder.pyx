@@ -22,21 +22,35 @@ cdef SIZE_t _TREE_LEAF = TREE_LEAF
 cdef SIZE_t _TREE_UNDEFINED = TREE_UNDEFINED
 
 cdef class Builder:
+    """
+    Builder builds random trees with initial_depth depth
+
+    Args:
+        initial_depth: depth of tree
+    """
+
     def __cinit__(self, int initial_depth):
         self.initial_depth = initial_depth
 
-    cpdef build(self, Tree tree, object X, np.ndarray y):
-        """Build a decision tree from the training set (X, y)."""
+    cpdef build(self, Tree tree):
+        """
+        Build a random decision tree
+        """
         pass
 
 cdef class FullTreeBuilder(Builder):
-    """Build a full random tree."""
+    """
+    FullTreeBuilder creates tree without empty spaces for nodes to the
+    initial_depth depth
+    """
 
     def __cinit__(self, int initial_depth):
         self.initial_depth = initial_depth
 
-    cpdef build(self, Tree tree, object X, np.ndarray y):
-        """Build a decision tree from the training set (X, y)."""
+    cpdef build(self, Tree tree):
+        """
+        Build a random decision tree
+        """
         cdef SIZE_t parent = TREE_UNDEFINED
         cdef bint is_left = 0
         cdef bint is_leaf = 0
@@ -95,7 +109,6 @@ cdef class FullTreeBuilder(Builder):
                         break
 
         tree.depth = self.initial_depth
-        tree.initialize_observations(X, y)
 
     # function and usage from https://numpy.org/devdocs/reference/random/examples/cython/extending.pyx.html
     cdef SIZE_t bounded_uint(self, SIZE_t lb, SIZE_t ub, bitgen_t *rng) nogil:

@@ -8,7 +8,8 @@ from tests.set_up_variables_and_imports import *
 def initialize_tree(thresholds) -> Tree:
     tree: Tree = Tree(5, 3, thresholds, 3)
     builder: FullTreeBuilder = FullTreeBuilder(3)
-    builder.build(tree, X, y)
+    builder.build(tree)
+    tree.initialize_observations(X, y)
     return tree
 
 

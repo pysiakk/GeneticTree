@@ -16,4 +16,4 @@ cdef class Builder:
     cdef public int initial_depth
 
     # Methods
-    cpdef build(self, Tree tree, object X, np.ndarray y)
+    cpdef build(self, Tree tree)
