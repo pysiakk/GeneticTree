@@ -63,7 +63,7 @@ class GeneticTree:
     def predict(self, X):
         if not self.__can_predict__:
             raise Exception('Cannot predict. Model not prepared.')
-        X = self.check_input(X)
+        X = self.check_X(X)
         return self.genetic_processor.predict(X)
 
     @staticmethod
