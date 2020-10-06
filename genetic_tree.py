@@ -67,11 +67,41 @@ class GeneticTree:
         return self.genetic_processor.predict(X)
 
     @staticmethod
-    def check_input(X, y=None):
-        #TODO write metainformation about X, y or check if provided are the same as metainformation
-        #TODO check if X and y are proper type of Object and have the same number of observations
+    def check_input(X, y):
+        """
+        Check if X and y have proper dtype and have the same number of observations
+
+        Args:
+            X: np.array or scipy.sparse_matrix of size observations x features
+            y: np.array with proper classes of observations
+
+        Returns:
+            X and y in proper format
+        """
+        X = GeneticTree.check_X(X)
+
+        if y.dtype != DOUBLE or not y.flags.contiguous:
+            y = np.ascontiguousarray(y, dtype=DOUBLE)
+
+        if y.shape[0] != X.shape[0]:
+            raise ValueError("X and y should have the same number of observations")
+
+        return X, y
+
+    @staticmethod
+    def check_X(X):
+        """
+        Checks if X has proper dtype
+        If not it return proper X
+
+        Args:
+            X: np.array or scipy.sparse_matrix of size observations x features
+
+        Returns:
+            Converted X
+        """
         if issparse(X):
-            X = X.tocsc()
+            X = X.tocsr()
             X.sort_indices()
 
             if X.data.dtype != DTYPE:
@@ -82,15 +112,9 @@ class GeneticTree:
                                  "sparse matrices")
 
         elif X.dtype != DTYPE:
-            # since we have to copy we will make it fortran for efficiency
-            X = np.asfortranarray(X, dtype=DTYPE)
+            X = np.ascontiguousarray(X, dtype=DTYPE)
 
-        if y is None:
-            return X
-        else:
-            if y.dtype != DOUBLE or not y.flags.contiguous:
-                y = np.ascontiguousarray(y, dtype=DOUBLE)
-            return X, y
+        return X
 
 
 class GeneticProcessor:
