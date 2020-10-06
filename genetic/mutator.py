@@ -97,7 +97,7 @@ class Mutator:
             n_trees: Number of trees in the forest
             probability: Probability of choosing each individual
 
-        Return:
+        Returns:
             np.array with indices
         """
         return np.random.choice(n_trees, math.ceil(n_trees * probability), replace=False)
