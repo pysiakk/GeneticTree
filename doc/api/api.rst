@@ -12,3 +12,4 @@ API
     crosser
     mutator
     initializer
+    selector
