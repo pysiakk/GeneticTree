@@ -1,5 +1,7 @@
 import numpy as np
 
+import inspect
+
 from genetic.initializer import Initializer
 from genetic.initializer import InitializationType
 from genetic.mutator import Mutator
@@ -18,7 +20,8 @@ class GeneticTree:
     High level interface possible to use like scikit-learn class
     """
 
-    def __init__(self, n_trees: int = 1000, max_trees: int = 2000, n_thresholds: int = 10,
+    def __init__(self,
+                 n_trees: int = 1000, max_trees: int = 2000, n_thresholds: int = 10,
                  initial_depth: int = 3, initialization_type: InitializationType = InitializationType.Random,
                  is_feature: bool = True, feature_prob: float = 0.05,
                  is_threshold: bool = True, threshold_prob: float = 0.05,
@@ -28,20 +31,20 @@ class GeneticTree:
                  max_iterations_without_improvement: int = 100, use_without_improvement: bool = False,
                  remove_other_trees: bool = True, remove_variables: bool = True,
                  ):
-        # TODO check: if any of parameters is None -> write warning / throw error
-        # TODO write all kwargs
-        self.genetic_processor = \
-            GeneticProcessor(n_trees=n_trees, max_trees=max_trees, n_thresholds=n_thresholds,
-                             initial_depth=initial_depth, initialization_type=initialization_type,
-                             is_feature=is_feature, feature_prob=feature_prob,
-                             is_threshold=is_threshold, threshold_prob=threshold_prob,
-                             is_class=is_class, class_prob=class_prob,
-                             cross_prob=cross_prob,
-                             max_iterations=max_iterations, use_without_improvement=use_without_improvement,
-                             max_iterations_without_improvement=max_iterations_without_improvement,
-                             remove_variables=remove_variables, remove_other_trees=remove_other_trees,
-                             )
+        kwargs = vars()
+        kwargs.pop('self')
+        if none_arg := self.if_any_arg_is_none(**kwargs):
+            raise ValueError(f"The argument {none_arg} is None. "
+                             f"GeneticTree does not support None arguments.")
+        self.genetic_processor = GeneticProcessor(**kwargs)
         self.__can_predict__ = False
+
+    @staticmethod
+    def if_any_arg_is_none(**kwargs):
+        for k, val in kwargs.items():
+            if val is None:
+                return k
+        return False
 
     def set_params(self):
         #TODO write all kwargs
