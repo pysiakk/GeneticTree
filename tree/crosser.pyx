@@ -6,6 +6,9 @@ from tree._utils cimport Stack, StackRecord
 from libc.stdlib cimport free
 from libc.stdlib cimport malloc
 
+import numpy as np
+cimport numpy as np
+
 TREE_LEAF = -1
 TREE_UNDEFINED = -2
 cdef SIZE_t _TREE_LEAF = TREE_LEAF
@@ -22,13 +25,25 @@ cdef class TreeCrosser:
 
     """
     Function to cross 2 trees
+    
+    If cross both then cross first tree with second and second with first 
+    using the same crossing points
     """
-    cpdef Tree cross_trees(self, Tree first_parent, Tree second_parent):
+    cpdef Tree[:] cross_trees(self, Tree first_parent, Tree second_parent,
+                              bint cross_both):
         cdef SIZE_t first_node_id = first_parent.get_random_node()
         cdef SIZE_t second_node_id = second_parent.get_random_node()
 
-        return self._cross_trees(first_parent, second_parent,
-                                 first_node_id, second_node_id)
+        cdef Tree[:] trees = np.empty(2, Tree)
+
+        trees[0] = self._cross_trees(first_parent, second_parent,
+                                     first_node_id, second_node_id)
+
+        if cross_both == 1:
+            trees[1] = self._cross_trees(second_parent, first_parent,
+                                         second_node_id, first_node_id)
+
+        return trees
 
     """
     Function to cross 2 trees by defining a child tree

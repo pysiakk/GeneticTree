@@ -16,7 +16,8 @@ cdef struct CrossoverPoint:
     SIZE_t depth_addition       # what is the depth of copied node in child tree
 
 cdef class TreeCrosser:
-    cpdef Tree cross_trees(self, Tree first_parent, Tree second_parent)
+    cpdef Tree[:] cross_trees(self, Tree first_parent, Tree second_parent,
+                              bint cross_both)
     cpdef Tree _cross_trees(self, Tree first_parent, Tree second_parent,
                             SIZE_t first_node_id, SIZE_t second_node_id)
 

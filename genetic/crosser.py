@@ -10,15 +10,26 @@ class Crosser:
 
     Args:
         cross_prob: The chance that each tree will be selected as first parent.
+        if_cross_both: If cross first parent with second and second with first \
+                       or only first with second
+        if_replace_old: If replace old tree(s) by child(ren) or not
 
     For each tree selected with cross_prob chance there will be found second
     random parent.
     """
 
-    def __init__(self, cross_prob: float = 0.05, **kwargs):
+    def __init__(self,
+                 cross_prob: float = 0.93,
+                 if_cross_both: bool = True, if_replace_old: bool = True,
+                 **kwargs):
         self.cross_prob: float = cross_prob
+        self.if_cross_both: bool = if_cross_both
+        self.if_replace_old: bool = if_replace_old
 
-    def set_params(self, cross_prob: float = None):
+    def set_params(self,
+                   cross_prob: float = None,
+                   if_cross_both: bool = None, if_replace_old: bool = None,
+                   **kwargs):
         """
         Function to set new parameters for Crosser
 
@@ -26,6 +37,10 @@ class Crosser:
         """
         if cross_prob is not None:
             self.cross_prob = cross_prob
+        if if_cross_both is not None:
+            self.if_cross_both = if_cross_both
+        if if_replace_old is not None:
+            self.if_replace_old = if_replace_old
 
     def cross_population(self, forest: Forest):
         """
@@ -48,16 +63,27 @@ class Crosser:
                 second_parent: Tree = forest.trees[second_parent_id]
 
                 # create child and register it in forest
-                child: Tree = crosser.cross_trees(first_parent, second_parent)
+                children: Tree[:] = crosser.cross_trees(first_parent, second_parent, int(self.if_cross_both))
 
-                # TODO change below line to more complicated way that should be less time consuming
+                # TODO change below lines to more complicated way that should be less time consuming
                 # During copying nodes from first tree copy also all observations dict
                 # and replace observations below changed node as NOT_REGISTERED
                 # Then after completion of all tree only need to run assign_all_not_registered_observations
-                child.initialize_observations(forest.X, forest.y)
+                children[0].initialize_observations(forest.X, forest.y)
+                if self.if_cross_both:
+                    children[1].initialize_observations(forest.X, forest.y)
 
-                forest.trees[current_trees_number] = child
-                current_trees_number += 1
+                if self.if_replace_old:
+                    forest.trees[first_parent_id] = children[0]
+                    if self.if_cross_both:
+                        forest.trees[second_parent_id] = children[1]
+                else:
+                    forest.trees[current_trees_number] = children[0]
+                    current_trees_number += 1
+                    if self.if_cross_both:
+                        forest.trees[current_trees_number] = children[1]
+                        current_trees_number += 1
+
         forest.current_trees = current_trees_number
 
     @staticmethod

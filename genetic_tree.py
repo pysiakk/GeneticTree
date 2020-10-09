@@ -29,6 +29,7 @@ class GeneticTree:
                  is_node: bool = False, node_prob: float = 0.005,
                  is_class_or_threshold: bool = True, class_or_threshold_prob: float = 0.005,
                  cross_prob: float = 0.93,
+                 if_cross_both: bool = True, if_replace_old: bool = True,
                  max_iterations: int = 200,
                  max_iterations_without_improvement: int = 100, use_without_improvement: bool = False,
                  remove_other_trees: bool = True, remove_variables: bool = True,
