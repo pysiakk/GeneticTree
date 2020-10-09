@@ -35,7 +35,8 @@ class GeneticTree:
                  ):
         kwargs = vars()
         kwargs.pop('self')
-        if none_arg := self.if_any_arg_is_none(**kwargs):
+        none_arg = self.if_any_arg_is_none(**kwargs)
+        if none_arg:
             raise ValueError(f"The argument {none_arg} is None. "
                              f"GeneticTree does not support None arguments.")
         self.genetic_processor = GeneticProcessor(**kwargs)
