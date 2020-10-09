@@ -72,6 +72,7 @@ cdef class Tree:
 
     # Mutation functions
     cpdef mutate_random_node(self)
+    cpdef mutate_random_class_or_threshold(self)
     cpdef mutate_random_feature(self)
     cpdef mutate_random_threshold(self)
     cpdef mutate_random_class(self)

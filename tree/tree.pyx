@@ -271,6 +271,20 @@ cdef class Tree:
             self._mutate_feature(node_id)
 
     """
+    Function to mutate random node in tree (it can be leaf or decision node)
+    In case the selected node is leaf it changes class
+    In other case it changes only threshold
+    """
+    cpdef mutate_random_class_or_threshold(self):
+        if self.node_count == 0:  # empty tree
+            return
+        cdef SIZE_t node_id = self.get_random_node()
+        if self.nodes[node_id].left_child == _TREE_LEAF:
+            self._mutate_class(node_id)
+        else:
+            self._mutate_threshold(node_id, 0)
+
+    """
     Function to mutate random decision node by changing feature and threshold
     """
     cpdef mutate_random_feature(self):
