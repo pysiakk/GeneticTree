@@ -14,7 +14,7 @@ def initialize_tree(thresholds) -> Tree:
 
 
 def initialize_forest(initial_depth: int = 3) -> Forest:
-    gt = GeneticTree(initial_depth=initial_depth, remove_other_trees=False)
+    gt = GeneticTree(initial_depth=initial_depth, remove_variables=False, remove_other_trees=False, max_iterations=1)
     gt.fit(X, y)
     return gt.genetic_processor.forest
 

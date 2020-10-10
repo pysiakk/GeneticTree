@@ -50,3 +50,9 @@ def test_high_level_and_low_level_prediction(genetic_tree, X):
     forest: Forest = genetic_tree.genetic_processor.forest
     assert_array_equal(genetic_tree.predict(X), forest.best_tree.predict(X))
 
+
+if __name__ == "__main__":
+    gt = GeneticTree(remove_other_trees=False, remove_variables=False, max_iterations=30)
+    gt.fit(iris.data, iris.target)
+    tree = gt.genetic_processor.forest.best_tree
+    print(gt.genetic_processor.selector.__evaluate_single_tree__(tree, gt.genetic_processor.forest.X))

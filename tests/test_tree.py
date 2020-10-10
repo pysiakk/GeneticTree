@@ -8,7 +8,7 @@ n_thresholds: int = 2
 forest: Forest = Forest(1, 2, n_thresholds)
 X, y = GeneticTree.check_input(X, y)
 forest.set_X_y(X, y)
-forest.initialize_population(1)
+forest.prepare_thresholds_array()
 thresholds = forest.thresholds  # thresholds array have unique values
                                 # it is needed to proper test mutating thresholds
 
