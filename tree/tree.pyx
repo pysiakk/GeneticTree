@@ -56,6 +56,7 @@ cdef extern from "numpy/arrayobject.h":
 TREE_LEAF = -1
 TREE_UNDEFINED = -2
 NOT_REGISTERED = -1
+NOT_CLASSIFIED = -1
 cdef SIZE_t _TREE_LEAF = TREE_LEAF
 cdef SIZE_t _TREE_UNDEFINED = TREE_UNDEFINED
 cdef SIZE_t _NOT_REGISTERED = NOT_REGISTERED
@@ -127,6 +128,8 @@ cdef class Tree:
         self.node_count = 0
         self.capacity = 0
         self.nodes = NULL
+
+        self.proper_classified = NOT_CLASSIFIED
         self.observations = {}   # dictionary from node id to list of observation struct
 
         self._resize_by_initial_depth(initial_depth)
@@ -443,6 +446,7 @@ cdef class Tree:
 
     # the main function to reassign all observations that should be removed to NOT_REGISTERED node id
     cdef _remove_observations_of_node(self, SIZE_t current_node_id, SIZE_t node_id_as_last):
+        self.proper_classified = NOT_CLASSIFIED
         if not self.observations.__contains__(current_node_id):
             return
         cdef list observations = self.observations[current_node_id]
@@ -452,6 +456,26 @@ cdef class Tree:
             observation.last_node_id = node_id_as_last
             self.observations[NOT_REGISTERED].append(observation)
         self.observations[current_node_id] = []
+
+
+# ===========================================================================================================
+# Evaluation functions
+# ===========================================================================================================
+
+    cpdef SIZE_t get_proper_classified(self, object X):
+        if self.proper_classified == NOT_CLASSIFIED:
+            self._evaluate_tree(X)
+        return self.proper_classified
+
+    cdef _evaluate_tree(self, object X):
+        self.assign_all_not_registered_observations(X)
+        cdef int proper_classified = 0
+        for k, val in self.observations.items():
+            for item in val:
+                if item.proper_class == item.current_class:
+                    proper_classified += 1
+        self.proper_classified = proper_classified
+
 
 # ===========================================================================================================
 # Prediction functions

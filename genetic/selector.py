@@ -36,23 +36,16 @@ class Selector:
         elitarysm: number of best trees to select before selecting other trees by selection_type policy
     """
 
-    def __init__(self, n_trees: int = 1000, selection_type: SelectionType = SelectionType.RankSelection,
-                 metric: Metric = Metric.Accuracy, elitarysm: int = 5, **kwargs):
+    def __init__(self,
+                 n_trees: int = 200,
+                 selection_type: SelectionType = SelectionType.RankSelection,
+                 metric: Metric = Metric.Accuracy, elitarysm: int = 5,
+                 **kwargs):
         assert elitarysm <= n_trees
         self.n_trees: int = n_trees
         self.selection_type: SelectionType = selection_type
         self.metric: Metric = metric
         self.n_elitarysm: int = elitarysm
-        self.n_observations = None
-
-    def set_n_observations(self, n_observations: int):
-        """
-        Sets n_observations - value handy in calculating some metrics
-
-        Args:
-            n_observations: the number of observations
-        """
-        self.n_observations = n_observations
 
     def set_params(self, n_trees: int = None, selection_type: SelectionType = None,
                    metric: Metric = None, elitarysm: int = None):
@@ -102,10 +95,8 @@ class Selector:
         Args:
             forest: Container with all trees
         """
-        proper_classified = np.empty(forest.current_trees)
-        for i in range(forest.current_trees):
-            proper_classified[i] = self.__evaluate_single_tree__(forest.trees[i], forest.X)
-        self.trees_metric = self.__get_trees_metric__(proper_classified)
+        if self.metric == Metric.Accuracy:
+            self.trees_metric = np.array(forest.get_accuracies())
 
     def __leave_best_population__(self, forest: Forest):
         """
@@ -131,7 +122,7 @@ class Selector:
         Function sets indices of best n_elitarysm trees
         """
         if self.n_elitarysm <= 0:
-            return []
+            return
         elite_indices = np.argpartition(-self.trees_metric, self.n_elitarysm - 1)[:self.n_elitarysm]
         self.selected_indices[:self.n_elitarysm] = elite_indices
 
@@ -151,35 +142,3 @@ class Selector:
         # in other SelectionType's it should be done as:
         # self.selected_population[self.elitarysm:] = indices
         # and indices array should be the size of self.n_trees - self.elitarysm
-
-    def __evaluate_single_tree__(self, tree: Tree, X) -> int:
-        """
-        Function counts proper classified observations
-
-        Args:
-            tree: tree to count proper observations
-            X: np.array with dataset of size observations x features
-
-        Returns:
-            number of proper classified observations
-        """
-        tree.assign_all_not_registered_observations(X)
-        observations: dict = tree.observations
-        proper_classified: int = 0
-        for k, val in observations.items():
-            for item in val:
-                if item.proper_class == item.current_class:
-                    proper_classified += 1
-        return proper_classified
-
-    def __get_trees_metric__(self, proper_classified):
-        """
-        Args:
-            proper_classified: np.array with numbers of proper classified observations in each tree
-
-        Returns:
-            np.array with indices as forest.trees with numbers proportional to
-            metric; the bigger number - the better tree is
-        """
-        if self.metric == Metric.Accuracy:
-            return proper_classified

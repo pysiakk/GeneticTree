@@ -153,7 +153,6 @@ class GeneticProcessor:
         self.forest.prepare_thresholds_array()
         self.stop_condition.reset_private_variables()
         self.initializer.initialize(self.forest)
-        self.selector.set_n_observations(y.shape[0])
 
     def growth_trees(self):
         while not self.stop_condition.stop():

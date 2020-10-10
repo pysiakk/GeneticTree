@@ -57,6 +57,7 @@ cdef class Tree:
     cdef public SIZE_t capacity         # Capacity of tree, in terms of nodes
     cdef Node* nodes                    # Array of nodes
 
+    cdef SIZE_t proper_classified    # Number of proper classified observations
     cdef public dict observations           # Dictionary with y array metadata
     cdef public DTYPE_t[:, :] thresholds    # Array with possible thresholds for each feature
 
@@ -103,6 +104,10 @@ cdef class Tree:
     cdef _remove_observations_below_node(self, SIZE_t node_id)
     cdef _remove_observations_of_node_recurrent(self, SIZE_t current_node_id, SIZE_t node_id_as_last)
     cdef _remove_observations_of_node(self, SIZE_t current_node_id, SIZE_t node_id_as_last)
+
+    # Evaluation functions
+    cpdef SIZE_t get_proper_classified(self, object X)
+    cdef _evaluate_tree(self, object X)
 
     # Prediction functions
     cdef prepare_tree_to_prediction(self)
