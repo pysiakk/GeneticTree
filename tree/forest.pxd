@@ -25,18 +25,18 @@ cdef class Forest:
     cdef public int n_features
     cdef public int n_classes
 
+    # Set up
     cpdef set_X_y(self, object X, np.ndarray y)
-    cpdef __remove_X_y__(self)
+    cpdef prepare_thresholds_array(self)
 
+    # Initializer
     cpdef create_new_tree(self, int initial_depth)
     cpdef add_new_tree_and_initialize_observations(self, Tree tree)
 
-    cpdef prepare_thresholds_array(self)
-
+    # Prediction + dealloc memory
     cpdef prepare_best_tree_to_prediction(self, int best_tree_index)
     cpdef remove_unnecessary_variables(self)
+    cpdef __remove_X_y__(self)
     cpdef remove_other_trees(self)
 
     cpdef np.ndarray predict(self, object X)
-
-    cpdef function_to_test_nogil(self)

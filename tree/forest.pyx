@@ -23,23 +23,15 @@ cdef class Forest:
         self.X = None
         self.y = None
 
+# ================================================================================================
+# Set up
+# ================================================================================================
+
     cpdef set_X_y(self, object X, np.ndarray y):
         self.X = X
         self.y = y
         self.n_features = self.X.shape[1]
         self.n_classes = np.unique(self.y).shape[0]
-
-    cpdef __remove_X_y__(self):
-        self.X = None
-        self.y = None
-
-    cpdef create_new_tree(self, int initial_depth):
-        return Tree(self.n_features, self.n_classes, self.thresholds, initial_depth)
-
-    cpdef add_new_tree_and_initialize_observations(self, Tree tree):
-        tree.initialize_observations(self.X, self.y)
-        self.trees[self.current_trees] = tree
-        self.current_trees += 1
 
     cpdef prepare_thresholds_array(self):
         cdef DTYPE_t[:, :] thresholds = np.zeros([self.n_thresholds, self.n_features], dtype=DTYPE)
@@ -57,6 +49,22 @@ cdef class Forest:
                 thresholds[j, i] = X_column[index]
         self.thresholds = thresholds
 
+# ================================================================================================
+# Initializer
+# ================================================================================================
+
+    cpdef create_new_tree(self, int initial_depth):
+        return Tree(self.n_features, self.n_classes, self.thresholds, initial_depth)
+
+    cpdef add_new_tree_and_initialize_observations(self, Tree tree):
+        tree.initialize_observations(self.X, self.y)
+        self.trees[self.current_trees] = tree
+        self.current_trees += 1
+
+# ================================================================================================
+# Prediction + dealloc memory
+# ================================================================================================
+
     cpdef prepare_best_tree_to_prediction(self, int best_tree_index):
         self.best_tree_index = best_tree_index
         self.best_tree = self.trees[best_tree_index]
@@ -66,22 +74,13 @@ cdef class Forest:
         self.__remove_X_y__()
         self.thresholds = None
 
+    cpdef __remove_X_y__(self):
+        self.X = None
+        self.y = None
+
     cpdef remove_other_trees(self):
         self.trees = None
         self.current_trees = 0
 
     cpdef np.ndarray predict(self, object X):
         return self.best_tree.predict(X)
-
-    # main function to test how to process many trees in one time using few cores
-    cpdef function_to_test_nogil(self):
-        cdef int i
-        cdef Tree[:] trees = self.trees
-        print("Start testing nogil")
-        with nogil:
-            for i in range(4):
-                i = i+1
-                # below code is not working with nogil :(
-                # the compilation can't end successfully
-                # trees[i].time_test_function()
-        print("Nogil tested successfully")
