@@ -5,6 +5,8 @@ from genetic.initializer import InitializationType
 from genetic.mutator import Mutator
 from genetic.crosser import Crosser
 from genetic.selector import Selector
+from genetic.selector import SelectionType
+from genetic.selector import Metric
 from genetic.stop_condition import StopCondition
 from tree.forest import Forest
 from scipy.sparse import issparse
@@ -30,6 +32,9 @@ class GeneticTree:
                  is_cross_both: bool = True, is_replace_old: bool = False,
                  max_iterations: int = 200,
                  max_iterations_without_improvement: int = 100, use_without_improvement: bool = False,
+                 selection_type: SelectionType = SelectionType.RankSelection,
+                 metric: Metric = Metric.AccuracyBySize, size_coef: int = 1000,
+                 elitarysm: int = 5,
                  remove_other_trees: bool = True, remove_variables: bool = True,
                  ):
         kwargs = vars()

@@ -11,6 +11,7 @@ class SelectionType(Enum):
 
 class Metric(Enum):
     Accuracy = auto()
+    AccuracyBySize = auto()
 
 
 class Selector:
@@ -33,18 +34,22 @@ class Selector:
         n_trees: number of trees to select
         selection_type: a selection policy how to select new individuals
         metric: a metric used to evaluate single tree
+        size_coef: coefficient inside AccuracyBySize Metric
         elitarysm: number of best trees to select before selecting other trees by selection_type policy
     """
 
     def __init__(self,
                  n_trees: int = 200,
                  selection_type: SelectionType = SelectionType.RankSelection,
-                 metric: Metric = Metric.Accuracy, elitarysm: int = 5,
+                 metric: Metric = Metric.AccuracyBySize,
+                 size_coef: int = 1000,
+                 elitarysm: int = 5,
                  **kwargs):
         assert elitarysm <= n_trees
         self.n_trees: int = n_trees
         self.selection_type: SelectionType = selection_type
         self.metric: Metric = metric
+        self.size_coef = size_coef
         self.n_elitarysm: int = elitarysm
 
     def set_params(self, n_trees: int = None, selection_type: SelectionType = None,
@@ -97,6 +102,10 @@ class Selector:
         """
         if self.metric == Metric.Accuracy:
             self.trees_metric = np.array(forest.get_accuracies())
+        if self.metric == Metric.AccuracyBySize:
+            acc = np.array(forest.get_accuracies())
+            size = np.array(forest.get_trees_sizes())
+            self.trees_metric = acc ** 2 * self.size_coef / (self.size_coef + size ** 2)
 
     def __leave_best_population__(self, forest: Forest):
         """
