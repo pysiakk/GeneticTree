@@ -1,5 +1,7 @@
 from enum import Enum, auto
 from tree.forest import Forest
+from tree.builder import Builder, FullTreeBuilder
+from tree.tree import Tree
 
 
 class InitializationType(Enum):
@@ -20,10 +22,22 @@ class Initializer:
         initialization_type: how to initialize trees
     """
 
-    def __init__(self, initial_depth: int = 3,
-                 initialization_type: InitializationType = InitializationType.Random, **kwargs):
+    def __init__(self,
+                 n_trees: int = 200, initial_depth: int = 1,
+                 initialization_type: InitializationType = InitializationType.Random,
+                 **kwargs):
+        self.n_trees: int = n_trees
         self.initial_depth: int = initial_depth
         self.initialization_type: InitializationType = initialization_type
+        self.builder: Builder = self.initialize_builder()
+
+    def initialize_builder(self):
+        """
+        Returns:
+            Builder: cython builder to initialize new trees
+        """
+        if self.initialization_type == InitializationType.Random:
+            return FullTreeBuilder(self.initial_depth)
 
     def set_params(self, initial_depth: int = None,
                    initialization_type: InitializationType = None):
@@ -44,5 +58,23 @@ class Initializer:
         Args:
             forest: Container with all trees
         """
+        tree: Tree
+        for tree_index in range(self.n_trees):
+            tree = forest.create_new_tree(self.initial_depth)
+            self.initialize_tree(tree)
+            forest.add_new_tree_and_initialize_observations(tree)
+
+    def initialize_tree(self, tree: Tree):
+        """
+        Args:
+            tree: Tree to initialize nodes
+        """
         if self.initialization_type == InitializationType.Random:
-            forest.initialize_population(self.initial_depth)
+            self.initialize_tree_by_random_initialization(tree)
+
+    def initialize_tree_by_random_initialization(self, tree: Tree):
+        """
+        Args:
+            tree: Tree to initialize nodes
+        """
+        self.builder.build(tree)

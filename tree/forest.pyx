@@ -28,43 +28,34 @@ cdef class Forest:
     cpdef set_X_y(self, object X, np.ndarray y):
         self.X = X
         self.y = y
+        self.n_features = self.X.shape[1]
+        self.n_classes = np.unique(self.y).shape[0]
 
     cpdef __remove_X_y__(self):
         self.X = None
         self.y = None
 
-    # basic initialization function
-    cpdef initialize_population(self, int initial_depth):
-        cdef int n_features = self.X.shape[1]
-        cdef int n_classes = np.unique(self.y).shape[0]
+    cpdef create_new_tree(self, int initial_depth):
+        return Tree(self.n_features, self.n_classes, self.thresholds, initial_depth)
 
-        cdef Builder builder = FullTreeBuilder(initial_depth)
-        cdef Tree tree
-        cdef int tree_index
+    cpdef add_new_tree_and_initialize_observations(self, Tree tree):
+        tree.initialize_observations(self.X, self.y)
+        self.trees[self.current_trees] = tree
+        self.current_trees += 1
 
-        self.prepare_thresholds_array(self.n_thresholds, n_features)
-
-        for tree_index in range(self.n_trees):
-            tree = Tree(n_features, n_classes, self.thresholds, initial_depth)
-            builder.build(tree)
-            tree.initialize_observations(self.X, self.y)
-            self.trees[tree_index] = tree
-
-        self.current_trees = self.n_trees
-
-    cdef prepare_thresholds_array(self, int n_thresholds, int n_features):
-        cdef DTYPE_t[:, :] thresholds = np.zeros([n_thresholds, n_features], dtype=DTYPE)
+    cpdef prepare_thresholds_array(self):
+        cdef DTYPE_t[:, :] thresholds = np.zeros([self.n_thresholds, self.n_features], dtype=DTYPE)
         cdef int i
         cdef int j
         cdef int index
         cdef DTYPE_t[:, :] X_ndarray = self.X
         cdef DTYPE_t[:] X_column
 
-        for i in range(n_features):
+        for i in range(self.n_features):
             X_column = X_ndarray[:, i]
             X_column = np.sort(X_column)
-            for j in range(n_thresholds):
-                index = int(X_column.shape[0] / (n_thresholds+1) * (j+1))
+            for j in range(self.n_thresholds):
+                index = int(X_column.shape[0] / (self.n_thresholds+1) * (j+1))
                 thresholds[j, i] = X_column[index]
         self.thresholds = thresholds
 

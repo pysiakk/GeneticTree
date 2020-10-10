@@ -152,6 +152,7 @@ class GeneticProcessor:
 
     def prepare_new_training(self, X, y):
         self.forest.set_X_y(X, y)
+        self.forest.prepare_thresholds_array()
         self.stop_condition.reset_private_variables()
         self.initializer.initialize(self.forest)
         self.selector.set_n_observations(y.shape[0])

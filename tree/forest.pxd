@@ -22,12 +22,16 @@ cdef class Forest:
     # temporal data to use once in fit function
     cdef public object X
     cdef public np.ndarray y
+    cdef public int n_features
+    cdef public int n_classes
 
     cpdef set_X_y(self, object X, np.ndarray y)
     cpdef __remove_X_y__(self)
 
-    cpdef initialize_population(self, int depth)
-    cdef prepare_thresholds_array(self, int n_thresholds, int n_features)
+    cpdef create_new_tree(self, int initial_depth)
+    cpdef add_new_tree_and_initialize_observations(self, Tree tree)
+
+    cpdef prepare_thresholds_array(self)
 
     cpdef prepare_best_tree_to_prediction(self, int best_tree_index)
     cpdef remove_unnecessary_variables(self)
