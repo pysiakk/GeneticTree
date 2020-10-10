@@ -21,7 +21,7 @@ class GeneticTree:
     """
 
     def __init__(self,
-                 n_trees: int = 200, max_trees: int = 400, n_thresholds: int = 10,
+                 n_trees: int = 200, max_trees: int = 600, n_thresholds: int = 10,
                  initial_depth: int = 1, initialization_type: InitializationType = InitializationType.Random,
                  is_feature: bool = False, feature_prob: float = 0.005,
                  is_threshold: bool = False, threshold_prob: float = 0.005,
@@ -29,7 +29,7 @@ class GeneticTree:
                  is_node: bool = False, node_prob: float = 0.005,
                  is_class_or_threshold: bool = True, class_or_threshold_prob: float = 0.005,
                  cross_prob: float = 0.93,
-                 if_cross_both: bool = True, if_replace_old: bool = True,
+                 is_cross_both: bool = True, is_replace_old: bool = False,
                  max_iterations: int = 200,
                  max_iterations_without_improvement: int = 100, use_without_improvement: bool = False,
                  remove_other_trees: bool = True, remove_variables: bool = True,
