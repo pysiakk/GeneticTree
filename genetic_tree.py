@@ -1,7 +1,5 @@
 import numpy as np
 
-import inspect
-
 from genetic.initializer import Initializer
 from genetic.initializer import InitializationType
 from genetic.mutator import Mutator
