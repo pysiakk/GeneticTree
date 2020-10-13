@@ -1,5 +1,6 @@
 import os
 os.chdir("../")
+import io
 
 from tree.tree import Tree, Observation
 from tree.builder import Builder, FullTreeBuilder

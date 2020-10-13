@@ -29,6 +29,7 @@
 from cpython cimport Py_INCREF, PyObject, PyTypeObject
 
 from libc.stdlib cimport free
+from libc.string cimport memcpy
 from libc.stdint cimport SIZE_MAX
 from libc.stdio cimport printf
 
@@ -144,18 +145,46 @@ cdef class Tree:
 
     def __reduce__(self):
         """Reduce re-implementation, for pickling."""
-        #TODO
-        pass
+        return (Tree, (self.n_features,
+               self.n_classes,
+               np.array(self.thresholds),
+               1), self.__getstate__())
 
     def __getstate__(self):
         """Getstate re-implementation, for pickling."""
-        #TODO
-        pass
+        d = {}
+        # capacity is inferred during the __setstate__ using nodes
+        d["depth"] = self.depth
+        d["node_count"] = self.node_count
+        d["nodes"] = self._get_node_ndarray()
+        # TODO uncomment after pull request with master
+        # d["proper_classified"] = self.proper_classified
+        d["observations"] = self.observations
 
     def __setstate__(self, d):
         """Setstate re-implementation, for unpickling."""
-        #TODO
-        pass
+        self.depth = d["depth"]
+        self.node_count = d["node_count"]
+        # TODO uncomment after pull request with master
+        # self.proper_classified = d["proper_classified"]
+        self.observations = d["observations"]
+
+        if 'nodes' not in d:
+            raise ValueError('You have loaded Tree version which '
+                             'cannot be imported')
+
+        node_ndarray = d['nodes']
+
+        if (node_ndarray.ndim != 1 or
+                node_ndarray.dtype != NODE_DTYPE or
+                not node_ndarray.flags.c_contiguous):
+            raise ValueError('Did not recognise loaded array layout')
+
+        self.capacity = node_ndarray.shape[0]
+        if self._resize_c(self.capacity) != 0:
+            raise MemoryError("resizing tree to %d" % self.capacity)
+        nodes = memcpy(self.nodes, (<np.ndarray> node_ndarray).data,
+                       self.capacity * sizeof(Node))
 
     cpdef resize_by_initial_depth(self, int initial_depth):
         if initial_depth <= 10:
