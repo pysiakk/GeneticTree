@@ -6,7 +6,7 @@ from genetic_tree import GeneticTree
 
 n_thresholds: int = 2
 forest: Forest = Forest(1, 2, n_thresholds)
-X, y = GeneticTree.check_input(X, y)
+X, y = GeneticTree.check_input(GeneticTree(), X, y, True)
 forest.set_X_y(X, y)
 forest.prepare_thresholds_array()
 thresholds = forest.thresholds  # thresholds array have unique values
