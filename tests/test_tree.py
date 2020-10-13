@@ -4,6 +4,8 @@ os.chdir("../")
 from tests.set_up_variables_and_imports import *
 from genetic_tree import GeneticTree
 
+import pickle
+
 n_thresholds: int = 2
 forest: Forest = Forest(1, 2, n_thresholds)
 X, y = GeneticTree.check_input(X, y)
@@ -118,3 +120,12 @@ def test_observations_reassigning():
     print(f'Observations not assigned just after mutation: {len(tree.observations[-1])}')
     tree.assign_all_not_registered_observations(X)
     assert len(tree.observations[-1]) == 0
+
+
+def test_pickling():
+    tree: Tree = build(10, 1)[0][0]
+    bytes_io = io.BytesIO()
+    pickle.dump(tree, bytes_io)
+    bytes_io.seek(0)
+    pickle.load(bytes_io)
+
