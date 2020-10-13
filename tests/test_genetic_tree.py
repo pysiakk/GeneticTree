@@ -5,6 +5,11 @@ import os
 os.chdir("../")
 
 n_trees = 20
+const_seed = np.random.randint(0, 10**8)
+
+# ====================================================================================================
+# Genetic Tree
+# ====================================================================================================
 
 
 def test_seed():
@@ -27,3 +32,74 @@ def test_seed():
     assert_array_equal(tree.children_right, tree2.children_right)
     assert_array_equal(tree.parent, tree2.parent)
 
+
+def test_none_seed():
+    """
+    test if seed can be None -> and then np won't set seed
+    """
+    GeneticTree(seed=None)
+
+
+def test_none_argument():
+    """
+    If one argument is none it should raise Error
+    """
+    with pytest.raises(ValueError):
+        GeneticTree(n_trees=None)
+
+
+@pytest.fixture
+def genetic_tree():
+    genetic_tree = GeneticTree(n_trees=10, max_trees=30, max_iterations=3, remove_other_trees=False, remove_variables=False)
+    return genetic_tree
+
+
+def test_predict_exception_when_not_fit(genetic_tree):
+    """
+    When any tree is not fit it should not allow prediction
+    """
+    with pytest.raises(Exception):
+        genetic_tree.predict(X)
+
+
+def test_X_y_different_sizes(genetic_tree):
+    """
+    X and y should have the same number of observations
+    """
+    with pytest.raises(ValueError):
+        genetic_tree.fit(X, np.concatenate([y, [1]]))
+
+
+@pytest.mark.parametrize("function",
+                         [GeneticTree.predict,
+                          GeneticTree.apply,
+                          GeneticTree.check_X])
+def test_X_with_less_features(genetic_tree, function):
+    """
+    X added as predicted should have the same number of features as
+    X used in fit function
+    """
+    genetic_tree.fit(X, y)
+    with pytest.raises(ValueError):
+        function(genetic_tree, X[:, 1:3], False)
+
+
+def test_set_n_features_after_check_input(genetic_tree):
+    genetic_tree.check_input(X, y, False)
+    assert X.shape[1] == genetic_tree._n_features_
+
+
+@pytest.fixture
+def np_randint():
+    np.random.seed(const_seed)
+    return np.random.randint(0, 10**8)
+
+
+def test_set_seed(np_randint):
+    GeneticTree(seed=const_seed)
+    assert np_randint == np.random.randint(0, 10**8)
+
+
+# ====================================================================================================
+# Genetic Processor
+# ====================================================================================================

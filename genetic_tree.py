@@ -189,6 +189,7 @@ class GeneticTree:
             elif X.dtype != DTYPE:
                 X = np.ascontiguousarray(X, dtype=DTYPE)
 
+        # even if check_input is false it should check n_features of X
         n_features = X.shape[1]
         if self._n_features_ is None:
             self._n_features_ = n_features
