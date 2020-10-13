@@ -36,10 +36,18 @@ class GeneticTree:
                  metric: Metric = Metric.AccuracyBySize, size_coef: int = 1000,
                  elitarysm: int = 5,
                  remove_other_trees: bool = True, remove_variables: bool = True,
+                 seed: int = None,
 
                  # TODO: params not used yet:
-                 seed: int = 123, verbose: bool = True, n_jobs: int = -1,
+                 verbose: bool = True, n_jobs: int = -1,
                  ):
+
+        if seed is not None:
+            np.random.seed(seed)
+        else:
+            seed = 0    # because it will return ValueError inside
+                        # statement `if none_arg:`
+
         kwargs = vars()
         kwargs.pop('self')
         none_arg = self.is_any_arg_none(**kwargs)

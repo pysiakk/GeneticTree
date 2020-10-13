@@ -66,7 +66,7 @@ cdef class FullTreeBuilder(Builder):
         # declaration to use nogil random generator (self.bounded_uint)
         cdef bitgen_t *rng
         cdef const char *capsule_name = "BitGenerator"
-        x = PCG64()
+        x = PCG64(np.random.randint(0, 10**8))
         capsule = x.capsule
         if not PyCapsule_IsValid(capsule, capsule_name):
             raise ValueError("Invalid pointer to anon_func_state")
