@@ -23,6 +23,7 @@ cdef class TreeCrosser:
 
     cdef _copy_nodes(self, Tree donor, SIZE_t crossover_point,
                      Tree recipient, bint is_first, CrossoverPoint* result)
+
     cdef void _add_node_to_stack(self, Tree donor,
                                  SIZE_t new_parent_id, SIZE_t old_self_id,
                                  bint is_left, Stack stack) nogil

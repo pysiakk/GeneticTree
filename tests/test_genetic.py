@@ -3,6 +3,7 @@ os.chdir("../")
 
 from genetic_tree import GeneticTree
 from tests.set_up_variables_and_imports import *
+import pytictoc
 
 
 def initialize_tree(thresholds) -> Tree:
@@ -30,19 +31,22 @@ def initialization():
 
 
 def mutate_feature():
-    gt = GeneticTree(feature_prob=1, initial_depth=1, max_iterations=1,
+    gt = GeneticTree(feature_prob=1, initial_depth=13, max_iterations=1,
                      remove_other_trees=False, remove_variables=False)
     gt.fit(X, y)
     forest_before = gt.genetic_processor.forest
     gt.genetic_processor.crosser.cross_population(forest_before)
     print(f'Features of tree before mutation: {forest_before.trees[0].feature}')
-    forest_after = gt.genetic_processor.mutator.mutate(forest_before)
+    # forest_after = gt.genetic_processor.mutator.mutate(forest_before)
     print(f'Features of tree in previous forest: {forest_before.trees[0].feature}')
-    print(f'Features of tree after mutation: {forest_after.trees[0].feature}')
+    # print(f'Features of tree after mutation: {forest_after.trees[0].feature}')
     return forest_before
 
 
 if __name__ == "__main__":
+    tt = pytictoc.TicToc()
+    tt.tic()
     forest: Forest = mutate_feature()
-    for tree in forest.trees[1000:1040]:
-        print(tree.feature)
+    tt.toc()
+    # for tree in forest.trees[1000:1040]:
+    #     print(tree.feature)

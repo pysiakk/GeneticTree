@@ -2,6 +2,7 @@ from tree.forest import Forest
 from tree.tree import Tree
 from tree.crosser import TreeCrosser
 import numpy as np
+import multiprocessing as mp
 
 
 class Crosser:
@@ -55,6 +56,12 @@ class Crosser:
         trees_number: int = forest.current_trees
         current_trees_number: int = trees_number
 
+        pool = mp.Pool(4)
+
+        # def thread(args: tuple, q):
+        #     thread_children: Tree[:] = pool.apply_async(crosser.cross_trees, args).get()
+        #     q.put(thread_children)
+
         for first_parent_id in range(trees_number):
             first_parent: Tree = forest.trees[first_parent_id]
             if np.random.rand() < self.cross_prob:
@@ -63,7 +70,10 @@ class Crosser:
                 second_parent: Tree = forest.trees[second_parent_id]
 
                 # create child and register it in forest
-                children: Tree[:] = crosser.cross_trees(first_parent, second_parent, int(self.is_cross_both))
+                children: Tree[:] = pool.apply_async(crosser.cross_trees,
+                                                     (first_parent, second_parent, int(self.is_cross_both))).get()
+
+                # children: Tree[:] = crosser.cross_trees(first_parent, second_parent, int(self.is_cross_both))
 
                 # TODO change below lines to more complicated way that should be less time consuming
                 # During copying nodes from first tree copy also all observations dict
@@ -83,6 +93,9 @@ class Crosser:
                     if self.is_cross_both:
                         forest.trees[current_trees_number] = children[1]
                         current_trees_number += 1
+
+        pool.close()
+        pool.join()
 
         forest.current_trees = current_trees_number
 
