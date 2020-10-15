@@ -83,6 +83,10 @@ cdef class Observation:
         self.observation_id = observation_id
         self.last_node_id = last_node_id
 
+    def __reduce__(self):
+        return (Observation, (self.proper_class, self.current_class,
+                              self.observation_id, self.last_node_id))
+
 cdef class Tree:
     property children_left:
         def __get__(self):
@@ -130,7 +134,8 @@ cdef class Tree:
         self.nodes = NULL
         self.observations = {}   # dictionary from node id to list of observation struct
 
-        self._resize_by_initial_depth(initial_depth)
+        if initial_depth != -1: # dont resize after repickling
+            self._resize_by_initial_depth(initial_depth)
 
     def __dealloc__(self):
         """Destructor."""
@@ -142,7 +147,7 @@ cdef class Tree:
         return (Tree, (self.n_features,
                self.n_classes,
                np.array(self.thresholds),
-               1), self.__getstate__())
+               -1), self.__getstate__())
 
     def __getstate__(self):
         """Getstate re-implementation, for pickling."""
@@ -154,6 +159,7 @@ cdef class Tree:
         # TODO uncomment after pull request with master
         # d["proper_classified"] = self.proper_classified
         d["observations"] = self.observations
+        return d
 
     def __setstate__(self, d):
         """Setstate re-implementation, for unpickling."""
@@ -293,7 +299,7 @@ cdef class Tree:
     cpdef mutate_random_node(self):
         if self.node_count == 0:  # empty tree
             return
-        cdef SIZE_t node_id = self.get_random_node()
+        cdef SIZE_t node_id = self._get_random_node()
         if self.nodes[node_id].left_child == _TREE_LEAF:
             self._mutate_class(node_id)
         else:
@@ -307,7 +313,7 @@ cdef class Tree:
     cpdef mutate_random_class_or_threshold(self):
         if self.node_count == 0:  # empty tree
             return
-        cdef SIZE_t node_id = self.get_random_node()
+        cdef SIZE_t node_id = self._get_random_node()
         if self.nodes[node_id].left_child == _TREE_LEAF:
             self._mutate_class(node_id)
         else:
@@ -352,7 +358,10 @@ cdef class Tree:
         self._change_feature_or_class(node_id, new_class)
         self._remove_observations_below_node(node_id)
 
-    cdef public SIZE_t get_random_node(self):
+    cpdef public SIZE_t get_random_node(self):
+        return self._get_random_node()
+
+    cdef SIZE_t _get_random_node(self):
         cdef SIZE_t random_id = np.random.randint(0, self.node_count)
         return random_id
 

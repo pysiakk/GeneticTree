@@ -70,8 +70,18 @@ class Crosser:
                 second_parent: Tree = forest.trees[second_parent_id]
 
                 # create child and register it in forest
-                children: Tree[:] = pool.apply_async(crosser.cross_trees,
-                                                     (first_parent, second_parent, int(self.is_cross_both))).get()
+                first_node_id = first_parent.get_random_node()
+                second_node_id = second_parent.get_random_node()
+
+                children1: Tree = pool.apply_async(crosser._cross_trees,
+                                                   (first_parent, second_parent, first_node_id, second_node_id)).get()
+                children = [children1]
+
+                if self.is_cross_both:
+                    children2: Tree = pool.apply_async(crosser._cross_trees,
+                                                       (first_parent, second_parent, first_node_id, second_node_id)).get()
+                    children.append(children2)
+
 
                 # children: Tree[:] = crosser.cross_trees(first_parent, second_parent, int(self.is_cross_both))
 
