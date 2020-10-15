@@ -129,3 +129,11 @@ def test_pickling():
     bytes_io.seek(0)
     pickle.load(bytes_io)
 
+
+def test_pickling_crosser():
+    crosser: TreeCrosser = TreeCrosser()
+    bytes_io = io.BytesIO()
+    pickle.dump(crosser, bytes_io)
+    bytes_io.seek(0)
+    pickle.load(bytes_io)
+

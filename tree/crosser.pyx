@@ -23,6 +23,19 @@ cdef class TreeCrosser:
     def __cinit__(self):
         pass
 
+    def __reduce__(self):
+        """Reduce re-implementation, for pickling."""
+        return (TreeCrosser, (), self.__getstate__())
+
+    def __getstate__(self):
+        """Getstate re-implementation, for pickling."""
+        return []
+
+    def __setstate__(self, d):
+        """Setstate re-implementation, for unpickling."""
+        pass
+
+
     """
     Function to cross 2 trees
     
