@@ -86,7 +86,8 @@ cdef class Tree:
     cdef _mutate_threshold(self, SIZE_t node_id, bint feature_changed)
     cdef _mutate_class(self, SIZE_t node_id)
 
-    cdef public SIZE_t get_random_node(self)
+    cpdef public SIZE_t get_random_node(self)
+    cdef SIZE_t _get_random_node(self)
     cdef SIZE_t _get_random_decision_node(self)
     cdef SIZE_t _get_random_leaf(self)
 

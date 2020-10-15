@@ -124,15 +124,30 @@ def test_observations_reassigning():
     assert len(tree.observations[-1]) == 0
 
 
-def test_pickling():
-    tree: Tree = build(10, 1)[0][0]
+def test_observation_pickling():
+    observation: Observation = Observation(1, 1, 1, 1)
+    bytes_io = io.BytesIO()
+    pickle.dump(observation, bytes_io)
+    bytes_io.seek(0)
+    observation = pickle.load(bytes_io)
+    assert observation.current_class == 1
+
+
+def test_tree_pickling():
+    tree: Tree = build(20, 1)[0][0]
+    depth = tree.depth
+    feature = tree.feature
+    node_count = tree.node_count
     bytes_io = io.BytesIO()
     pickle.dump(tree, bytes_io)
     bytes_io.seek(0)
-    pickle.load(bytes_io)
+    tree = pickle.load(bytes_io)
+    assert_array_equal(feature, tree.feature)
+    assert depth == tree.depth
+    assert node_count == tree.node_count
 
 
-def test_pickling_crosser():
+def test_crosser_pickling():
     crosser: TreeCrosser = TreeCrosser()
     bytes_io = io.BytesIO()
     pickle.dump(crosser, bytes_io)

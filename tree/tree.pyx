@@ -84,6 +84,10 @@ cdef class Observation:
         self.observation_id = observation_id
         self.last_node_id = last_node_id
 
+    def __reduce__(self):
+        return (Observation, (self.proper_class, self.current_class,
+                              self.observation_id, self.last_node_id))
+
 cdef class Tree:
     property children_left:
         def __get__(self):
@@ -145,35 +149,36 @@ cdef class Tree:
 
     def __reduce__(self):
         """Reduce re-implementation, for pickling."""
-        return (Tree, (self.n_features,
-               self.n_classes,
-               np.array(self.thresholds),
-               1), self.__getstate__())
+        return (Tree,
+               (self.n_classes,
+               self.X,
+               self.y,
+               self.thresholds,
+               ), self.__getstate__())
 
     def __getstate__(self):
         """Getstate re-implementation, for pickling."""
-        d = {}
+        state = {}
         # capacity is inferred during the __setstate__ using nodes
-        d["depth"] = self.depth
-        d["node_count"] = self.node_count
-        d["nodes"] = self._get_node_ndarray()
-        # TODO uncomment after pull request with master
-        # d["proper_classified"] = self.proper_classified
-        d["observations"] = self.observations
+        state["depth"] = self.depth
+        state["node_count"] = self.node_count
+        state["nodes"] = self._get_node_ndarray()
+        state["proper_classified"] = self.proper_classified
+        state["observations"] = self.observations
+        return state
 
-    def __setstate__(self, d):
+    def __setstate__(self, state):
         """Setstate re-implementation, for unpickling."""
-        self.depth = d["depth"]
-        self.node_count = d["node_count"]
-        # TODO uncomment after pull request with master
-        # self.proper_classified = d["proper_classified"]
-        self.observations = d["observations"]
+        self.depth = state["depth"]
+        self.node_count = state["node_count"]
+        self.proper_classified = state["proper_classified"]
+        self.observations = state["observations"]
 
-        if 'nodes' not in d:
+        if 'nodes' not in state:
             raise ValueError('You have loaded Tree version which '
                              'cannot be imported')
 
-        node_ndarray = d['nodes']
+        node_ndarray = state['nodes']
 
         if (node_ndarray.ndim != 1 or
                 node_ndarray.dtype != NODE_DTYPE or
@@ -299,7 +304,7 @@ cdef class Tree:
     cpdef mutate_random_node(self):
         if self.node_count == 0:  # empty tree
             return
-        cdef SIZE_t node_id = self.get_random_node()
+        cdef SIZE_t node_id = self._get_random_node()
         if self.nodes[node_id].left_child == _TREE_LEAF:
             self._mutate_class(node_id)
         else:
@@ -313,7 +318,7 @@ cdef class Tree:
     cpdef mutate_random_class_or_threshold(self):
         if self.node_count == 0:  # empty tree
             return
-        cdef SIZE_t node_id = self.get_random_node()
+        cdef SIZE_t node_id = self._get_random_node()
         if self.nodes[node_id].left_child == _TREE_LEAF:
             self._mutate_class(node_id)
         else:
@@ -358,7 +363,10 @@ cdef class Tree:
         self._change_feature_or_class(node_id, new_class)
         self._remove_observations_below_node(node_id)
 
-    cdef public SIZE_t get_random_node(self):
+    cpdef public SIZE_t get_random_node(self):
+        return self._get_random_node()
+
+    cdef SIZE_t _get_random_node(self):
         cdef SIZE_t random_id = np.random.randint(0, self.node_count)
         return random_id
 
