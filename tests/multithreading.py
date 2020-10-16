@@ -8,6 +8,7 @@ import numpy as np
 from timeit import timeit
 from functools import partial
 import multiprocessing
+from threading import Thread
 from enum import Enum
 
 
@@ -17,12 +18,13 @@ class ThreadType(Enum):
     nogil_multi = 3,
     single = 4,
     multiprocessing_with_less_threads = 5
+    nogil_multithread = 6
 
 
 def test_time(size: int = 10**6, thread_type: ThreadType = ThreadType.single):
     gt = GeneticTree()
     forest = gt.genetic_processor.forest
-    tc = Tree(5, 3, np.array([[1, 2, 3, 4, 5], [2, 3, 4, 5, 6]]), 10)
+    tc = Tree(5, 3, None, 10)
     if thread_type is ThreadType.multiprocessing:
         threads = []
         for i in range(100):
@@ -47,6 +49,14 @@ def test_time(size: int = 10**6, thread_type: ThreadType = ThreadType.single):
             threads.append(t)
         for thread in threads:
             thread.join()
+    elif thread_type is ThreadType.nogil_multithread:
+        threads = []
+        for i in range(100):
+            t = Thread(target=tc.time_test_nogil, args=(size,))
+            t.start()
+            threads.append(t)
+        for thread in threads:
+            thread.join()
     elif thread_type is ThreadType.single:
         for i in range(100):
             target = tc.time_test(size)
@@ -58,8 +68,10 @@ if __name__ == "__main__":
         multi_time = timeit(partial(test_time, iterations, ThreadType.multiprocessing), number=100)
         multi_less_threads_time = timeit(partial(test_time, iterations, ThreadType.multiprocessing_with_less_threads), number=100)
         nogil_multi_time = timeit(partial(test_time, iterations, ThreadType.nogil_multi), number=100)
+        nogil_multithread_time = timeit(partial(test_time, iterations, ThreadType.nogil_multithread), number=100)
         single_time = timeit(partial(test_time, iterations, ThreadType.single), number=100)
         print(f'Multiprocessing time: {multi_time:0.04f} for 10^{power} iterations')
         print(f'Multiprocessing with ten time less threads than previous time: {multi_less_threads_time:0.04f} for 10^{power} iterations')
         print(f'Nogil with multiprocessing time: {nogil_multi_time:0.04f} for 10^{power} iterations')
+        print(f'Nogil with multithreading time: {nogil_multithread_time:0.04f} for 10^{power} iterations')
         print(f'Single thread time: {single_time:0.04f} for 10^{power} iterations')
