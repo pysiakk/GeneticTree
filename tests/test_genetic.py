@@ -21,7 +21,7 @@ def initialize_forest(initial_depth: int = 3) -> Forest:
 
 
 def initialization():
-    forest: Forest = initialize_forest(7)
+    forest: Forest = initialize_forest(10)
     tree: Tree = initialize_tree(forest.thresholds)
     tree_example: Tree = forest.trees[0]
     print(f'Features of tree: {tree.feature}\n')
@@ -31,7 +31,7 @@ def initialization():
 
 
 def mutate_feature():
-    gt = GeneticTree(feature_prob=1, initial_depth=13, max_iterations=1,
+    gt = GeneticTree(n_trees=5, feature_prob=1, initial_depth=18, max_iterations=1,
                      remove_other_trees=False, remove_variables=False)
     gt.fit(X, y)
     forest_before = gt.genetic_processor.forest
