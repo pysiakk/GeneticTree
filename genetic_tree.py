@@ -56,7 +56,7 @@ class GeneticTree:
                              f"GeneticTree does not support None arguments.")
         self.genetic_processor = GeneticProcessor(**kwargs)
         self._n_features_ = None
-        self.__can_predict__ = False
+        self._can_predict_ = False
 
     @staticmethod
     def is_any_arg_none(**kwargs):
@@ -70,16 +70,16 @@ class GeneticTree:
         self.genetic_processor.set_params()
 
     def fit(self, X, y, check_input: bool = True, **kwargs):
-        self.__can_predict__ = False
+        self._can_predict_ = False
         self.genetic_processor.set_params(**kwargs)
-        X, y = self.check_input(X, y, check_input)
+        X, y = self._check_input_(X, y, check_input)
         self.genetic_processor.prepare_new_training(X, y)
         self.genetic_processor.growth_trees()
-        self.__prepare_to_predict__()
+        self._prepare_to_predict_()
 
-    def __prepare_to_predict__(self):
+    def _prepare_to_predict_(self):
         self.genetic_processor.prepare_to_predict()
-        self.__can_predict__ = True
+        self._can_predict_ = True
 
     def predict(self, X, check_input=True):
         """
@@ -94,8 +94,8 @@ class GeneticTree:
             For each row x (observation) it classify the observation to one
             class and return this class.
         """
-        self.check_is_fitted()
-        X = self.check_X(X, check_input)
+        self._check_is_fitted_()
+        X = self._check_X_(X, check_input)
         return self.genetic_processor.predict(X)
 
     def predict_proba(self, X, check_input=True):
@@ -112,8 +112,8 @@ class GeneticTree:
             For each row x in X (observation) it finds the proper leaf. Then it
             returns the probability of each class based on leaf.
         """
-        self.check_is_fitted()
-        X = self.check_X(X, check_input)
+        self._check_is_fitted_()
+        X = self._check_X_(X, check_input)
         # TODO when tree will be done with all genetic operators
 
     def apply(self, X, check_input=True):
@@ -129,15 +129,15 @@ class GeneticTree:
             For each observation x in X, return the index of the leaf x
             ends up in. Leaves are numbered within [0, node_count).
         """
-        self.check_is_fitted()
-        X = self.check_X(X, check_input)
+        self._check_is_fitted_()
+        X = self._check_X_(X, check_input)
         # TODO when tree will be done with all genetic operators
 
-    def check_is_fitted(self):
-        if not self.__can_predict__:
+    def _check_is_fitted_(self):
+        if not self._can_predict_:
             raise Exception('Cannot predict. Model not prepared.')
 
-    def check_input(self, X, y, check_input: bool):
+    def _check_input_(self, X, y, check_input: bool):
         """
         Check if X and y have proper dtype and have the same number of observations
 
@@ -149,7 +149,7 @@ class GeneticTree:
         Returns:
             X and y in proper format
         """
-        X = self.check_X(X, check_input)
+        X = self._check_X_(X, check_input)
 
         if check_input:
             if y.dtype != DOUBLE or not y.flags.contiguous:
@@ -162,7 +162,7 @@ class GeneticTree:
 
         return X, y
 
-    def check_X(self, X, check_input: bool):
+    def _check_X_(self, X, check_input: bool):
         """
         Checks if X has proper dtype
         If not it return proper X

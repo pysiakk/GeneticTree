@@ -73,7 +73,7 @@ def test_X_y_different_sizes(genetic_tree):
 @pytest.mark.parametrize("function",
                          [GeneticTree.predict,
                           GeneticTree.apply,
-                          GeneticTree.check_X])
+                          GeneticTree._check_X_])
 def test_X_with_less_features(genetic_tree, function):
     """
     X added as predicted should have the same number of features as
@@ -85,7 +85,7 @@ def test_X_with_less_features(genetic_tree, function):
 
 
 def test_set_n_features_after_check_input(genetic_tree):
-    genetic_tree.check_input(X, y, False)
+    genetic_tree._check_input_(X, y, False)
     assert X.shape[1] == genetic_tree._n_features_
 
 
