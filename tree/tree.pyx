@@ -497,6 +497,14 @@ cdef class Tree:
 
         return y
 
+    cpdef np.ndarray predict_proba(self, object X):
+        # TODO when tree will be done with all genetic operators
+        return np.array([1, 2])
+
+    cpdef np.ndarray apply(self, object X):
+        # TODO when tree will be done with all genetic operators
+        return np.array([1, 2])
+
 # ===========================================================================================================
 # Multithreading test functions
 # ===========================================================================================================

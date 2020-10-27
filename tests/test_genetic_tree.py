@@ -54,6 +54,17 @@ def genetic_tree():
     return genetic_tree
 
 
+@pytest.fixture
+def genetic_tree_fitted(genetic_tree):
+    genetic_tree.fit(X, y)
+    return genetic_tree
+
+
+@pytest.fixture
+def X_converted(genetic_tree):
+    return genetic_tree._check_X_(X, True)
+
+
 def test_predict_exception_when_not_fit(genetic_tree):
     """
     When any tree is not fit it should not allow prediction
@@ -72,6 +83,7 @@ def test_X_y_different_sizes(genetic_tree):
 
 @pytest.mark.parametrize("function",
                          [GeneticTree.predict,
+                          GeneticTree.predict_proba,
                           GeneticTree.apply,
                           GeneticTree._check_X_])
 def test_X_with_less_features(genetic_tree, function):
@@ -99,6 +111,20 @@ def test_set_seed(np_randint):
     GeneticTree(seed=const_seed)
     assert np_randint == np.random.randint(0, 10**8)
 
+
+def test_predict(genetic_tree_fitted, X_converted):
+    assert_array_equal(genetic_tree_fitted.predict(X),
+                       genetic_tree_fitted.genetic_processor.forest.best_tree.predict(X_converted))
+
+
+def test_predict_proba(genetic_tree_fitted, X_converted):
+    assert_array_equal(genetic_tree_fitted.predict_proba(X),
+                       genetic_tree_fitted.genetic_processor.forest.best_tree.predict_proba(X_converted))
+
+
+def test_apply(genetic_tree_fitted, X_converted):
+    assert_array_equal(genetic_tree_fitted.apply(X),
+                       genetic_tree_fitted.genetic_processor.forest.best_tree.apply(X_converted))
 
 # ====================================================================================================
 # Genetic Processor

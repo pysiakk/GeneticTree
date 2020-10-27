@@ -114,7 +114,7 @@ class GeneticTree:
         """
         self._check_is_fitted_()
         X = self._check_X_(X, check_input)
-        # TODO when tree will be done with all genetic operators
+        return self.genetic_processor.forest.best_tree.predict_proba(X)
 
     def apply(self, X, check_input=True):
         """
@@ -131,7 +131,7 @@ class GeneticTree:
         """
         self._check_is_fitted_()
         X = self._check_X_(X, check_input)
-        # TODO when tree will be done with all genetic operators
+        return self.genetic_processor.forest.best_tree.apply(X)
 
     def _check_is_fitted_(self):
         if not self._can_predict_:
