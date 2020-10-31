@@ -3,6 +3,7 @@ from tree.forest import Forest
 from tree.builder import Builder, FullTreeBuilder
 from tree.tree import Tree
 from joblib import Parallel, delayed
+from threading import Thread
 
 
 class InitializationType(Enum):
@@ -60,7 +61,7 @@ class Initializer:
             forest: Container with all trees
         """
         Parallel(n_jobs=4, backend="threading", prefer="threads")(delayed(self._initialize)(forest)
-                                                                  for _ in range(self.n_trees))
+                                                                  for _ in range(4))
 
     def _initialize(self, forest):
         """
@@ -69,9 +70,10 @@ class Initializer:
         Args:
             forest: Container with all trees
         """
-        tree = forest.create_new_tree(self.initial_depth)
-        self.initialize_tree(tree)
-        forest.add_new_tree_and_initialize_observations(tree)
+        for i in range(self.n_trees // 4):
+            tree = forest.create_new_tree(self.initial_depth)
+            self.initialize_tree(tree)
+            forest.add_new_tree_and_initialize_observations(tree)
 
     def initialize_tree(self, tree: Tree):
         """
