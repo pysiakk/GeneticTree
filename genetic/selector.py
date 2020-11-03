@@ -53,7 +53,8 @@ class Selector:
         self.n_elitarysm: int = elitarysm
 
     def set_params(self, n_trees: int = None, selection_type: SelectionType = None,
-                   metric: Metric = None, elitarysm: int = None):
+                   metric: Metric = None, elitarysm: int = None,
+                   **kwargs):
         """
         Function to set new parameters for Selector
 

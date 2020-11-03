@@ -52,7 +52,7 @@ class Mutator:
                    is_class: bool = None, class_prob: float = None,
                    is_node: bool = None, node_prob: float = None,
                    is_class_or_threshold: bool = None, class_or_threshold_prob: float = None,
-                   ):
+                   **kwargs):
         """
         Function to set new parameters for Mutator
 

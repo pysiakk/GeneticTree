@@ -22,7 +22,8 @@ class StopCondition:
         self.reset_private_variables()
 
     def set_params(self, max_iterations: int = None,
-                   max_iterations_without_improvement: int = None, use_without_improvement: bool = None):
+                   max_iterations_without_improvement: int = None, use_without_improvement: bool = None,
+                   **kwargs):
         if max_iterations is not None:
             self.max_iterations = max_iterations
         if max_iterations_without_improvement is not None:

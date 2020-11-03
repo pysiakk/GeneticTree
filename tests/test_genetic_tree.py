@@ -19,11 +19,11 @@ def test_seed():
     seed = np.random.randint(0, 10**8)
     gt = GeneticTree(seed=seed, n_trees=n_trees, max_iterations=3)
     gt.fit(X, y)
-    tree: Tree = gt.genetic_processor.forest.best_tree
+    tree: Tree = gt.forest.best_tree
 
     gt2 = GeneticTree(seed=seed, n_trees=n_trees, max_iterations=3)
     gt2.fit(X, y)
-    tree2: Tree = gt2.genetic_processor.forest.best_tree
+    tree2: Tree = gt2.forest.best_tree
 
     assert_array_equal(tree.feature, tree2.feature)
     assert_array_equal(tree.threshold, tree2.threshold)
@@ -114,17 +114,17 @@ def test_set_seed(np_randint):
 
 def test_predict(genetic_tree_fitted, X_converted):
     assert_array_equal(genetic_tree_fitted.predict(X),
-                       genetic_tree_fitted.genetic_processor.forest.best_tree.predict(X_converted))
+                       genetic_tree_fitted.forest.best_tree.predict(X_converted))
 
 
 def test_predict_proba(genetic_tree_fitted, X_converted):
     assert_array_equal(genetic_tree_fitted.predict_proba(X),
-                       genetic_tree_fitted.genetic_processor.forest.best_tree.predict_proba(X_converted))
+                       genetic_tree_fitted.forest.best_tree.predict_proba(X_converted))
 
 
 def test_apply(genetic_tree_fitted, X_converted):
     assert_array_equal(genetic_tree_fitted.apply(X),
-                       genetic_tree_fitted.genetic_processor.forest.best_tree.apply(X_converted))
+                       genetic_tree_fitted.forest.best_tree.apply(X_converted))
 
 # ====================================================================================================
 # Genetic Processor

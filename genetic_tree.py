@@ -54,7 +54,16 @@ class GeneticTree:
         if none_arg:
             raise ValueError(f"The argument {none_arg} is None. "
                              f"GeneticTree does not support None arguments.")
-        self.genetic_processor = GeneticProcessor(**kwargs)
+
+        self.initializer = Initializer(**kwargs)
+        self.mutator = Mutator(**kwargs)
+        self.crosser = Crosser(**kwargs)
+        self.selector = Selector(**kwargs)
+        self.stop_condition = StopCondition(**kwargs)
+        self.forest = Forest(n_trees, max_trees, n_thresholds)
+
+        self.remove_other_trees = remove_other_trees
+        self.remove_variables = remove_variables
         self._n_features_ = None
         self._can_predict_ = False
 
@@ -65,20 +74,49 @@ class GeneticTree:
                 return k
         return False
 
-    def set_params(self):
-        #TODO write all kwargs
-        self.genetic_processor.set_params()
+    def set_params(self, remove_other_trees: bool = None, remove_variables: bool = None):
+        # TODO add all params
+
+        kwargs = vars()
+        kwargs.pop('self')
+
+        self.initializer.set_params(**kwargs)
+        self.mutator.set_params(**kwargs)
+        self.crosser.set_params(**kwargs)
+        self.selector.set_params(**kwargs)
+        self.stop_condition.set_params(**kwargs)
+        if remove_other_trees is not None:
+            self.remove_other_trees = remove_other_trees
+        if remove_variables is not None:
+            self.remove_variables = remove_variables
 
     def fit(self, X, y, check_input: bool = True, **kwargs):
         self._can_predict_ = False
-        self.genetic_processor.set_params(**kwargs)
+        self.set_params(**kwargs)
         X, y = self._check_input_(X, y, check_input)
-        self.genetic_processor.prepare_new_training(X, y)
-        self.genetic_processor.growth_trees()
+        self._prepare_new_training_(X, y)
+        self._growth_trees_()
         self._prepare_to_predict_()
 
+    def _prepare_new_training_(self, X, y):
+        self.forest.set_X_y(X, y)
+        self.forest.prepare_thresholds_array()
+        self.stop_condition.reset_private_variables()
+        self.initializer.initialize(self.forest)
+
+    def _growth_trees_(self):
+        while not self.stop_condition.stop():
+            self.mutator.mutate(self.forest)
+            self.crosser.cross_population(self.forest)
+            self.selector.select(self.forest)
+
     def _prepare_to_predict_(self):
-        self.genetic_processor.prepare_to_predict()
+        best_tree_index: int = self.selector.get_best_tree_index(self.forest)
+        self.forest.prepare_best_tree_to_prediction(best_tree_index)
+        if self.remove_other_trees:
+            self.forest.remove_other_trees()
+        if self.remove_variables:
+            self.forest.remove_unnecessary_variables()
         self._can_predict_ = True
 
     def predict(self, X, check_input=True):
@@ -96,7 +134,7 @@ class GeneticTree:
         """
         self._check_is_fitted_()
         X = self._check_X_(X, check_input)
-        return self.genetic_processor.predict(X)
+        return self.forest.predict(X)
 
     def predict_proba(self, X, check_input=True):
         """
@@ -114,7 +152,7 @@ class GeneticTree:
         """
         self._check_is_fitted_()
         X = self._check_X_(X, check_input)
-        return self.genetic_processor.forest.best_tree.predict_proba(X)
+        return self.forest.best_tree.predict_proba(X)
 
     def apply(self, X, check_input=True):
         """
@@ -131,7 +169,7 @@ class GeneticTree:
         """
         self._check_is_fitted_()
         X = self._check_X_(X, check_input)
-        return self.genetic_processor.forest.best_tree.apply(X)
+        return self.forest.best_tree.apply(X)
 
     def _check_is_fitted_(self):
         if not self._can_predict_:
@@ -199,53 +237,3 @@ class GeneticTree:
                              f"and input n_features is {n_features}.")
 
         return X
-
-
-class GeneticProcessor:
-    """
-    Low level interface responsible for communication between all genetic classes
-    """
-
-    def __init__(self, remove_other_trees: bool = True, remove_variables: bool = True, **kwargs):
-        self.initializer = Initializer(**kwargs)
-        self.mutator = Mutator(**kwargs)
-        self.crosser = Crosser(**kwargs)
-        self.selector = Selector(**kwargs)
-        self.stop_condition = StopCondition(**kwargs)
-        self.forest = Forest(kwargs["n_trees"], kwargs["max_trees"], kwargs["n_thresholds"])
-        self.remove_other_trees = remove_other_trees
-        self.remove_variables = remove_variables
-
-    def set_params(self, remove_other_trees: bool = None, remove_variables: bool = None, **kwargs):
-        self.initializer.set_params(**kwargs)
-        self.mutator.set_params(**kwargs)
-        self.crosser.set_params(**kwargs)
-        self.selector.set_params(**kwargs)
-        self.stop_condition.set_params(**kwargs)
-        if remove_other_trees is not None:
-            self.remove_other_trees = remove_other_trees
-        if remove_variables is not None:
-            self.remove_variables = remove_variables
-
-    def prepare_new_training(self, X, y):
-        self.forest.set_X_y(X, y)
-        self.forest.prepare_thresholds_array()
-        self.stop_condition.reset_private_variables()
-        self.initializer.initialize(self.forest)
-
-    def growth_trees(self):
-        while not self.stop_condition.stop():
-            self.mutator.mutate(self.forest)
-            self.crosser.cross_population(self.forest)
-            self.selector.select(self.forest)
-
-    def prepare_to_predict(self):
-        best_tree_index: int = self.selector.get_best_tree_index(self.forest)
-        self.forest.prepare_best_tree_to_prediction(best_tree_index)
-        if self.remove_other_trees:
-            self.forest.remove_other_trees()
-        if self.remove_variables:
-            self.forest.remove_unnecessary_variables()
-
-    def predict(self, X):
-        return self.forest.predict(X)

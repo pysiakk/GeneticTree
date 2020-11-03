@@ -40,7 +40,8 @@ class Initializer:
             return FullTreeBuilder(self.initial_depth)
 
     def set_params(self, initial_depth: int = None,
-                   initialization_type: InitializationType = None):
+                   initialization_type: InitializationType = None,
+                   **kwargs):
         """
         Function to set new parameters for Initializer
 
