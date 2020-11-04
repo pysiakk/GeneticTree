@@ -6,7 +6,8 @@ from genetic.mutator import Mutator
 from genetic.crosser import Crosser
 from genetic.selector import Selector
 from genetic.selector import SelectionType
-from genetic.selector import Metric
+from genetic.evaluator import Evaluator
+from genetic.evaluator import Metric
 from genetic.stop_condition import StopCondition
 from tree.forest import Forest
 from scipy.sparse import issparse
@@ -59,6 +60,7 @@ class GeneticTree:
         self.mutator = Mutator(**kwargs)
         self.crosser = Crosser(**kwargs)
         self.selector = Selector(**kwargs)
+        self.evaluator = Evaluator(**kwargs)
         self.stop_condition = StopCondition(**kwargs)
         self.forest = Forest(n_trees, max_trees, n_thresholds)
 
@@ -84,6 +86,7 @@ class GeneticTree:
         self.mutator.set_params(**kwargs)
         self.crosser.set_params(**kwargs)
         self.selector.set_params(**kwargs)
+        self.evaluator.set_params(**kwargs)
         self.stop_condition.set_params(**kwargs)
         if remove_other_trees is not None:
             self.remove_other_trees = remove_other_trees
@@ -108,10 +111,11 @@ class GeneticTree:
         while not self.stop_condition.stop():
             self.mutator.mutate(self.forest)
             self.crosser.cross_population(self.forest)
-            self.selector.select(self.forest)
+            trees_metric = self.evaluator.evaluate(self.forest)
+            self.selector.select(self.forest, trees_metric)
 
     def _prepare_to_predict_(self):
-        best_tree_index: int = self.selector.get_best_tree_index(self.forest)
+        best_tree_index: int = self.evaluator.get_best_tree_index(self.forest)
         self.forest.prepare_best_tree_to_prediction(best_tree_index)
         if self.remove_other_trees:
             self.forest.remove_other_trees()
