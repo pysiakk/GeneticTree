@@ -6,7 +6,7 @@ from tests.set_up_variables_and_imports import *
 
 
 def initialize_tree(thresholds) -> Tree:
-    tree: Tree = Tree(5, 3, thresholds, 3)
+    tree: Tree = Tree(4, 3, thresholds, 3)
     builder: FullTreeBuilder = FullTreeBuilder(3)
     builder.build(tree)
     tree.initialize_observations(X, y)
