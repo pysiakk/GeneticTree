@@ -105,7 +105,7 @@ class GeneticTree:
         self.forest.set_X_y(X, y)
         self.forest.prepare_thresholds_array()
         self.stop_condition.reset_private_variables()
-        self.initializer.initialize(self.forest)
+        self.initializer.initialize(self.forest, X, y, self.forest.thresholds)
 
     def _growth_trees_(self):
         while not self.stop_condition.stop():

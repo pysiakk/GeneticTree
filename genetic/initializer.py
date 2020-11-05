@@ -2,6 +2,7 @@ from enum import Enum, auto
 from tree.forest import Forest
 from tree.builder import Builder, FullTreeBuilder
 from tree.tree import Tree
+import numpy as np
 
 
 class InitializationType(Enum):
@@ -52,7 +53,7 @@ class Initializer:
         if initialization_type is not None:
             self.initialization_type = initialization_type
 
-    def initialize(self, forest: Forest):
+    def initialize(self, forest: Forest, X, y, thresholds):
         """
         Function to initialize forest
 
@@ -60,8 +61,10 @@ class Initializer:
             forest: Container with all trees
         """
         tree: Tree
+        n_classes: int = np.unique(y).shape[0]
         for tree_index in range(self.n_trees):
-            tree = forest.create_new_tree(self.initial_depth)
+            tree: Tree = Tree(n_classes, X, y, thresholds)
+            tree.resize_by_initial_depth(self.initial_depth)
             self.initialize_tree(tree)
             forest.add_new_tree_and_initialize_observations(tree)
 

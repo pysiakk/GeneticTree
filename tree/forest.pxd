@@ -30,7 +30,6 @@ cdef class Forest:
     cpdef prepare_thresholds_array(self)
 
     # Initializer
-    cpdef create_new_tree(self, int initial_depth)
     cpdef add_new_tree_and_initialize_observations(self, Tree tree)
 
     # Prediction + dealloc memory
