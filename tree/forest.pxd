@@ -16,9 +16,6 @@ cdef class Forest:
     cdef public int current_trees
     cdef int max_trees
 
-    cdef public int n_thresholds
-    cdef public DTYPE_t[:, :] thresholds
-
     # temporal data to use once in fit function
     cdef public object X
     cdef public np.ndarray y
@@ -27,7 +24,6 @@ cdef class Forest:
 
     # Set up
     cpdef set_X_y(self, object X, np.ndarray y)
-    cpdef prepare_thresholds_array(self)
 
     # Initializer
     cpdef add_new_tree_and_initialize_observations(self, Tree tree)

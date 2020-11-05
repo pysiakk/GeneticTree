@@ -3,6 +3,10 @@ os.chdir("../")
 
 from genetic_tree import GeneticTree
 from tests.set_up_variables_and_imports import *
+from tree.thresholds import prepare_thresholds_array
+
+X = GeneticTree._check_X_(GeneticTree(), X, True)
+thresholds = prepare_thresholds_array(10, X)
 
 
 def initialize_tree(thresholds) -> Tree:
@@ -22,7 +26,8 @@ def initialize_forest(initial_depth: int = 3) -> Forest:
 
 def initialization():
     forest: Forest = initialize_forest(7)
-    tree: Tree = initialize_tree(forest.thresholds)
+
+    tree: Tree = initialize_tree(thresholds)
     tree_example: Tree = forest.trees[0]
     print(f'Features of tree: {tree.feature}\n')
     print(f'Features of first forest tree: {tree_example.feature},\n'

@@ -8,7 +8,7 @@ cimport numpy as np
 from numpy import float32 as DTYPE
 
 cdef class Forest:
-    def __cinit__(self, int n_trees, int max_trees, int n_thresholds):
+    def __cinit__(self, int n_trees, int max_trees):
         self.trees = np.empty(max_trees, Tree)
         self.best_tree_index = 0
         self.best_tree = None
@@ -16,9 +16,6 @@ cdef class Forest:
         self.n_trees = n_trees
         self.max_trees = max_trees
         self.current_trees = 0
-
-        self.n_thresholds = n_thresholds
-        self.thresholds = None
 
         self.X = None
         self.y = None
@@ -32,22 +29,6 @@ cdef class Forest:
         self.y = y
         self.n_features = self.X.shape[1]
         self.n_classes = np.unique(self.y).shape[0]
-
-    cpdef prepare_thresholds_array(self):
-        cdef DTYPE_t[:, :] thresholds = np.zeros([self.n_thresholds, self.n_features], dtype=DTYPE)
-        cdef int i
-        cdef int j
-        cdef int index
-        cdef DTYPE_t[:, :] X_ndarray = self.X
-        cdef DTYPE_t[:] X_column
-
-        for i in range(self.n_features):
-            X_column = X_ndarray[:, i]
-            X_column = np.sort(X_column)
-            for j in range(self.n_thresholds):
-                index = int(X_column.shape[0] / (self.n_thresholds+1) * (j+1))
-                thresholds[j, i] = X_column[index]
-        self.thresholds = thresholds
 
 # ================================================================================================
 # Initializer
@@ -69,7 +50,6 @@ cdef class Forest:
 
     cpdef remove_unnecessary_variables(self):
         self.__remove_X_y__()
-        self.thresholds = None
 
     cpdef __remove_X_y__(self):
         self.X = None

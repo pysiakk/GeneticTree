@@ -3,22 +3,24 @@ import time
 
 from genetic_tree import GeneticTree
 from tests.set_up_variables_and_imports import *
+from tree.thresholds import prepare_thresholds_array
 
 
-def check_thresholds_memory_usage(X2, y2, n_trees: int = 10, n_thresholds: int = 10, depth: int = 3):
+def check_thresholds_memory_usage(X, X2, y2, n_trees: int = 10, n_thresholds: int = 10, depth: int = 3):
     """
     Check if tree really only gets the memory view (reference for object inside memory)
     And that tree does not copy all thresholds array
     """
-    gt = GeneticTree(initial_depth=1, remove_variables=False, remove_other_trees=False, max_iterations=1, n_thresholds=n_thresholds)
-    gt.fit(X, y)
+    X = GeneticTree._check_X_(GeneticTree(), X, True)
+    thresholds = prepare_thresholds_array(n_thresholds, X)
+
     memory = memory_used()
     print(f"Memory after creating thresholds array {memory:0.02f}.")
     trees = []
     builder: FullTreeBuilder = FullTreeBuilder(3)
     start = time.time()
     for i in range(n_trees):
-        tree: Tree = Tree(3,  X2, y2, gt.forest.thresholds)
+        tree: Tree = Tree(3,  X2, y2, thresholds)
         tree.resize_by_initial_depth(depth)
         builder.build(tree)
         trees.append(tree)
@@ -42,9 +44,9 @@ if __name__ == "__main__":
     n_thresholds = 200000000
     # y2 = np.repeat(y, 1000, axis=0)
     # X2 = np.repeat(X, 1000, axis=0)
-    check_thresholds_memory_usage(X, y, n_thresholds=10, n_trees=10000)
-    # check_thresholds_memory_usage(X2, y2, n_thresholds=10, n_trees=10000)
-    # check_thresholds_memory_usage(X, y, n_thresholds=n_thresholds, n_trees=10000)
+    check_thresholds_memory_usage(X, X, y, n_thresholds=10, n_trees=10000)
+    # check_thresholds_memory_usage(X, X2, y2, n_thresholds=10, n_trees=10000)
+    # check_thresholds_memory_usage(X, X, y, n_thresholds=n_thresholds, n_trees=10000)
 # The memory used by trees does not depend on number of thresholds array (so not depend on the size of this array)
 # Also there is not a measurable time difference
 # There is also no difference if X and y are bigger or not

@@ -3,14 +3,14 @@ os.chdir("../")
 
 from tests.set_up_variables_and_imports import *
 from genetic_tree import GeneticTree
+from tree.thresholds import prepare_thresholds_array
 
 n_thresholds: int = 2
-forest: Forest = Forest(1, 2, n_thresholds)
-X, y = GeneticTree._check_input_(GeneticTree(), X, y, True)
-forest.set_X_y(X, y)
-forest.prepare_thresholds_array()
-thresholds = forest.thresholds  # thresholds array have unique values
-                                # it is needed to proper test mutating thresholds
+X = GeneticTree._check_X_(GeneticTree(), X, True)
+
+# thresholds array have unique values
+# it is needed to proper test mutating thresholds
+thresholds = prepare_thresholds_array(n_thresholds, X)
 
 
 def test_builder_tree_size():

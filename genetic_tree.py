@@ -10,6 +10,7 @@ from genetic.evaluator import Evaluator
 from genetic.evaluator import Metric
 from genetic.stop_condition import StopCondition
 from tree.forest import Forest
+from tree.thresholds import prepare_thresholds_array
 from scipy.sparse import issparse
 
 from numpy import float32 as DTYPE
@@ -62,10 +63,12 @@ class GeneticTree:
         self.selector = Selector(**kwargs)
         self.evaluator = Evaluator(**kwargs)
         self.stop_condition = StopCondition(**kwargs)
-        self.forest = Forest(n_trees, max_trees, n_thresholds)
+        self.forest = Forest(n_trees, max_trees)
 
         self.remove_other_trees = remove_other_trees
         self.remove_variables = remove_variables
+
+        self._n_thresholds_ = n_thresholds
         self._n_features_ = None
         self._can_predict_ = False
 
@@ -102,10 +105,11 @@ class GeneticTree:
         self._prepare_to_predict_()
 
     def _prepare_new_training_(self, X, y):
-        self.forest.set_X_y(X, y)
-        self.forest.prepare_thresholds_array()
         self.stop_condition.reset_private_variables()
-        self.initializer.initialize(self.forest, X, y, self.forest.thresholds)
+
+        self.forest.set_X_y(X, y)
+        thresholds = prepare_thresholds_array(self._n_thresholds_, X)
+        self.initializer.initialize(self.forest, X, y, thresholds)
 
     def _growth_trees_(self):
         while not self.stop_condition.stop():
