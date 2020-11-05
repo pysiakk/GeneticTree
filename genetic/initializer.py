@@ -2,10 +2,12 @@ from enum import Enum, auto
 from tree.forest import Forest
 from tree.builder import Builder, FullTreeBuilder
 from tree.tree import Tree
+from numpy.random import randint
 
 
 class InitializationType(Enum):
     Random = auto()
+    Half = auto()
 
 
 class Initializer:
@@ -37,7 +39,7 @@ class Initializer:
             Builder: cython builder to initialize new trees
         """
         if self.initialization_type == InitializationType.Random:
-            return FullTreeBuilder(self.initial_depth)
+            return FullTreeBuilder()
 
     def set_params(self, initial_depth: int = None,
                    initialization_type: InitializationType = None,
@@ -62,20 +64,56 @@ class Initializer:
         tree: Tree
         for tree_index in range(self.n_trees):
             tree = forest.create_new_tree(self.initial_depth)
-            self.initialize_tree(tree)
+            self.initialize_tree(tree, self.initial_depth)
             forest.add_new_tree_and_initialize_observations(tree)
 
-    def initialize_tree(self, tree: Tree):
+        # TODO: switch between functions to choose which initialization you want to use
+
+    def initialize_random(self, forest: Forest):
+        """
+        Function to initialize forest
+
+        Args:
+            forest: Container with all trees
+        """
+        tree: Tree
+        for tree_index in range(self.n_trees):
+            tree = forest.create_new_tree(self.initial_depth)
+            self.initialize_tree(tree, self.initial_depth)
+            forest.add_new_tree_and_initialize_observations(tree)
+
+    def initialize_half(self, forest: Forest):
+        """
+        Function to initialize forest
+
+        Args:
+            forest: Container with all trees
+        """
+        tree: Tree
+        for tree_index in range(self.n_trees):
+            if tree_index % 2 == 0:
+                tree = forest.create_new_tree(self.initial_depth)
+                self.initialize_tree(tree, self.initial_depth)
+                forest.add_new_tree_and_initialize_observations(tree)
+            else:
+                depth = randint(1, self.initial_depth)
+                tree = forest.create_new_tree(depth)
+                self.initialize_tree(tree, depth)
+                forest.add_new_tree_and_initialize_observations(tree)
+
+    def initialize_tree(self, tree: Tree, initial_depth: int):
         """
         Args:
             tree: Tree to initialize nodes
+            initial_depth: Depth to which tree will be initialized
         """
         if self.initialization_type == InitializationType.Random:
-            self.initialize_tree_by_random_initialization(tree)
+            self.initialize_tree_by_random_initialization(tree, initial_depth)
 
-    def initialize_tree_by_random_initialization(self, tree: Tree):
+    def initialize_tree_by_random_initialization(self, tree: Tree, initial_depth: int):
         """
         Args:
             tree: Tree to initialize nodes
+            initial_depth: Depth to which tree will be initialized
         """
-        self.builder.build(tree)
+        self.builder.build(tree, self.initial_depth)
