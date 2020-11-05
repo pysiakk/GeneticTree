@@ -1,5 +1,3 @@
-from tree.forest import Forest
-from tree.tree import Tree
 import numpy as np
 
 from enum import Enum, auto
@@ -61,7 +59,7 @@ class Selector:
             assert elitarysm <= self.n_trees
             self.n_elitarysm = elitarysm
 
-    def select(self, forest: Forest, trees_metric):
+    def select(self, trees, trees_metric):
         """
         Function leaves population (selected by SelectionType) inside forest
         It need to metric of all trees be evaluated before
@@ -76,11 +74,8 @@ class Selector:
         self.__set_elite_indices__()
         self.__set_selected_indices__()
 
-        max_n_trees = len(forest.trees)
-        new_trees = np.empty(max_n_trees, Tree)
-        new_trees[:self.n_trees] = np.take(forest.trees, self.selected_population)
-        forest.trees = new_trees
-        forest.current_trees = self.n_trees
+        new_trees = list(np.take(np.array(trees), self.selected_population))
+        return new_trees
 
     def __set_elite_indices__(self):
         """

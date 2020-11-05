@@ -1,4 +1,3 @@
-from tree.forest import Forest
 from tree.tree import Tree
 from tree.crosser import TreeCrosser
 import numpy as np
@@ -42,7 +41,7 @@ class Crosser:
         if is_replace_old is not None:
             self.is_replace_old = is_replace_old
 
-    def cross_population(self, forest: Forest):
+    def cross_population(self, trees):
         """
         It goes through trees inside forest and adds new trees to forest based
         on cross probability
@@ -52,15 +51,14 @@ class Crosser:
         """
         crosser: TreeCrosser = TreeCrosser()
 
-        trees_number: int = forest.current_trees
-        current_trees_number: int = trees_number
+        trees_number: int = len(trees)
 
         for first_parent_id in range(trees_number):
-            first_parent: Tree = forest.trees[first_parent_id]
+            first_parent: Tree = trees[first_parent_id]
             if np.random.rand() < self.cross_prob:
                 # find second parent
                 second_parent_id: int = self.get_second_parent(trees_number, first_parent_id)
-                second_parent: Tree = forest.trees[second_parent_id]
+                second_parent: Tree = trees[second_parent_id]
 
                 # create child and register it in forest
                 children: Tree[:] = crosser.cross_trees(first_parent, second_parent, int(self.is_cross_both))
@@ -74,17 +72,13 @@ class Crosser:
                     children[1].initialize_observations()
 
                 if self.is_replace_old:
-                    forest.trees[first_parent_id] = children[0]
+                    trees[first_parent_id] = children[0]
                     if self.is_cross_both:
-                        forest.trees[second_parent_id] = children[1]
+                        trees[second_parent_id] = children[1]
                 else:
-                    forest.trees[current_trees_number] = children[0]
-                    current_trees_number += 1
+                    trees.append(children[0])
                     if self.is_cross_both:
-                        forest.trees[current_trees_number] = children[1]
-                        current_trees_number += 1
-
-        forest.current_trees = current_trees_number
+                        trees.append(children[1])
 
     @staticmethod
     def get_second_parent(n_trees: int, first_parent_id: int) -> int:

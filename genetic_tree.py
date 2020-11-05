@@ -9,7 +9,6 @@ from genetic.selector import SelectionType
 from genetic.evaluator import Evaluator
 from genetic.evaluator import Metric
 from genetic.stop_condition import StopCondition
-from tree.forest import Forest
 from tree.thresholds import prepare_thresholds_array
 from scipy.sparse import issparse
 
@@ -23,7 +22,7 @@ class GeneticTree:
     """
 
     def __init__(self,
-                 n_trees: int = 200, max_trees: int = 600, n_thresholds: int = 10,
+                 n_trees: int = 200, n_thresholds: int = 10,
                  initial_depth: int = 1, initialization_type: InitializationType = InitializationType.Random,
                  is_feature: bool = False, feature_prob: float = 0.005,
                  is_threshold: bool = False, threshold_prob: float = 0.005,
@@ -63,10 +62,12 @@ class GeneticTree:
         self.selector = Selector(**kwargs)
         self.evaluator = Evaluator(**kwargs)
         self.stop_condition = StopCondition(**kwargs)
-        self.forest = Forest(n_trees, max_trees)
 
         self.remove_other_trees = remove_other_trees
         self.remove_variables = remove_variables
+
+        self._trees_ = None
+        self._best_tree_ = None
 
         self._n_thresholds_ = n_thresholds
         self._n_features_ = None
@@ -108,23 +109,28 @@ class GeneticTree:
         self.stop_condition.reset_private_variables()
 
         thresholds = prepare_thresholds_array(self._n_thresholds_, X)
-        self.initializer.initialize(self.forest, X, y, thresholds)
+        self._trees_ = self.initializer.initialize(X, y, thresholds)
 
     def _growth_trees_(self):
         while not self.stop_condition.stop():
-            self.mutator.mutate(self.forest)
-            self.crosser.cross_population(self.forest)
-            trees_metric = self.evaluator.evaluate(self.forest)
-            self.selector.select(self.forest, trees_metric)
+            self.mutator.mutate(self._trees_)
+            self.crosser.cross_population(self._trees_)
+            trees_metric = self.evaluator.evaluate(self._trees_)
+            self._trees_ = self.selector.select(self._trees_, trees_metric)
 
     def _prepare_to_predict_(self):
-        best_tree_index: int = self.evaluator.get_best_tree_index(self.forest)
-        self.forest.prepare_best_tree_to_prediction(best_tree_index)
+        self._prepare_best_tree_to_prediction_()
         if self.remove_other_trees:
-            self.forest.remove_other_trees()
+            self._trees_ = None
         if self.remove_variables:
             pass
         self._can_predict_ = True
+
+    def _prepare_best_tree_to_prediction_(self):
+        best_tree_index: int = self.evaluator.get_best_tree_index(self._trees_)
+        self._best_tree_ = self._trees_[best_tree_index]
+        self._best_tree_.prepare_tree_to_prediction()
+
 
     def predict(self, X, check_input=True):
         """
@@ -141,7 +147,7 @@ class GeneticTree:
         """
         self._check_is_fitted_()
         X = self._check_X_(X, check_input)
-        return self.forest.best_tree.predict(X)
+        return self._best_tree_.predict(X)
 
     def predict_proba(self, X, check_input=True):
         """
@@ -159,7 +165,7 @@ class GeneticTree:
         """
         self._check_is_fitted_()
         X = self._check_X_(X, check_input)
-        return self.forest.best_tree.predict_proba(X)
+        return self._best_tree_.predict_proba(X)
 
     def apply(self, X, check_input=True):
         """
@@ -176,7 +182,7 @@ class GeneticTree:
         """
         self._check_is_fitted_()
         X = self._check_X_(X, check_input)
-        return self.forest.best_tree.apply(X)
+        return self._best_tree_.apply(X)
 
     def _check_is_fitted_(self):
         if not self._can_predict_:

@@ -10,8 +10,6 @@ ext_modules = cythonize([
     Extension("tree.tree", ["tree/tree.pyx"],      # probably it has to have first name (tree)
                                                    # the same as second (tree(.pyx))
               extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),
-    Extension("tree.forest", ["tree/forest.pyx"],
-              extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),
     Extension("tree.evaluation", ["tree/evaluation.pyx"],
               extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),
     Extension("tree.thresholds", ["tree/thresholds.pyx"],

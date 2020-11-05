@@ -484,7 +484,7 @@ cdef class Tree:
 # Prediction functions
 # ===========================================================================================================
 
-    cdef prepare_tree_to_prediction(self):
+    cpdef prepare_tree_to_prediction(self):
         # TODO  consider if should change anything (maybe observations=NULL; thresholds=NULL)
         pass
 

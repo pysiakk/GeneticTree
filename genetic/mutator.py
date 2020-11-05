@@ -1,4 +1,3 @@
-from tree.forest import Forest
 from tree.tree import Tree
 import math
 import numpy as np
@@ -79,7 +78,7 @@ class Mutator:
         if class_or_threshold_prob is not None:
             self.class_or_threshold_prob = class_or_threshold_prob
 
-    def mutate(self, forest: Forest):
+    def mutate(self, trees):
         """
         It mutates all trees based on params
 
@@ -103,19 +102,18 @@ class Mutator:
             forest: Container with mutated trees
         """
         if self.is_feature:
-            forest = self.mutate_one(forest, Tree.mutate_random_feature, self.feature_prob)
+            self.mutate_one(trees, Tree.mutate_random_feature, self.feature_prob)
         if self.is_threshold:
-            forest = self.mutate_one(forest, Tree.mutate_random_threshold, self.threshold_prob)
+            self.mutate_one(trees, Tree.mutate_random_threshold, self.threshold_prob)
         if self.is_class:
-            forest = self.mutate_one(forest, Tree.mutate_random_class, self.class_prob)
+            self.mutate_one(trees, Tree.mutate_random_class, self.class_prob)
         if self.is_node:
-            forest = self.mutate_one(forest, Tree.mutate_random_node, self.node_prob)
+            self.mutate_one(trees, Tree.mutate_random_node, self.node_prob)
         if self.is_class_or_threshold:
-            forest = self.mutate_one(forest, Tree.mutate_random_class_or_threshold, self.class_or_threshold_prob)
-        return forest
+            self.mutate_one(trees, Tree.mutate_random_class_or_threshold, self.class_or_threshold_prob)
 
     @staticmethod
-    def mutate_one(forest: Forest, function: callable, prob: float):
+    def mutate_one(trees, function: callable, prob: float):
         """
         It mutate all trees by function with prob probability
 
@@ -127,12 +125,11 @@ class Mutator:
         Returns:
             forest: Container with mutated trees
         """
-        trees_number: int = forest.current_trees
+        trees_number: int = len(trees)
         tree_ids: np.array = Mutator.get_random_trees(trees_number, prob)
         for tree_id in tree_ids:
-            tree: Tree = forest.trees[tree_id]
+            tree: Tree = trees[tree_id]
             function(tree)
-        return forest
 
     @staticmethod
     def get_random_trees(n_trees: int, probability: float) -> np.array:

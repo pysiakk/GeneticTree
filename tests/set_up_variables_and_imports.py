@@ -3,7 +3,6 @@ os.chdir("../")
 
 from tree.tree import Tree, Observation
 from tree.builder import Builder, FullTreeBuilder
-from tree.forest import Forest
 from tree.crosser import TreeCrosser
 
 from sklearn import datasets

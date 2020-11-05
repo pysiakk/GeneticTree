@@ -3,7 +3,6 @@
 # (LICENSE) based on the same file as tree.pyx
 
 from tree.tree cimport Tree
-from tree.forest cimport Forest
 
 from libc.stdint cimport SIZE_MAX
 from libc.stdint cimport uint32_t

@@ -1,8 +1,6 @@
 import os
 os.chdir("../")
 
-from genetic_tree import GeneticTree
-
 from timeit import timeit
 from functools import partial
 import multiprocessing
@@ -19,8 +17,6 @@ class ThreadType(Enum):
 
 
 def test_time(size: int = 10**6, thread_type: ThreadType = ThreadType.single):
-    gt = GeneticTree()
-    forest = gt.forest
     tc = Tree(3, X, y, np.array([[1, 2, 3, 4, 5], [2, 3, 4, 5, 6]]))
     tc.resize_by_initial_depth(10)
     if thread_type is ThreadType.multiprocessing:

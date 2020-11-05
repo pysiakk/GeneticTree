@@ -114,7 +114,7 @@ cdef class Tree:
     cdef _evaluate_tree(self)
 
     # Prediction functions
-    cdef prepare_tree_to_prediction(self)
+    cpdef prepare_tree_to_prediction(self)
     cpdef np.ndarray predict(self, object X)
     cpdef np.ndarray predict_proba(self, object X)
     cpdef np.ndarray apply(self, object X)
