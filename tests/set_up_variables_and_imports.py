@@ -28,3 +28,4 @@ iris.target = iris.target[perm]
 
 X = iris.data
 y = iris.target
+y = np.ascontiguousarray(y, dtype=np.float64)

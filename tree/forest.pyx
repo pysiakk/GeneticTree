@@ -54,7 +54,9 @@ cdef class Forest:
 # ================================================================================================
 
     cpdef create_new_tree(self, int initial_depth):
-        return Tree(self.n_features, self.n_classes, self.thresholds, initial_depth)
+        cdef Tree tree = Tree(self.n_classes, self.X, self.y, self.thresholds)
+        tree.resize_by_initial_depth(initial_depth)
+        return tree
 
     cpdef add_new_tree_and_initialize_observations(self, Tree tree):
         tree.initialize_observations(self.X, self.y)

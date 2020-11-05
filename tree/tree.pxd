@@ -45,8 +45,9 @@ cdef class Observation:
 cdef class Tree:
     # The Tree object is a binary tree structure.
 
-    # Input/Output layout
+    # Sizes of arrays
     cdef public SIZE_t n_features       # Number of features in X
+    cdef public SIZE_t n_observations   # Number of observations in X and y
     cdef public SIZE_t n_classes        # Number of classes in y
     cdef public SIZE_t n_thresholds     # Number of possible thresholds to mutate between
 
@@ -57,12 +58,15 @@ cdef class Tree:
     cdef public SIZE_t capacity         # Capacity of tree, in terms of nodes
     cdef Node* nodes                    # Array of nodes
 
-    cdef SIZE_t proper_classified    # Number of proper classified observations
-    cdef public dict observations           # Dictionary with y array metadata
+    cdef public SIZE_t proper_classified       # Number of proper classified observations
+    cdef public dict observations       # Dictionary with y array metadata
+
     cdef public DTYPE_t[:, :] thresholds    # Array with possible thresholds for each feature
+    cdef public object X                    # Array with observations features (TODO: possibility of sparse array)
+    cdef public DOUBLE_t[:] y               # Array with classes of observations
 
     # Methods
-    cdef _resize_by_initial_depth(self, int initial_depth)
+    cpdef resize_by_initial_depth(self, int initial_depth)
     cdef int _resize(self, SIZE_t capacity) nogil except -1
     cdef int _resize_c(self, SIZE_t capacity=*) nogil except -1
 

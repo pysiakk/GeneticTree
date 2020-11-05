@@ -114,13 +114,17 @@ cdef class Tree:
         def __get__(self):
             return self._get_node_ndarray()['depth'][:self.node_count]
 
-    def __cinit__(self, int n_features, int n_classes, DTYPE_t[:, :] thresholds, int initial_depth):
+    def __cinit__(self, int n_classes,
+                  object X, DOUBLE_t[:] y,
+                  DTYPE_t[:, :] thresholds):
         """Constructor."""
-        # Input/Output layout
-        self.n_features = n_features
+        self.n_features = X.shape[1]
+        self.n_observations = X.shape[0]
         self.n_classes = n_classes
-
         self.n_thresholds = thresholds.shape[0]
+
+        self.X = X
+        self.y = y
         self.thresholds = thresholds
 
         # Inner structures
@@ -131,8 +135,6 @@ cdef class Tree:
 
         self.proper_classified = NOT_CLASSIFIED
         self.observations = {}   # dictionary from node id to list of observation struct
-
-        self._resize_by_initial_depth(initial_depth)
 
     def __dealloc__(self):
         """Destructor."""
@@ -154,7 +156,7 @@ cdef class Tree:
         #TODO
         pass
 
-    cdef _resize_by_initial_depth(self, int initial_depth):
+    cpdef resize_by_initial_depth(self, int initial_depth):
         if initial_depth <= 10:
             init_capacity = (2 ** (initial_depth + 1)) - 1
         else:

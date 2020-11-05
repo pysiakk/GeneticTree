@@ -181,9 +181,9 @@ cdef class TreeCrosser:
     Creates new tree with base params as previous tree
     """
     cdef Tree _initialize_new_tree(self, Tree previous_tree):
-        cdef int n_features = previous_tree.n_features
         cdef int n_classes = previous_tree.n_classes
         cdef int depth = previous_tree.depth
 
-        cdef Tree tree = Tree(n_features, n_classes, previous_tree.thresholds, depth)
+        cdef Tree tree = Tree(n_classes, previous_tree.X, previous_tree.y, previous_tree.thresholds)
+        tree.resize_by_initial_depth(depth)
         return tree
