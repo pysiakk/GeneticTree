@@ -19,7 +19,7 @@ def genetic_tree():
 
 @pytest.fixture
 def X(genetic_tree):
-    return genetic_tree.forest.X
+    return genetic_tree.forest.trees[0].X
 
 
 def print_observation(genetic_tree, X):

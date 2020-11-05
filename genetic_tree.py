@@ -107,7 +107,6 @@ class GeneticTree:
     def _prepare_new_training_(self, X, y):
         self.stop_condition.reset_private_variables()
 
-        self.forest.set_X_y(X, y)
         thresholds = prepare_thresholds_array(self._n_thresholds_, X)
         self.initializer.initialize(self.forest, X, y, thresholds)
 
@@ -124,7 +123,7 @@ class GeneticTree:
         if self.remove_other_trees:
             self.forest.remove_other_trees()
         if self.remove_variables:
-            self.forest.remove_unnecessary_variables()
+            pass
         self._can_predict_ = True
 
     def predict(self, X, check_input=True):
@@ -142,7 +141,7 @@ class GeneticTree:
         """
         self._check_is_fitted_()
         X = self._check_X_(X, check_input)
-        return self.forest.predict(X)
+        return self.forest.best_tree.predict(X)
 
     def predict_proba(self, X, check_input=True):
         """

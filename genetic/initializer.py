@@ -66,7 +66,9 @@ class Initializer:
             tree: Tree = Tree(n_classes, X, y, thresholds)
             tree.resize_by_initial_depth(self.initial_depth)
             self.initialize_tree(tree)
-            forest.add_new_tree_and_initialize_observations(tree)
+            tree.initialize_observations()
+            forest.trees[forest.current_trees] = tree
+            forest.current_trees += 1
 
     def initialize_tree(self, tree: Tree):
         """

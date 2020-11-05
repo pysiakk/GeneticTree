@@ -10,28 +10,9 @@ cdef class Forest:
     # Class containing all trees
     cdef public Tree[:] trees
     cdef public Tree best_tree
-    cdef int best_tree_index
 
-    cdef int n_trees
     cdef public int current_trees
-    cdef int max_trees
-
-    # temporal data to use once in fit function
-    cdef public object X
-    cdef public np.ndarray y
-    cdef public int n_features
-    cdef public int n_classes
-
-    # Set up
-    cpdef set_X_y(self, object X, np.ndarray y)
-
-    # Initializer
-    cpdef add_new_tree_and_initialize_observations(self, Tree tree)
 
     # Prediction + dealloc memory
     cpdef prepare_best_tree_to_prediction(self, int best_tree_index)
-    cpdef remove_unnecessary_variables(self)
-    cpdef __remove_X_y__(self)
     cpdef remove_other_trees(self)
-
-    cpdef np.ndarray predict(self, object X)
