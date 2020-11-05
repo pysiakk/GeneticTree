@@ -61,13 +61,10 @@ class Initializer:
         Args:
             forest: Container with all trees
         """
-        tree: Tree
-        for tree_index in range(self.n_trees):
-            tree = forest.create_new_tree(self.initial_depth)
-            self.initialize_tree(tree, self.initial_depth)
-            forest.add_new_tree_and_initialize_observations(tree)
-
-        # TODO: switch between functions to choose which initialization you want to use
+        if self.initialization_type == InitializationType.Random:
+            self.initialize_random(forest)
+        elif self.initialization_type == InitializationType.Half:
+            self.initialize_half(forest)
 
     def initialize_random(self, forest: Forest):
         """
@@ -102,15 +99,6 @@ class Initializer:
                 forest.add_new_tree_and_initialize_observations(tree)
 
     def initialize_tree(self, tree: Tree, initial_depth: int):
-        """
-        Args:
-            tree: Tree to initialize nodes
-            initial_depth: Depth to which tree will be initialized
-        """
-        if self.initialization_type == InitializationType.Random:
-            self.initialize_tree_by_random_initialization(tree, initial_depth)
-
-    def initialize_tree_by_random_initialization(self, tree: Tree, initial_depth: int):
         """
         Args:
             tree: Tree to initialize nodes

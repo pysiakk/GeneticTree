@@ -15,11 +15,11 @@ def check_thresholds_memory_usage(n_trees: int = 10, n_thresholds: int = 10, dep
     memory = memory_used()
     print(f"Memory after creating thresholds array {memory:0.02f}.")
     trees = []
-    builder: FullTreeBuilder = FullTreeBuilder(3)
+    builder: FullTreeBuilder = FullTreeBuilder()
     start = time.time()
     for i in range(n_trees):
         tree: Tree = Tree(4, 3, gt.forest.thresholds, depth)
-        builder.build(tree)
+        builder.build(tree, 3)
         # tree.initialize_observations(X, y)
         trees.append(tree)
     end = time.time()

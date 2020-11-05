@@ -29,10 +29,10 @@ cdef class Builder:
         initial_depth: depth of tree
     """
 
-    def __cinit__(self, int initial_depth):
-        self.initial_depth = initial_depth
+    def __cinit__(self):
+        pass
 
-    cpdef build(self, Tree tree):
+    cpdef build(self, Tree tree, int initial_depth):
         """
         Build a random decision tree
         """
@@ -51,7 +51,6 @@ cdef class FullTreeBuilder(Builder):
         """
         Build a random decision tree
         """
-        cdef int initial_depth = initial_depth
         cdef SIZE_t parent = TREE_UNDEFINED
         cdef bint is_left = 0
         cdef bint is_leaf = 0

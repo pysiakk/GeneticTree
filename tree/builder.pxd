@@ -13,7 +13,9 @@ ctypedef np.npy_uint32 UINT32_t          # Unsigned 32 bit integer
 
 cdef class Builder:
     # Interface to building trees
-    cdef public int initial_depth
+    # cdef public int initial_depth
 
     # Methods
-    cpdef build(self, Tree tree)
+    cpdef build(self, Tree tree, int initial_depth)
+
+

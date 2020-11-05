@@ -25,10 +25,10 @@ def check_creating_trees_with_many_threads(n_trees: int = 10, n_jobs: int = 4, d
 
 
 def create_trees_in_one_thread(n_trees, thresholds, depth, trees):
-    builder: FullTreeBuilder = FullTreeBuilder(depth)
+    builder: FullTreeBuilder = FullTreeBuilder()
     for i in range(n_trees):
         tree: Tree = Tree(4, 3, thresholds, depth)
-        builder.build(tree)
+        builder.build(tree, depth)
         # tree.initialize_observations(X, y)
         trees.append(tree)
 
