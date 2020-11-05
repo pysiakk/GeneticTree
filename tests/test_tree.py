@@ -30,7 +30,7 @@ def build(depth: int = 1, n_trees: int = 10):
         tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds)
         tree.resize_by_initial_depth(depth)
         builder.build(tree)
-        tree.initialize_observations(X, y)
+        tree.initialize_observations()
         trees.append((tree, np.array(tree.feature), np.array(tree.threshold)))
     return trees
 
@@ -118,5 +118,5 @@ def test_observations_reassigning():
     for i in range(10):
         tree.mutate_random_node()
     print(f'Observations not assigned just after mutation: {len(tree.observations[-1])}')
-    tree.assign_all_not_registered_observations(X)
+    tree.assign_all_not_registered_observations()
     assert len(tree.observations[-1]) == 0

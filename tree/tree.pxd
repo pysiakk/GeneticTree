@@ -18,7 +18,7 @@
 import numpy as np
 cimport numpy as np
 
-ctypedef np.npy_float64 DOUBLE_t        # Type of y
+ctypedef np.npy_float64 DOUBLE_t        # Type of thresholds
 ctypedef np.npy_float32 DTYPE_t         # Type of X
 ctypedef np.npy_intp SIZE_t             # Type for indices and counters
 
@@ -63,7 +63,7 @@ cdef class Tree:
 
     cdef public DTYPE_t[:, :] thresholds    # Array with possible thresholds for each feature
     cdef public object X                    # Array with observations features (TODO: possibility of sparse array)
-    cdef public DOUBLE_t[:] y               # Array with classes of observations
+    cdef public SIZE_t[:] y                 # Array with classes of observations
 
     # Methods
     cpdef resize_by_initial_depth(self, int initial_depth)
@@ -98,8 +98,8 @@ cdef class Tree:
     cdef _change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold)
 
     # Observations functions
-    cpdef initialize_observations(self, object X, np.ndarray y)
-    cpdef assign_all_not_registered_observations(self, object X)
+    cpdef initialize_observations(self)
+    cpdef assign_all_not_registered_observations(self)
 
     cdef _assign_leaf_for_observation(self, Observation observation, SIZE_t node_id)
     cdef SIZE_t _find_leaf_for_observation(self, SIZE_t observation_id, DTYPE_t[:, :] X_ndarray,
@@ -110,8 +110,8 @@ cdef class Tree:
     cdef _remove_observations_of_node(self, SIZE_t current_node_id, SIZE_t node_id_as_last)
 
     # Evaluation functions
-    cpdef SIZE_t get_proper_classified(self, object X)
-    cdef _evaluate_tree(self, object X)
+    cpdef SIZE_t get_proper_classified(self)
+    cdef _evaluate_tree(self)
 
     # Prediction functions
     cdef prepare_tree_to_prediction(self)

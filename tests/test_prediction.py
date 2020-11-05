@@ -38,7 +38,7 @@ def test_score(genetic_tree, X):
     score_sum_by_prediction = 0
     for i in range(n_trees):
         tree: Tree = genetic_tree.forest.trees[i]
-        score_sum += tree.get_proper_classified(X)
+        score_sum += tree.get_proper_classified()
         y_pred = genetic_tree.forest.trees[i].predict(X)
         score_sum_by_prediction += np.sum(y_pred == iris.target)
     # test if prediction works
@@ -55,4 +55,4 @@ if __name__ == "__main__":
     gt = GeneticTree(remove_other_trees=False, remove_variables=False, max_iterations=30)
     gt.fit(iris.data, iris.target)
     tree = gt.forest.best_tree
-    print(tree.get_proper_classified(gt.forest.X))
+    print(tree.get_proper_classified())

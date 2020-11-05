@@ -12,6 +12,8 @@ ext_modules = cythonize([
               extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),
     Extension("tree.forest", ["tree/forest.pyx"],
               extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),
+    Extension("tree.evaluation", ["tree/evaluation.pyx"],
+              extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),
     Extension("tree.crosser", ["tree/crosser.pyx"],
               define_macros=defs,
               extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),

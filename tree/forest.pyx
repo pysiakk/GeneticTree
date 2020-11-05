@@ -59,39 +59,9 @@ cdef class Forest:
         return tree
 
     cpdef add_new_tree_and_initialize_observations(self, Tree tree):
-        tree.initialize_observations(self.X, self.y)
+        tree.initialize_observations()
         self.trees[self.current_trees] = tree
         self.current_trees += 1
-
-# ===========================================================================================================
-# Evaluation functions
-# ===========================================================================================================
-
-    cpdef DOUBLE_t[:] get_accuracies(self):
-        cdef DOUBLE_t[:] accuracies = np.empty(self.current_trees, float)
-        cdef SIZE_t n_observations = self.y.shape[0]
-        cdef int i
-        cdef Tree tree
-        for i in range(self.current_trees):
-            tree = self.trees[i]
-            accuracies[i] = tree.get_proper_classified(self.X) / n_observations
-        return accuracies
-
-    cpdef SIZE_t[:] get_proper_classified(self):
-        cdef SIZE_t[:] proper_classified = np.empty(self.current_trees, int)
-        cdef int i
-        cdef Tree tree
-        for i in range(self.current_trees):
-            tree = self.trees[i]
-            proper_classified[i] = tree.get_proper_classified(self.X)
-        return proper_classified
-
-    cpdef SIZE_t[:] get_trees_sizes(self):
-        cdef SIZE_t[:] trees_sizes = np.empty(self.current_trees, int)
-        cdef int i
-        for i in range(self.current_trees):
-            trees_sizes[i] = self.trees[i].node_count
-        return trees_sizes
 
 # ================================================================================================
 # Prediction + dealloc memory

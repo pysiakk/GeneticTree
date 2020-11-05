@@ -1,4 +1,5 @@
 from tree.forest import Forest
+from tree.evaluation import get_accuracies, get_proper_classified, get_trees_sizes
 import numpy as np
 
 from enum import Enum, auto
@@ -71,10 +72,10 @@ class Evaluator:
             forest: Container with all trees
         """
         if self.metric == Metric.Accuracy:
-            trees_metric = np.array(forest.get_accuracies())
+            trees_metric = np.array(get_accuracies(forest.trees, forest.current_trees))
         elif self.metric == Metric.AccuracyBySize:
-            acc = np.array(forest.get_accuracies())
-            size = np.array(forest.get_trees_sizes())
+            acc = np.array(get_accuracies(forest.trees, forest.current_trees))
+            size = np.array(get_trees_sizes(forest.trees, forest.current_trees))
             trees_metric = acc ** 2 * self.size_coef / (self.size_coef + size ** 2)
         else:
             raise ValueError(f"The metric {self.metric} not exist")

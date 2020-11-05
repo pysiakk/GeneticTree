@@ -69,9 +69,9 @@ class Crosser:
                 # During copying nodes from first tree copy also all observations dict
                 # and replace observations below changed node as NOT_REGISTERED
                 # Then after completion of all tree only need to run assign_all_not_registered_observations
-                children[0].initialize_observations(forest.X, forest.y)
+                children[0].initialize_observations()
                 if self.is_cross_both:
-                    children[1].initialize_observations(forest.X, forest.y)
+                    children[1].initialize_observations()
 
                 if self.is_replace_old:
                     forest.trees[first_parent_id] = children[0]

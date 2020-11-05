@@ -33,11 +33,6 @@ cdef class Forest:
     cpdef create_new_tree(self, int initial_depth)
     cpdef add_new_tree_and_initialize_observations(self, Tree tree)
 
-    # Evaluation functions
-    cpdef DOUBLE_t[:] get_accuracies(self)
-    cpdef SIZE_t[:] get_proper_classified(self)
-    cpdef SIZE_t[:] get_trees_sizes(self)
-
     # Prediction + dealloc memory
     cpdef prepare_best_tree_to_prediction(self, int best_tree_index)
     cpdef remove_unnecessary_variables(self)

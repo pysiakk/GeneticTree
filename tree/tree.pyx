@@ -115,7 +115,8 @@ cdef class Tree:
             return self._get_node_ndarray()['depth'][:self.node_count]
 
     def __cinit__(self, int n_classes,
-                  object X, DOUBLE_t[:] y,
+                  object X,
+                  SIZE_t[:] y,
                   DTYPE_t[:, :] thresholds):
         """Constructor."""
         self.n_features = X.shape[1]
@@ -376,30 +377,30 @@ cdef class Tree:
 # Observations functions
 # ===========================================================================================================
     # initialization of observations
-    cpdef initialize_observations(self, object X, np.ndarray y):
+    cpdef initialize_observations(self):
         cdef SIZE_t node_id
         cdef SIZE_t proper_class
         cdef SIZE_t current_class
         cdef SIZE_t observation_id
         cdef Observation observation
 
-        cdef DTYPE_t[:, :] X_ndarray = X
+        cdef DTYPE_t[:, :] X_ndarray = self.X
 
-        for observation_id in range(y.shape[0]):
+        for observation_id in range(self.n_observations):
             node_id = self._find_leaf_for_observation(observation_id, X_ndarray, 0)
-            proper_class = y[observation_id]
+            proper_class = self.y[observation_id]
             current_class = self.nodes[node_id].feature
             observation = Observation(proper_class, current_class, observation_id, node_id)
             self._assign_leaf_for_observation(observation, node_id)
 
     # assigning only not registered observations (because of crossing or mutation)
-    cpdef assign_all_not_registered_observations(self, object X):
+    cpdef assign_all_not_registered_observations(self):
         if not self.observations.__contains__(NOT_REGISTERED):
             return
         cdef SIZE_t node_id
         cdef list observations = self.observations[NOT_REGISTERED]
 
-        cdef DTYPE_t[:, :] X_ndarray = X
+        cdef DTYPE_t[:, :] X_ndarray = self.X
 
         for observation in observations:
             node_id = self._find_leaf_for_observation(observation.observation_id,
@@ -464,13 +465,13 @@ cdef class Tree:
 # Evaluation functions
 # ===========================================================================================================
 
-    cpdef SIZE_t get_proper_classified(self, object X):
+    cpdef SIZE_t get_proper_classified(self):
         if self.proper_classified == NOT_CLASSIFIED:
-            self._evaluate_tree(X)
+            self._evaluate_tree()
         return self.proper_classified
 
-    cdef _evaluate_tree(self, object X):
-        self.assign_all_not_registered_observations(X)
+    cdef _evaluate_tree(self):
+        self.assign_all_not_registered_observations()
         cdef int proper_classified = 0
         for k, val in self.observations.items():
             for item in val:

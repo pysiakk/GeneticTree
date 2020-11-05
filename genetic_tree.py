@@ -13,7 +13,7 @@ from tree.forest import Forest
 from scipy.sparse import issparse
 
 from numpy import float32 as DTYPE
-from numpy import float64 as DOUBLE
+from numpy import intp as SIZE
 
 
 class GeneticTree:
@@ -194,8 +194,8 @@ class GeneticTree:
         X = self._check_X_(X, check_input)
 
         if check_input:
-            if y.dtype != DOUBLE or not y.flags.contiguous:
-                y = np.ascontiguousarray(y, dtype=DOUBLE)
+            if y.dtype != SIZE or not y.flags.contiguous:
+                y = np.ascontiguousarray(y, dtype=SIZE)
 
         if y.shape[0] != X.shape[0]:
             raise ValueError(f"X and y should have the same number of "
