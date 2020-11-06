@@ -24,11 +24,9 @@ class GeneticTree:
     def __init__(self,
                  n_trees: int = 200, n_thresholds: int = 10,
                  initial_depth: int = 1, initialization_type: InitializationType = InitializationType.Random,
-                 is_feature: bool = False, feature_prob: float = 0.005,
-                 is_threshold: bool = False, threshold_prob: float = 0.005,
-                 is_class: bool = False, class_prob: float = 0.005,
-                 is_node: bool = False, node_prob: float = 0.005,
-                 is_class_or_threshold: bool = True, class_or_threshold_prob: float = 0.005,
+                 mutation_prob: float = 0.005,
+                 mutations_additional: list = None,
+                 mutation_is_replace: bool = False,
                  cross_prob: float = 0.93,
                  is_cross_both: bool = True, is_replace_old: bool = False,
                  max_iterations: int = 200,
@@ -51,6 +49,7 @@ class GeneticTree:
 
         kwargs = vars()
         kwargs.pop('self')
+        kwargs.pop('mutations_additional')
         none_arg = self.is_any_arg_none(**kwargs)
         if none_arg:
             raise ValueError(f"The argument {none_arg} is None. "
