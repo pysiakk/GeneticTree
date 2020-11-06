@@ -28,7 +28,8 @@ class GeneticTree:
                  mutations_additional: list = None,
                  mutation_is_replace: bool = False,
                  cross_prob: float = 0.93,
-                 is_cross_both: bool = True, is_replace_old: bool = False,
+                 cross_is_both: bool = True,
+                 cross_is_replace: bool = False,
                  max_iterations: int = 200,
                  max_iterations_without_improvement: int = 100, use_without_improvement: bool = False,
                  selection_type: SelectionType = SelectionType.RankSelection,
@@ -121,7 +122,7 @@ class GeneticTree:
 
             # new parents based on offspring, elite parents from previous
             # population, made by mutation and crossing
-            parents = offspring + elite  # + mutated_population + crossed_population
+            parents = offspring + elite + mutated_population + crossed_population
             trees_metrics = self.evaluator.evaluate(parents)
 
         self._trees_ = parents
