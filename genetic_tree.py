@@ -34,8 +34,8 @@ class GeneticTree:
                  max_iterations: int = 200,
                  max_iterations_without_improvement: int = 100, use_without_improvement: bool = False,
                  selection_type: SelectionType = SelectionType.RankSelection,
+                 n_elitism: int = 5,
                  metric: Metric = Metric.AccuracyBySize, size_coef: int = 1000,
-                 elitarysm: int = 5,
                  remove_other_trees: bool = True, remove_variables: bool = True,
                  seed: int = None,
 
@@ -112,11 +112,20 @@ class GeneticTree:
         self._trees_ = self.initializer.initialize(X, y, thresholds)
 
     def _growth_trees_(self):
+        parents = self._trees_
+        trees_metrics = self.evaluator.evaluate(parents)
         while not self.stop_condition.stop():
-            self.mutator.mutate(self._trees_)
-            self.crosser.cross_population(self._trees_)
-            trees_metric = self.evaluator.evaluate(self._trees_)
-            self._trees_ = self.selector.select(self._trees_, trees_metric)
+            offspring = self.selector.select(parents, trees_metrics)
+            elite = self.selector.get_elite_population(parents, trees_metrics)
+            mutated_population = self.mutator.mutate(offspring)
+            crossed_population = self.crosser.cross_population(offspring)
+
+            # new parents based on offspring, elite parents from previous
+            # population, made by mutation and crossing
+            parents = offspring + elite  # + mutated_population + crossed_population
+            trees_metrics = self.evaluator.evaluate(parents)
+
+        self._trees_ = parents
 
     def _prepare_to_predict_(self):
         self._prepare_best_tree_to_prediction_()
@@ -130,7 +139,6 @@ class GeneticTree:
         best_tree_index: int = self.evaluator.get_best_tree_index(self._trees_)
         self._best_tree_ = self._trees_[best_tree_index]
         self._best_tree_.prepare_tree_to_prediction()
-
 
     def predict(self, X, check_input=True):
         """
