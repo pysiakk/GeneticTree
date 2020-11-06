@@ -89,7 +89,7 @@ class Selector:
 
     def select(self, trees, trees_metrics):
         """
-        Function selects offspring
+        Function selects best parents from population
 
         Args:
             trees: List with all trees

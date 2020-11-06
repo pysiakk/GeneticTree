@@ -22,19 +22,24 @@ class GeneticTree:
     """
 
     def __init__(self,
-                 n_trees: int = 200, n_thresholds: int = 10,
+                 n_trees: int = 400,
+                 n_thresholds: int = 10,
+                 # TODO: change default initialization to splitting nodes with probability
                  initial_depth: int = 1, initialization_type: InitializationType = InitializationType.Random,
-                 mutation_prob: float = 0.005,
+                 mutation_prob: float = 0.4,
                  mutations_additional: list = None,
                  mutation_is_replace: bool = False,
-                 cross_prob: float = 0.93,
+                 cross_prob: float = 0.6,
                  cross_is_both: bool = True,
                  cross_is_replace: bool = False,
-                 max_iterations: int = 200,
-                 max_iterations_without_improvement: int = 100, use_without_improvement: bool = False,
+                 is_left_selected_parents: bool = False,
+                 max_iterations: int = 500,
+                 # TODO: params about stopping algorithm when it coverages
+                 # TODO: change default selection to stochastic uniform
                  selection_type: SelectionType = SelectionType.RankSelection,
-                 n_elitism: int = 5,
-                 metric: Metric = Metric.AccuracyBySize, size_coef: int = 1000,
+                 n_elitism: int = 3,
+                 # TODO: change metric to AccuracyByDepth (and add additional metric parameters)
+                 metric: Metric = Metric.AccuracyBySize,
                  remove_other_trees: bool = True, remove_variables: bool = True,
                  seed: int = None,
 
@@ -44,13 +49,11 @@ class GeneticTree:
 
         if seed is not None:
             np.random.seed(seed)
-        else:
-            seed = 0    # because it will return ValueError inside
-                        # statement `if none_arg:`
 
         kwargs = vars()
         kwargs.pop('self')
         kwargs.pop('mutations_additional')
+        kwargs.pop('seed')
         none_arg = self.is_any_arg_none(**kwargs)
         if none_arg:
             raise ValueError(f"The argument {none_arg} is None. "
@@ -65,6 +68,7 @@ class GeneticTree:
 
         self.remove_other_trees = remove_other_trees
         self.remove_variables = remove_variables
+        self._is_left_selected_parents_ = is_left_selected_parents
 
         self._trees_ = None
         self._best_tree_ = None
@@ -112,20 +116,23 @@ class GeneticTree:
         self._trees_ = self.initializer.initialize(X, y, thresholds)
 
     def _growth_trees_(self):
-        parents = self._trees_
-        trees_metrics = self.evaluator.evaluate(parents)
+        offspring = self._trees_
+        trees_metrics = self.evaluator.evaluate(offspring)
+
         while not self.stop_condition.stop():
-            offspring = self.selector.select(parents, trees_metrics)
-            elite = self.selector.get_elite_population(parents, trees_metrics)
-            mutated_population = self.mutator.mutate(offspring)
-            crossed_population = self.crosser.cross_population(offspring)
+            elite = self.selector.get_elite_population(offspring, trees_metrics)
+            selected_parents = self.selector.select(offspring, trees_metrics)
+            mutated_population = self.mutator.mutate(selected_parents)
+            crossed_population = self.crosser.cross_population(selected_parents)
 
-            # new parents based on offspring, elite parents from previous
-            # population, made by mutation and crossing
-            parents = offspring + elite + mutated_population + crossed_population
-            trees_metrics = self.evaluator.evaluate(parents)
+            # offspring based on elite parents from previous
+            # population, and trees made by mutation and crossing
+            offspring = elite + mutated_population + crossed_population
+            if self._is_left_selected_parents_:
+                offspring += selected_parents
+            trees_metrics = self.evaluator.evaluate(offspring)
 
-        self._trees_ = parents
+        self._trees_ = offspring
 
     def _prepare_to_predict_(self):
         self._prepare_best_tree_to_prediction_()
