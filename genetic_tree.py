@@ -127,9 +127,11 @@ class GeneticTree:
 
             # offspring based on elite parents from previous
             # population, and trees made by mutation and crossing
-            offspring = elite + mutated_population + crossed_population
+            offspring = mutated_population + crossed_population
             if self._is_left_selected_parents_:
                 offspring += selected_parents
+            else:
+                offspring += elite
             trees_metrics = self.evaluator.evaluate(offspring)
 
         self._trees_ = offspring
