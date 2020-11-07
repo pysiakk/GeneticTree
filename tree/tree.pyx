@@ -149,11 +149,15 @@ cdef class Tree:
 
     def __reduce__(self):
         """Reduce re-implementation, for pickling."""
+        # never pickle trees during fit
+        # after unpickling need to pass pointers to X, y and thresholds arrays
+        empty_2d_array = np.empty((1, 1), dtype=np.float32)
+        empty_1d_array = np.empty(1, dtype=np.intp)
         return (Tree,
                (self.n_classes,
-               np.array(self.X),
-               np.array(self.y),
-               np.array(self.thresholds),
+               empty_2d_array,
+               empty_1d_array,
+               empty_2d_array,
                ), self.__getstate__())
 
     def __getstate__(self):
@@ -165,6 +169,11 @@ cdef class Tree:
         state["nodes"] = self._get_node_ndarray()
         state["proper_classified"] = self.proper_classified
         state["observations"] = self.observations
+
+        state["n_features"] = self.n_features
+        state["n_observations"] = self.n_observations
+        state["n_thresholds"] = self.n_thresholds
+
         return state
 
     def __setstate__(self, state):
@@ -173,6 +182,10 @@ cdef class Tree:
         self.node_count = state["node_count"]
         self.proper_classified = state["proper_classified"]
         self.observations = state["observations"]
+
+        self.n_features = state["n_features"]
+        self.n_observations = state["n_observations"]
+        self.n_thresholds = state["n_thresholds"]
 
         if 'nodes' not in state:
             raise ValueError('You have loaded Tree version which '
