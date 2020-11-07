@@ -151,9 +151,9 @@ cdef class Tree:
         """Reduce re-implementation, for pickling."""
         return (Tree,
                (self.n_classes,
-               self.X,
-               self.y,
-               self.thresholds,
+               np.array(self.X),
+               np.array(self.y),
+               np.array(self.thresholds),
                ), self.__getstate__())
 
     def __getstate__(self):
