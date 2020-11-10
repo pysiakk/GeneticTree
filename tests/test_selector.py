@@ -175,6 +175,6 @@ def random_function():
     return 9
 
 
-def test_add_new():
+def test_add_new_selection_type():
     SelectionType.add_new("MyNewName", random_function)
     assert SelectionType.MyNewName.select() == 9
