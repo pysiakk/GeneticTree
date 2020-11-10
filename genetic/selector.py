@@ -1,7 +1,7 @@
 import numpy as np
 import warnings
 
-from aenum import Enum
+from aenum import Enum, extend_enum
 
 
 def get_selected_indices_by_rank_selection(metrics, n_individuals):
@@ -48,6 +48,10 @@ class SelectionType(Enum):
         obj._value_ = len(cls.__members__)
         obj.select = function
         return obj
+
+    @staticmethod
+    def add_new(name, function):
+        extend_enum(SelectionType, name, function)
 
     # after each entry should be at least delimiter
     # (also can be more arguments which will be ignored)

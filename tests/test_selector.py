@@ -71,7 +71,7 @@ def test_tournament_selection_with_size_1(metrics):
 
 
 # ==============================================================================
-# Selector and SelectionType
+# Selector
 # ==============================================================================
 
 # Base selector
@@ -165,3 +165,16 @@ def test_calling_proper_selection_type(selector, metrics, trees, selection_type)
     indices_by_selection_type = selection_type.select(metrics, selector.n_trees)
     assert_array_equal(trees[indices_by_selection_type], trees_by_selector)
 
+
+# ==============================================================================
+# SelectionType
+# ==============================================================================
+
+def random_function():
+    """Never can't be sure that function is not random"""
+    return 9
+
+
+def test_add_new():
+    SelectionType.add_new("MyNewName", random_function)
+    assert SelectionType.MyNewName.select() == 9
