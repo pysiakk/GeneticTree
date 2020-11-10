@@ -23,6 +23,31 @@ def get_selected_indices_by_tournament_selection(metrics, n_individuals, tournam
     return np.apply_along_axis(tournament_selection, 1, random_indices)
 
 
+def get_selected_indices_by_roulette_selection(metrics, n_individuals):
+    metrics_summed = np.cumsum(metrics)
+    metrics_summed = metrics_summed / metrics_summed[metrics.shape[0] - 1]
+
+    # roulette numbers are from 0 to 1, because metrics_summed are rescaled to [0, 1]
+    random_roulette_numbers = np.random.random(n_individuals)
+    random_roulette_numbers = np.sort(random_roulette_numbers)
+
+    selected_indices = np.empty(n_individuals, dtype=np.int)
+    metric_index = 0
+    roulette_index = 0
+    selected_index = 0
+
+    # the best theoretical computational complexity but in pure python
+    while roulette_index != n_individuals:
+        if random_roulette_numbers[roulette_index] <= metrics_summed[metric_index]:
+            selected_indices[selected_index] = metric_index
+            selected_index += 1
+            roulette_index += 1
+        else:
+            metric_index += 1
+
+    return selected_indices
+
+
 class SelectionType(Enum):
     """
     SelectionType is enumerator with possible selections to use:
@@ -58,6 +83,7 @@ class SelectionType(Enum):
     # this is needed because value is callable type
     RankSelection = get_selected_indices_by_rank_selection,
     TournamentSelection = get_selected_indices_by_tournament_selection,
+    RouletteSelection = get_selected_indices_by_roulette_selection,
 
 
 class Selector:

@@ -1,11 +1,13 @@
 from genetic.selector import SelectionType, Selector
 from genetic.selector import get_selected_indices_by_rank_selection
 from genetic.selector import get_selected_indices_by_tournament_selection
+from genetic.selector import get_selected_indices_by_roulette_selection
 
 from sklearn.utils._testing import assert_array_equal
 
 import numpy as np
 import pytest
+import copy
 
 
 # ==============================================================================
@@ -64,6 +66,31 @@ def test_tournament_selection_with_size_1(metrics):
 # Roulette selection
 # +++++++++++++++
 
+@pytest.mark.parametrize("n_individuals", [5, 10])
+def test_roulette_selection_reproducible_results(metrics, n_individuals):
+    np.random.seed(123)
+    result1 = get_selected_indices_by_roulette_selection(metrics, n_individuals)
+    np.random.seed(123)
+    result2 = get_selected_indices_by_roulette_selection(metrics, n_individuals)
+    assert_array_equal(result1, result2)
+
+
+@pytest.mark.parametrize("n_individuals", [2, 5, 10])
+def test_roulette_selection(metrics, n_individuals):
+    np.random.seed(123)
+    selected_indices = get_selected_indices_by_roulette_selection(metrics, n_individuals)
+    np.random.seed(123)
+    indices = np.sort(np.random.random(n_individuals))
+    metrics_summed = np.cumsum(metrics)
+    metrics_summed = metrics_summed / metrics_summed[14]
+    selected_indices_manually = np.empty(n_individuals, np.int)
+    for i in range(indices.shape[0]):
+        below = copy.deepcopy(metrics_summed)
+        below[1:] = metrics_summed[:14]
+        below[0] = 0
+        above = metrics_summed
+        selected_indices_manually[i] = np.argmax(np.logical_and(below <= indices[i], indices[i] < above))
+    assert_array_equal(selected_indices, selected_indices_manually)
 
 # +++++++++++++++
 # Stochastic uniform selection
@@ -156,7 +183,9 @@ def test_elitism_above_trees_len(selector, metrics, trees, trees_len):
 # +++++++++++++++
 
 @pytest.mark.parametrize("selection_type", [SelectionType.RankSelection,
-                                            SelectionType.TournamentSelection])
+                                            SelectionType.TournamentSelection,
+                                            SelectionType.RouletteSelection,
+                                            ])
 def test_calling_proper_selection_type(selector, metrics, trees, selection_type):
     selector.set_params(selection_type=selection_type)
     np.random.seed(123)
