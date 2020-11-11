@@ -36,7 +36,7 @@ class GeneticTree:
                  max_iterations: int = 500,
                  # TODO: params about stopping algorithm when it coverages
                  # TODO: change default selection to stochastic uniform
-                 selection_type: SelectionType = SelectionType.RankSelection,
+                 selection_type: SelectionType = SelectionType.Rank,
                  n_elitism: int = 3,
                  # TODO: change metric to AccuracyByDepth (and add additional metric parameters)
                  metric: Metric = Metric.AccuracyBySize,

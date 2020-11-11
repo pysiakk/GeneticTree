@@ -128,7 +128,7 @@ def test_roulette_selection(metrics, n_individuals):
 # Base selector
 @pytest.fixture
 def selector():
-    return Selector(10, SelectionType.RankSelection, 3)
+    return Selector(10, SelectionType.Rank, 3)
 
 
 @pytest.fixture
@@ -152,8 +152,8 @@ def test_set_n_trees_below_one(selector, n_trees):
     assert selector.n_trees == 1
 
 
-@pytest.mark.parametrize("selection_type", [SelectionType.RankSelection,
-                                            SelectionType.TournamentSelection])
+@pytest.mark.parametrize("selection_type", [SelectionType.Rank,
+                                            SelectionType.Tournament])
 def test_set_selection_type(selector, selection_type):
     selector.set_params(selection_type=selection_type)
     assert selector.selection_type == selection_type
@@ -206,9 +206,9 @@ def test_elitism_above_trees_len(selector, metrics, trees, trees_len):
 # SelectionTypes
 # +++++++++++++++
 
-@pytest.mark.parametrize("selection_type", [SelectionType.RankSelection,
-                                            SelectionType.TournamentSelection,
-                                            SelectionType.RouletteSelection,
+@pytest.mark.parametrize("selection_type", [SelectionType.Rank,
+                                            SelectionType.Tournament,
+                                            SelectionType.Roulette,
                                             SelectionType.StochasticUniform
                                             ])
 def test_calling_proper_selection_type(selector, metrics, trees, selection_type):

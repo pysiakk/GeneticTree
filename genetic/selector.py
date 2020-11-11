@@ -127,7 +127,7 @@ def get_selected_indices_by_stochastic_uniform_selection(metrics: np.array, n_in
 class SelectionType(Enum):
     """
     SelectionType is enumerator with possible selections to use:
-        RankSelection -- select best (based on metric) n trees
+        Rank -- select best (based on metric) n trees
 
     To add new SelectionType execute code similar to:
     <code>
@@ -155,9 +155,9 @@ class SelectionType(Enum):
     # after each entry should be at least delimiter
     # (also can be more arguments which will be ignored)
     # this is needed because value is callable type
-    RankSelection = get_selected_indices_by_rank_selection,
-    TournamentSelection = get_selected_indices_by_tournament_selection,
-    RouletteSelection = get_selected_indices_by_roulette_selection,
+    Rank = get_selected_indices_by_rank_selection,
+    Tournament = get_selected_indices_by_tournament_selection,
+    Roulette = get_selected_indices_by_roulette_selection,
     StochasticUniform = get_selected_indices_by_stochastic_uniform_selection,
 
 
@@ -180,7 +180,7 @@ class Selector:
 
     def __init__(self,
                  n_trees: int = 200,
-                 selection_type: SelectionType = SelectionType.RankSelection,
+                 selection_type: SelectionType = SelectionType.Rank,
                  n_elitism: int = 5,
                  **kwargs):
         self.n_trees: int = self._check_n_trees_(n_trees)
