@@ -48,6 +48,29 @@ def get_selected_indices_by_roulette_selection(metrics, n_individuals):
     return selected_indices
 
 
+def get_selected_indices_by_stochastic_uniform_selection(metrics, n_individuals):
+    metrics_summed = np.cumsum(metrics)
+    metrics_summed = metrics_summed / metrics_summed[metrics.shape[0] - 1]
+
+    distance = 1 / n_individuals
+    random_number = np.random.random(1)[0] * distance
+
+    selected_indices = np.empty(n_individuals, dtype=np.int)
+    metric_index = 0
+    selected_index = 0
+
+    # the best theoretical computational complexity but in pure python
+    while selected_index != n_individuals:
+        if random_number <= metrics_summed[metric_index]:
+            selected_indices[selected_index] = metric_index
+            selected_index += 1
+            random_number += distance
+        else:
+            metric_index += 1
+
+    return selected_indices
+
+
 class SelectionType(Enum):
     """
     SelectionType is enumerator with possible selections to use:
@@ -84,6 +107,7 @@ class SelectionType(Enum):
     RankSelection = get_selected_indices_by_rank_selection,
     TournamentSelection = get_selected_indices_by_tournament_selection,
     RouletteSelection = get_selected_indices_by_roulette_selection,
+    StochasticUniform = get_selected_indices_by_stochastic_uniform_selection,
 
 
 class Selector:

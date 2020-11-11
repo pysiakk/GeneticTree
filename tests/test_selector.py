@@ -2,6 +2,7 @@ from genetic.selector import SelectionType, Selector
 from genetic.selector import get_selected_indices_by_rank_selection
 from genetic.selector import get_selected_indices_by_tournament_selection
 from genetic.selector import get_selected_indices_by_roulette_selection
+from genetic.selector import get_selected_indices_by_stochastic_uniform_selection
 
 from sklearn.utils._testing import assert_array_equal
 
@@ -92,9 +93,32 @@ def test_roulette_selection(metrics, n_individuals):
         selected_indices_manually[i] = np.argmax(np.logical_and(below <= indices[i], indices[i] < above))
     assert_array_equal(selected_indices, selected_indices_manually)
 
+
 # +++++++++++++++
 # Stochastic uniform selection
 # +++++++++++++++
+
+@pytest.mark.parametrize("n_individuals", [2, 5, 10])
+def test_roulette_selection(metrics, n_individuals):
+    np.random.seed(123)
+    selected_indices = get_selected_indices_by_stochastic_uniform_selection(metrics, n_individuals)
+
+    np.random.seed(123)
+    distance = 1 / n_individuals
+    first_number = np.random.random(1)[0] * distance
+    indices = np.arange(0, n_individuals) * distance + first_number
+
+    metrics_summed = np.cumsum(metrics)
+    metrics_summed = metrics_summed / metrics_summed[14]
+
+    selected_indices_manually = np.empty(n_individuals, np.int)
+    for i in range(indices.shape[0]):
+        below = copy.deepcopy(metrics_summed)
+        below[1:] = metrics_summed[:14]
+        below[0] = 0
+        above = metrics_summed
+        selected_indices_manually[i] = np.argmax(np.logical_and(below <= indices[i], indices[i] < above))
+    assert_array_equal(selected_indices, selected_indices_manually)
 
 
 # ==============================================================================
@@ -185,6 +209,7 @@ def test_elitism_above_trees_len(selector, metrics, trees, trees_len):
 @pytest.mark.parametrize("selection_type", [SelectionType.RankSelection,
                                             SelectionType.TournamentSelection,
                                             SelectionType.RouletteSelection,
+                                            SelectionType.StochasticUniform
                                             ])
 def test_calling_proper_selection_type(selector, metrics, trees, selection_type):
     selector.set_params(selection_type=selection_type)
