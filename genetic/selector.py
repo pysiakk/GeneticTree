@@ -4,13 +4,34 @@ import warnings
 from aenum import Enum, extend_enum
 
 
-def get_selected_indices_by_rank_selection(metrics, n_individuals):
-    # in this type of selection we have to get best trees
+def get_selected_indices_by_rank_selection(metrics: np.array, n_individuals: int) -> np.array:
+    """
+    Selects best (with the highest metric) n_individuals individuals
+
+    Args:
+         metrics: array with value of metric of each individual
+         n_individuals: number of individuals to select
+    Returns:
+         np.array: array with indices of selected individuals (individuals are in random order)
+    """
     indices = np.argpartition(-metrics, n_individuals - 1)[:n_individuals]
     return indices
 
 
-def get_selected_indices_by_tournament_selection(metrics, n_individuals, tournament_size=3):
+def get_selected_indices_by_tournament_selection(metrics: np.array, n_individuals: int,
+                                                 tournament_size: int = 3) -> np.array:
+    """
+    It simulates n_individuals tournaments
+    At each tournament there are chosen random tournament_size individuals
+    Then the best (with the highest metric) individual from tournament is selected
+
+    Args:
+         metrics: array with value of metric of each individual
+         n_individuals: number of individuals to select
+         tournament_size: Number of individuals in each tournament
+    Returns:
+         np.array: array with indices of selected individuals (individuals are in random order)
+    """
     random_indices = np.empty([n_individuals, tournament_size], dtype=np.int)
     for i in range(tournament_size):
         random_indices[:, i] = np.random.randint(0, metrics.shape[0] - i, n_individuals)
@@ -23,7 +44,22 @@ def get_selected_indices_by_tournament_selection(metrics, n_individuals, tournam
     return np.apply_along_axis(tournament_selection, 1, random_indices)
 
 
-def get_selected_indices_by_roulette_selection(metrics, n_individuals):
+def get_selected_indices_by_roulette_selection(metrics: np.array, n_individuals: int) -> np.array:
+    """
+    First it creates a circle on which every individual gets angle proportional
+    to its metric (such that sum of all angles is all circle)
+    Then algorithm spins the wheel n_individual times and selects pointed individual
+
+    In practical implementation instead of angle there is a proportional part of
+    [0, 1] section. And instead of spinning the wheel there are generated
+    random numbers from [0, 1] section.
+
+    Args:
+         metrics: array with value of metric of each individual
+         n_individuals: number of individuals to select
+    Returns:
+         np.array: array with indices of selected individuals (individuals are in random order)
+    """
     metrics_summed = np.cumsum(metrics)
     metrics_summed = metrics_summed / metrics_summed[metrics.shape[0] - 1]
 
@@ -48,7 +84,24 @@ def get_selected_indices_by_roulette_selection(metrics, n_individuals):
     return selected_indices
 
 
-def get_selected_indices_by_stochastic_uniform_selection(metrics, n_individuals):
+def get_selected_indices_by_stochastic_uniform_selection(metrics: np.array, n_individuals: int) -> np.array:
+    """
+    First it creates a section on which every individual gets distance proportional
+    to its metric, the individuals are positioned without intervals between.
+    Then algorithm goes by the same distance on this section and selects pointed
+    individuals.
+
+    In practical implementation the section is scaled to [0, 1].
+    Then the algorithm is going from one number to another by
+    distance = 1 / n_individuals. And the algorithm starts from random number
+    from [0, 1/n_individuals] section.
+
+    Args:
+         metrics: array with value of metric of each individual
+         n_individuals: number of individuals to select
+    Returns:
+         np.array: array with indices of selected individuals (individuals are in random order)
+    """
     metrics_summed = np.cumsum(metrics)
     metrics_summed = metrics_summed / metrics_summed[metrics.shape[0] - 1]
 
@@ -78,15 +131,13 @@ class SelectionType(Enum):
 
     To add new SelectionType execute code similar to:
     <code>
-    from aenum import extend_enum
-    name = "SelectionTypeName" # string with name of new selection type
-    def selection_function(metrics, n_individuals):
+    def selection_function(metrics: np.array, n_individuals: int) -> np.array:
         # function that will get np array of trees metrics
         # and number of individuals to select
         # it returns np array with selected indices
         indices = ...
         return indices
-    extend_enum(SelectionType, name, selection_function)
+    SelectionType.add_new("SelectionTypeName", selection_function)
     </code>
     Then you can use new selection type by passing in genetic tree
     SelectionType.SelectionTypeName
