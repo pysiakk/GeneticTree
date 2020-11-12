@@ -15,8 +15,12 @@ def get_selected_indices_by_rank_selection(metrics: np.array, n_individuals: int
     Returns:
          np.array: array with indices of selected individuals (individuals are in random order)
     """
-    indices = np.argpartition(-metrics, n_individuals - 1)[:n_individuals]
-    return indices
+    if metrics.shape[0] >= n_individuals:
+        indices = np.argpartition(-metrics, n_individuals - 1)[:n_individuals]
+        return indices
+    else:
+        indices_recurrent = get_selected_indices_by_rank_selection(metrics, n_individuals - metrics.shape[0])
+        return np.concatenate([np.arange(0, metrics.shape[0]), indices_recurrent])
 
 
 def get_selected_indices_by_tournament_selection(metrics: np.array, n_individuals: int,

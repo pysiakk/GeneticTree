@@ -31,6 +31,20 @@ def test_rank_selection(metrics, n_individuals):
     assert_array_equal(np.sort(selected_indices), np.sort(proper_indices))
 
 
+@pytest.mark.parametrize("n_individuals",
+                         [20, 40, 45, 46])
+def test_rank_selection_with_n_individuals_bigger_than_metrics_shape(metrics, n_individuals):
+    np.random.seed(123)
+    selected_indices = get_selected_indices_by_rank_selection(metrics, n_individuals)
+    repeats = n_individuals // metrics.shape[0]
+    by_repeats = np.repeat(np.arange(0, metrics.shape[0]), repeats)
+    np.random.seed(123)
+    individuals_left = n_individuals - repeats * metrics.shape[0]
+    by_ranking = np.argpartition(-metrics, individuals_left - 1)[:individuals_left]
+    proper_indices = np.concatenate([by_repeats, by_ranking])
+    assert_array_equal(np.sort(selected_indices), np.sort(proper_indices))
+
+
 # +++++++++++++++
 # Tournament selection
 # +++++++++++++++
@@ -253,6 +267,17 @@ def assert_trees_equal(trees1, trees2):
     assert len(trees1) == len(trees2)
     for i in range(len(trees1)):
         assert_array_equal(trees1[i].feature, trees2[i].feature)
+
+
+@pytest.mark.parametrize("selection_type", [SelectionType.Rank,
+                                            SelectionType.Tournament,
+                                            SelectionType.Roulette,
+                                            SelectionType.StochasticUniform
+                                            ])
+def test_warning_that_there_are_less_than_n_trees(selector, real_metrics, real_trees, selection_type):
+    selector.set_params(n_trees=4, selection_type=selection_type)
+    with pytest.warns(UserWarning):
+        selector.select(real_trees, real_metrics)
 
 
 # ==============================================================================
