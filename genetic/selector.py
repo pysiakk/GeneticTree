@@ -2,6 +2,7 @@ import numpy as np
 import warnings
 
 from aenum import Enum, extend_enum
+from tree.tree import copy_tree
 
 
 def get_selected_indices_by_rank_selection(metrics: np.array, n_individuals: int) -> np.array:
@@ -245,8 +246,26 @@ class Selector:
                           f"probability with do not replacing parents.",
                           UserWarning)
         indices = self.selection_type.select(trees_metrics, self.n_trees)
-        # TODO take only once each index, then if index is repeated make a copy of tree
-        new_trees = list(np.take(np.array(trees), indices))
+        new_trees = self._get_new_trees_by_indices_(trees, indices)
+        return new_trees
+
+    @staticmethod
+    def _get_new_trees_by_indices_(trees, indices):
+        sorted_indices = np.sort(indices)
+
+        # first get all unique indices
+        unique_indices = np.unique(indices)
+        new_trees = list(np.take(np.array(trees), unique_indices))
+
+        # remove one copy of each index in indices
+        uniques_to_remove = np.searchsorted(sorted_indices, unique_indices)
+        removed = np.delete(sorted_indices, uniques_to_remove)
+
+        # for each existing index copy tree and add to new_trees list
+        # it is needed to not have two references for the same tree
+        for index in removed:
+            new_trees.append(copy_tree(trees[index]))
+
         return new_trees
 
     def get_elite_population(self, trees, trees_metrics):

@@ -4,6 +4,7 @@ from genetic.selector import get_selected_indices_by_tournament_selection
 from genetic.selector import get_selected_indices_by_roulette_selection
 from genetic.selector import get_selected_indices_by_stochastic_uniform_selection
 
+from tests.test_tree import build
 from sklearn.utils._testing import assert_array_equal
 
 import numpy as np
@@ -203,6 +204,34 @@ def test_elitism_above_trees_len(selector, metrics, trees, trees_len):
 
 
 # +++++++++++++++
+# select
+# +++++++++++++++
+
+@pytest.fixture
+def real_trees():
+    trees = []
+    for i in range(3):
+        trees.append(build(5, 1)[0][0])
+    return trees
+
+
+@pytest.fixture
+def real_metrics():
+    return np.array([1, 3, 2])
+
+
+def test_copying_trees(selector, real_trees, real_metrics):
+    # should select last tree 3 times but also should copy this tree
+    selector.set_params(3, selection_type=SelectionType.Tournament)
+    selected_trees = selector.select(real_trees, real_metrics)
+    assert id(selected_trees[0]) != id(selected_trees[1]) != id(selected_trees[2]) != id(selected_trees[0])
+    assert_array_equal(selected_trees[0].feature, selected_trees[1].feature)
+    assert_array_equal(selected_trees[2].feature, selected_trees[1].feature)
+    assert_array_equal(selected_trees[0].feature, selected_trees[2].feature)
+    assert id(selected_trees[0]) == id(real_trees[1])
+
+
+# +++++++++++++++
 # SelectionTypes
 # +++++++++++++++
 
@@ -211,13 +240,19 @@ def test_elitism_above_trees_len(selector, metrics, trees, trees_len):
                                             SelectionType.Roulette,
                                             SelectionType.StochasticUniform
                                             ])
-def test_calling_proper_selection_type(selector, metrics, trees, selection_type):
-    selector.set_params(selection_type=selection_type)
+def test_calling_proper_selection_type(selector, real_metrics, real_trees, selection_type):
+    selector.set_params(selection_type=selection_type, n_trees=2)
     np.random.seed(123)
-    trees_by_selector = selector.select(trees, metrics)
+    trees_by_selector = selector.select(real_trees, real_metrics)
     np.random.seed(123)
-    indices_by_selection_type = selection_type.select(metrics, selector.n_trees)
-    assert_array_equal(trees[indices_by_selection_type], trees_by_selector)
+    indices_by_selection_type = selection_type.select(real_metrics, selector.n_trees)
+    assert_trees_equal(np.array(real_trees)[indices_by_selection_type], trees_by_selector)
+
+
+def assert_trees_equal(trees1, trees2):
+    assert len(trees1) == len(trees2)
+    for i in range(len(trees1)):
+        assert_array_equal(trees1[i].feature, trees2[i].feature)
 
 
 # ==============================================================================
