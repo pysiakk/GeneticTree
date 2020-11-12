@@ -167,7 +167,14 @@ class Selector:
     Selector is responsible for selecting best individuals from population
 
     Possible selection policies:
-    - rankSelection (best n)
+    - Rank (best n)
+    - Tournament (n tournaments with k individuals - each tournament is won \
+    by the best individual)
+    - Roulette (n spins of roulette on which each individual have angle \
+    proportional to metric)
+    - Stochastic Uniform (n points belonging to individuals sections; points \
+    are distant from each other the same distance; individuals sections are \
+    proportional to metric
 
     There is also elitism, which allows to select best (in terms of trees
     metrics) n_elitism individuals
@@ -230,7 +237,9 @@ class Selector:
 
     def select(self, trees, trees_metrics):
         """
-        Function selects best parents from population
+        Function selects parents from population
+        It selects self.n_trees trees
+        It uses selection_type policy
 
         Args:
             trees: List with all trees
