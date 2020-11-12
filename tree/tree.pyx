@@ -36,6 +36,7 @@ from libc.stdio cimport printf
 from tree._utils cimport safe_realloc
 
 import multiprocessing
+import copy
 
 import numpy as np
 cimport numpy as np
@@ -600,3 +601,11 @@ cdef class Tree:
                 x *= 2
                 x += 1
             printf("", x)
+
+
+cpdef Tree copy_tree(Tree tree):
+    cdef Tree tree_copied = copy.deepcopy(tree)
+    tree_copied.X = tree.X
+    tree_copied.y = tree.y
+    tree_copied.thresholds = tree.thresholds
+    return tree_copied

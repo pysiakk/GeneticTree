@@ -120,19 +120,6 @@ cdef class Tree:
     cpdef np.ndarray predict_proba(self, object X)
     cpdef np.ndarray apply(self, object X)
 
-    # commented out functions
-    # cpdef np.ndarray predict(self, object X)
-
-    # cpdef np.ndarray apply(self, object X)
-    # cdef np.ndarray _apply_dense(self, object X)
-    # cdef np.ndarray _apply_sparse_csr(self, object X)
-
-    # cpdef object decision_path(self, object X)
-    # cdef object _decision_path_dense(self, object X)
-    # cdef object _decision_path_sparse_csr(self, object X)
-
-    # cpdef compute_feature_importances(self, normalize=*)
-
     # Multithreading test functions
     cpdef test_function_with_args_core(self, char* name, long long size, int print_size)
     cpdef test_function_with_args(self, char* name, long long size, int print_size)
@@ -142,3 +129,6 @@ cdef class Tree:
 
     cpdef time_test_nogil(self, long long size)
     cdef void _time_test_nogil_(self, long long size) nogil
+
+
+cpdef Tree copy_tree(Tree tree)

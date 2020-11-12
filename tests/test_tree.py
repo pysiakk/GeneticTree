@@ -4,6 +4,7 @@ os.chdir("../")
 from tests.set_up_variables_and_imports import *
 from genetic_tree import GeneticTree
 from tree.thresholds import prepare_thresholds_array
+from tree.tree import copy_tree
 
 import pickle
 
@@ -153,4 +154,19 @@ def test_crosser_pickling():
     pickle.dump(crosser, bytes_io)
     bytes_io.seek(0)
     pickle.load(bytes_io)
+
+
+def test_tree_copying():
+    tree: Tree = build(10, 1)[0][0]
+    tree_copied: Tree = copy_tree(tree)
+    assert tree.node_count == tree_copied.node_count
+    assert_array_equal(tree.X, tree_copied.X)
+    assert_array_equal(tree.y, tree_copied.y)
+    assert_array_equal(tree.thresholds, tree_copied.thresholds)
+    assert id(tree.node_count) != id(tree_copied.node_count)
+    assert id(tree.X) == id(tree_copied.X)
+    # following lines don't have to be true
+    # because two memoryviews of the same object can have different ids
+    # assert id(tree.y) == id(tree_copied.y)
+    # assert id(tree.thresholds) == id(tree_copied.thresholds)
 
