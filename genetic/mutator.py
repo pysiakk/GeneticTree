@@ -57,15 +57,14 @@ class Mutator:
     """
 
     def __init__(self,
-                 mutation_prob: float = 0.005,
+                 mutation_prob: float = 0.4,
                  mutations_additional: list = None,
                  mutation_is_replace: bool = False,
                  **kwargs):
-        self.mutation_prob = mutation_prob
-        self.mutation_is_replace = mutation_is_replace
+        self.mutation_prob = self._check_mutation_prob_(mutation_prob)
+        self.mutation_is_replace = self._check_mutation_is_replace_(mutation_is_replace)
         if mutations_additional is not None:
-            self._check_mutations_additional_(mutations_additional)
-            self.mutations_additional = mutations_additional
+            self.mutations_additional = self._check_mutations_additional_(mutations_additional)
         else:
             self.mutations_additional = []
 
@@ -80,20 +79,44 @@ class Mutator:
         Arguments are the same as in __init__
         """
         if mutation_prob is not None:
-            self.mutation_prob = mutation_prob
+            self.mutation_prob = self._check_mutation_prob_(mutation_prob)
         if mutation_is_replace is not None:
-            self.mutation_is_replace = mutation_is_replace
+            self.mutation_is_replace = self._check_mutation_is_replace_(mutation_is_replace)
         if mutations_additional is not None:
-            self._check_mutations_additional_(mutations_additional)
-            self.mutations_additional = mutations_additional
+            self.mutations_additional = self._check_mutations_additional_(mutations_additional)
+
+    @staticmethod
+    def _check_mutation_prob_(mutation_prob, error_name: str = "mutation_prob"):
+        if type(mutation_prob) is not float and type(mutation_prob) is not int:
+            raise TypeError(f"{error_name}: {mutation_prob} should be "
+                            f"float or int. Instead it is {type(mutation_prob)}")
+        if mutation_prob <= 0:
+            mutation_prob = 0
+        if mutation_prob >= 1:
+            mutation_prob = 1
+        return mutation_prob
+    
+    @staticmethod
+    def _check_mutation_is_replace_(mutation_is_replace):
+        if type(mutation_is_replace) is not bool:
+            raise TypeError(f"mutation_is_replace: {mutation_is_replace} should be "
+                            f"bool. Instead it is {type(mutation_is_replace)}")
+        return mutation_is_replace
 
     @staticmethod
     def _check_mutations_additional_(mutations_additional):
-        # TODO: meaningful errors instead of asserts
-        assert isinstance(mutations_additional, list)
-        for element in mutations_additional:
-            assert isinstance(element[0], MutationType)
-            assert isinstance(element[1], float)
+        if not isinstance(mutations_additional, list):
+            raise TypeError(f"mutations_additional: {mutations_additional} is "
+                            f"not type list")
+        for i in range(len(mutations_additional)):
+            element = mutations_additional[i]
+            if not isinstance(element[0], MutationType):
+                raise TypeError(f"MutationType inside mutations additional: "
+                                f"{element[0]} is not a MutationType")
+            error_name = f"Mutation probability inside mutations additional for {element[0]}"
+            element = element[0], Mutator._check_mutation_prob_(element[1], error_name)
+            mutations_additional[i] = element
+        return mutations_additional
 
     def mutate(self, trees):
         """
