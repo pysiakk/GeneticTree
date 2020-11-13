@@ -1,4 +1,4 @@
-from tree.tree import Tree
+from tree.tree import Tree, copy_tree
 import math
 import numpy as np
 
@@ -52,6 +52,8 @@ class Mutator:
         mutations_additional: list of tuples \
                               each tuple contains MutationType \
                               and probability of this MutationType
+        mutation_is_replace: if new trees should replace previous or should \
+                             previous trees be modified directly
     """
 
     def __init__(self,
@@ -132,8 +134,7 @@ class Mutator:
             if self.mutation_is_replace:
                 self._run_mutation_function_(tree, mutation_type)
             else:
-                # TODO: function to intelligent copy tree (not deepcopy X, y, thresholds)
-                # tree = copy_tree(tree)
+                tree = copy_tree(tree)
                 self._run_mutation_function_(tree, mutation_type)
                 new_created_trees.append(tree)
         return new_created_trees
