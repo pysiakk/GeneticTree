@@ -2,7 +2,7 @@ from tree.tree import Tree
 import math
 import numpy as np
 
-from aenum import Enum
+from aenum import Enum, extend_enum
 
 
 class MutationType(Enum):
@@ -22,6 +22,10 @@ class MutationType(Enum):
         obj._value_ = len(cls.__members__)
         obj.mutate = function
         return obj
+
+    @staticmethod
+    def add_new(name, function):
+        extend_enum(MutationType, name, function)
 
     # after each entry should be at least delimiter
     # (also can be more arguments which will be ignored)
