@@ -133,6 +133,13 @@ class SelectionType(Enum):
     """
     SelectionType is enumerator with possible selections to use:
         Rank -- select best (based on metric) n trees
+        Tournament -- n tournaments with k individuals - each tournament is won \
+        by the best individual
+        Roulette -- n spins of roulette on which each individual have angle \
+        proportional to metric
+        Stochastic Uniform -- n points belonging to individuals sections; points \
+        are distant from each other the same distance; individuals sections are \
+        proportional to metric
 
     To add new SelectionType execute code similar to:
     <code>
