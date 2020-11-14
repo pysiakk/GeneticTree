@@ -1,12 +1,51 @@
-from tree.evaluation import get_accuracies, get_proper_classified, get_trees_sizes
+from tree.evaluation import get_accuracies, get_trees_depths, get_trees_sizes
 import numpy as np
 
-from enum import Enum, auto
+from aenum import Enum, extend_enum
+
+
+def get_accuracy(trees: np.array, **kwargs) -> np.array:
+    return np.array(get_accuracies(trees))
+
+
+def get_accuracy_and_size(trees: np.array, size_factor: float = 0.0001, **kwargs) -> np.array:
+    accuracy = np.array(get_accuracies(trees))
+    size = np.array(get_trees_sizes(trees))
+    return accuracy - size_factor * size
+
+
+def get_accuracy_and_depth(trees: np.array, depth_factor: float = 0.01, **kwargs) -> np.array:
+    accuracy = np.array(get_accuracies(trees))
+    depth = np.array(get_trees_depths(trees))
+    return accuracy - depth_factor * depth
 
 
 class Metric(Enum):
-    Accuracy = auto()
-    AccuracyBySize = auto()
+    """
+    Metric is enumerator with possible metrics to use during evaluation:
+        Accuracy -- number of proper classified observations divided by \
+        number of all observations
+        AccuracyMinusSize -- accuracy + constant times number of nodes of tree
+        AccuracyMinusDepth -- accuracy + constant times maximal depth of tree
+
+    To add new Metric see genetic.selector.SelectionType
+    """
+    def __new__(cls, function, *args):
+        obj = object.__new__(cls)
+        obj._value_ = len(cls.__members__)
+        obj.evaluate = function
+        return obj
+
+    @staticmethod
+    def add_new(name, function):
+        extend_enum(Metric, name, function)
+
+    # after each entry should be at least delimiter
+    # (also can be more arguments which will be ignored)
+    # this is needed because value is callable type
+    Accuracy = get_accuracy,
+    AccuracyMinusSize = get_accuracy_and_size,
+    AccuracyMinusDepth = get_accuracy_and_depth,
 
 
 class Evaluator:
@@ -16,66 +55,54 @@ class Evaluator:
 
     There are plenty of possible metrics:
     - accuracy
-    - accuracy with size
+    - accuracy minus size (means number of nodes)
+    - accuracy minus depth (means maximal depth of tree)
 
     Args:
-        n_trees: number of trees to select
         metric: a metric used to evaluate single tree
-        size_coef: coefficient inside AccuracyBySize Metric
     """
 
     def __init__(self,
-                 n_trees: int = 200,
-                 metric: Metric = Metric.AccuracyBySize,
-                 size_coef: int = 1000,
+                 metric: Metric = Metric.AccuracyMinusDepth,
                  **kwargs):
-        self.n_trees: int = n_trees
-        self.metric: Metric = metric
-        self.size_coef = size_coef
+        self.metric: Metric = self._check_metric_(metric)
 
     def set_params(self,
-                   n_trees: int = None,
                    metric: Metric = None,
-                   size_coef: int = None,
                    **kwargs):
         """
         Function to set new parameters for Selector
 
         Arguments are the same as in __init__
         """
-        if n_trees is not None:
-            self.n_trees = n_trees
         if metric is not None:
-            self.metric = metric
-        if size_coef is not None:
-            self.size_coef = size_coef
+            self.metric = self._check_metric_(metric)
+
+    @staticmethod
+    def _check_metric_(metric):
+        if isinstance(metric, Metric):
+            return metric
+        else:
+            raise TypeError(f"Passed metric={metric} with type {type(metric)}, "
+                            f"Needed argument with type Metric")
 
     def get_best_tree_index(self, trees) -> int:
         """
         Args:
-            forest: Container with all trees
+            trees: List with all trees
 
         Returns:
-            Index of best tree inside forest
+            Index of best tree from trees array
         """
         trees_metric = self.evaluate(trees)
         best_index = np.argmax(trees_metric)
         return best_index
 
-    def evaluate(self, trees):
+    def evaluate(self, trees) -> np.array:
         """
-        Function evaluates each tree's metric inside forest
-        The metrics are stored then in field Selector.tree_metric
+        Function evaluates each tree's metric from trees array
 
         Args:
-            forest: Container with all trees
+            trees: List with all trees to evaluate
         """
-        if self.metric == Metric.Accuracy:
-            trees_metric = np.array(get_accuracies(trees))
-        elif self.metric == Metric.AccuracyBySize:
-            acc = np.array(get_accuracies(trees))
-            size = np.array(get_trees_sizes(trees))
-            trees_metric = acc ** 2 * self.size_coef / (self.size_coef + size ** 2)
-        else:
-            raise ValueError(f"The metric {self.metric} not exist")
-        return trees_metric
+        return self.metric.evaluate(trees)

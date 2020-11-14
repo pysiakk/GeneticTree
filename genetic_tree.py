@@ -38,8 +38,7 @@ class GeneticTree:
                  # TODO: change default selection to stochastic uniform
                  selection_type: SelectionType = SelectionType.Rank,
                  n_elitism: int = 3,
-                 # TODO: change metric to AccuracyByDepth (and add additional metric parameters)
-                 metric: Metric = Metric.AccuracyBySize,
+                 metric: Metric = Metric.AccuracyMinusDepth,
                  remove_other_trees: bool = True, remove_variables: bool = True,
                  seed: int = None,
 

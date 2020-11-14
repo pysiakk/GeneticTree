@@ -38,3 +38,10 @@ cpdef SIZE_t[:] get_trees_sizes(list trees):
         trees_sizes[i] = trees[i].node_count
     return trees_sizes
 
+
+cpdef SIZE_t[:] get_trees_depths(list trees):
+    cdef SIZE_t[:] trees_depths = np.empty(len(trees), int)
+    cdef int i
+    for i in range(len(trees)):
+        trees_depths[i] = trees[i].depth
+    return trees_depths
