@@ -11,7 +11,6 @@ class Crosser:
         cross_prob: The chance that each tree will be selected as first parent.
         cross_is_both: If cross first parent with second and second with first \
                        or only first with second
-        cross_is_replace: If replace old tree(s) by child(ren) or not
 
     For each tree selected with cross_prob chance there will be found second
     random parent.
@@ -20,15 +19,13 @@ class Crosser:
     def __init__(self,
                  cross_prob: float = 0.93,
                  cross_is_both: bool = True,
-                 cross_is_replace: bool = True,
                  **kwargs):
         self.cross_prob: float = cross_prob
         self.cross_is_both: bool = cross_is_both
-        self.cross_is_replace: bool = cross_is_replace
 
     def set_params(self,
                    cross_prob: float = None,
-                   cross_is_both: bool = None, cross_is_replace: bool = None,
+                   cross_is_both: bool = None,
                    **kwargs):
         """
         Function to set new parameters for Crosser
@@ -39,8 +36,6 @@ class Crosser:
             self.cross_prob = cross_prob
         if cross_is_both is not None:
             self.cross_is_both = cross_is_both
-        if cross_is_replace is not None:
-            self.cross_is_replace = cross_is_replace
 
     def cross_population(self, trees):
         """
@@ -72,14 +67,10 @@ class Crosser:
                 if self.cross_is_both:
                     children[1].initialize_observations()
 
-                if self.cross_is_replace:
-                    trees[first_parent_id] = children[0]
-                    if self.cross_is_both:
-                        trees[second_parent_id] = children[1]
-                else:
-                    new_created_trees.append(children[0])
-                    if self.cross_is_both:
-                        new_created_trees.append(children[1])
+                new_created_trees.append(children[0])
+                if self.cross_is_both:
+                    new_created_trees.append(children[1])
+
         return new_created_trees
 
     @staticmethod

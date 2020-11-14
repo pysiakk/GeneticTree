@@ -31,7 +31,6 @@ class GeneticTree:
                  mutation_is_replace: bool = False,
                  cross_prob: float = 0.6,
                  cross_is_both: bool = True,
-                 cross_is_replace: bool = False,
                  is_left_selected_parents: bool = False,
                  max_iterations: int = 500,
                  # TODO: params about stopping algorithm when it coverages
