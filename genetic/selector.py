@@ -198,9 +198,9 @@ class Selector:
     """
 
     def __init__(self,
-                 n_trees: int = 200,
-                 selection_type: SelectionType = SelectionType.Rank,
-                 n_elitism: int = 5,
+                 n_trees: int = 400,
+                 selection_type: SelectionType = SelectionType.StochasticUniform,
+                 n_elitism: int = 3,
                  **kwargs):
         self.n_trees: int = self._check_n_trees_(n_trees)
         self.selection_type: SelectionType = self._check_selection_type_(selection_type)

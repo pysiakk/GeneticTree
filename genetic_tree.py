@@ -35,8 +35,7 @@ class GeneticTree:
                  is_left_selected_parents: bool = False,
                  max_iterations: int = 500,
                  # TODO: params about stopping algorithm when it coverages
-                 # TODO: change default selection to stochastic uniform
-                 selection_type: SelectionType = SelectionType.Rank,
+                 selection_type: SelectionType = SelectionType.StochasticUniform,
                  n_elitism: int = 3,
                  metric: Metric = Metric.AccuracyMinusDepth,
                  remove_other_trees: bool = True, remove_variables: bool = True,
