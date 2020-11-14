@@ -1,5 +1,5 @@
 from tree.tree import Tree
-from tree.crosser import TreeCrosser
+from tree.crosser import cross_trees
 import numpy as np
 
 
@@ -50,7 +50,6 @@ class Crosser:
         Args:
             trees: List with all trees to apply crossing
         """
-        crosser: TreeCrosser = TreeCrosser()
         new_created_trees = []
 
         trees_number: int = len(trees)
@@ -63,7 +62,7 @@ class Crosser:
                 second_parent: Tree = trees[second_parent_id]
 
                 # create child and register it in forest
-                children: Tree[:] = crosser.cross_trees(first_parent, second_parent, int(self.cross_is_both))
+                children: Tree[:] = cross_trees(first_parent, second_parent, int(self.cross_is_both))
 
                 # TODO change below lines to more complicated way that should be less time consuming
                 # During copying nodes from first tree copy also all observations dict

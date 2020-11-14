@@ -4,7 +4,7 @@ import io
 
 from tree.tree import Tree, Observation
 from tree.builder import Builder, FullTreeBuilder
-from tree.crosser import TreeCrosser
+from tree.crosser import cross_trees, test_cross_trees
 
 from sklearn import datasets
 import numpy as np

@@ -66,8 +66,7 @@ def assert_array_not_the_same_in_at_most_one_index(array, other) -> int:
 
 def test_crosser():
     trees = build(2, 10)
-    crosser: TreeCrosser = TreeCrosser()
-    tree: Tree = crosser._cross_trees(trees[0][0], trees[1][0], 2, 0)
+    tree: Tree = test_cross_trees(trees[0][0], trees[1][0], 2, 0)
     new_features = np.append(np.append(np.append(trees[0][1][0:2], np.array([trees[0][1][4], trees[0][1][3], trees[1][1][0]])),
                                        np.array([trees[1][1][2], trees[1][1][6], trees[1][1][5]])),
                              np.array([trees[1][1][1], trees[1][1][4], trees[1][1][3]]))
@@ -78,12 +77,11 @@ def test_crosser():
 
 def test_independence_of_created_trees_by_crosser(crosses: int = 10, mutations: int = 10):
     trees = build(1, 10)
-    crosser: TreeCrosser = TreeCrosser()
 
     # cross tree many times with the same tree
-    tree: Tree = crosser._cross_trees(trees[0][0], trees[1][0], 1, 0)
+    tree: Tree = test_cross_trees(trees[0][0], trees[1][0], 1, 0)
     for i in range(1, crosses):
-        tree = crosser._cross_trees(trees[0][0], tree, 1, 0)
+        tree = test_cross_trees(trees[0][0], tree, 1, 0)
 
     # check if crossing is proper
     new_features = np.repeat(np.array([[trees[0][1][0], trees[0][1][2]]]).transpose(), crosses, axis=1).reshape(crosses*2, order='F')
@@ -146,14 +144,6 @@ def test_tree_pickling():
     assert_array_equal(feature, tree.feature)
     assert depth == tree.depth
     assert node_count == tree.node_count
-
-
-def test_crosser_pickling():
-    crosser: TreeCrosser = TreeCrosser()
-    bytes_io = io.BytesIO()
-    pickle.dump(crosser, bytes_io)
-    bytes_io.seek(0)
-    pickle.load(bytes_io)
 
 
 def test_tree_copying():
