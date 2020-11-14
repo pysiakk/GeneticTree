@@ -56,20 +56,13 @@ class Crosser:
             first_parent: Tree = trees[first_parents_indices[i]]
             second_parent: Tree = trees[second_parents_indices[i]]
 
-            # create child and register it in forest
-            children: Tree[:] = cross_trees(first_parent, second_parent, int(self.cross_is_both))
+            first_node_id: int = first_parent.get_random_node()
+            second_node_id: int = second_parent.get_random_node()
 
-            # TODO change below lines to more complicated way that should be less time consuming
-            # During copying nodes from first tree copy also all observations dict
-            # and replace observations below changed node as NOT_REGISTERED
-            # Then after completion of all tree only need to run assign_all_not_registered_observations
-            children[0].initialize_observations()
+            # create children and append them to list
+            new_created_trees.append(cross_trees(first_parent, second_parent, first_node_id, second_node_id))
             if self.cross_is_both:
-                children[1].initialize_observations()
-
-            new_created_trees.append(children[0])
-            if self.cross_is_both:
-                new_created_trees.append(children[1])
+                new_created_trees.append(cross_trees(second_parent, first_parent, second_node_id, first_node_id))
 
         return new_created_trees
 

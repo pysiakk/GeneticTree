@@ -1,6 +1,6 @@
 # cython: linetrace=True
 
-from tree.tree cimport Tree
+from tree.tree cimport Tree, Node
 from tree._utils cimport Stack, StackRecord
 
 from libc.stdlib cimport free
@@ -30,25 +30,26 @@ cdef struct CrossoverPoint:
 
 """
 Function to cross 2 trees
-
-If cross both then cross first tree with second and second with first 
-using the same crossing points
+First it initializes new tree
+Then it call function to add all nodes from parents
+At the end it initializes observations dictionary
 """
-cpdef Tree[:] cross_trees(Tree first_parent, Tree second_parent,
-                          bint cross_both):
-    cdef SIZE_t first_node_id = first_parent.get_random_node()
-    cdef SIZE_t second_node_id = second_parent.get_random_node()
+cpdef Tree cross_trees(Tree first_parent, Tree second_parent,
+                       int first_node_id, int second_node_id):
 
-    cdef Tree[:] trees = np.empty(2, Tree)
+    cdef Tree child = _initialize_new_tree(first_parent)
 
-    trees[0] = _cross_trees(first_parent, second_parent,
-                                 first_node_id, second_node_id)
+    _add_nodes_from_parents(child, first_parent.nodes, second_parent.nodes,
+                            first_node_id, second_node_id)
 
-    if cross_both == 1:
-        trees[1] = _cross_trees(second_parent, first_parent,
-                                     second_node_id, first_node_id)
 
-    return trees
+    # TODO change below line to more complicated way that should be less time consuming
+    # During copying nodes from first tree copy also all observations dict
+    # and replace observations below changed node as NOT_REGISTERED
+    # Then after completion of all tree only need to run assign_all_not_registered_observations
+    child.initialize_observations()
+
+    return child
 
 
 """
@@ -56,7 +57,10 @@ Function to run _cross_trees with testing purpose
 """
 cpdef Tree test_cross_trees(Tree first_parent, Tree second_parent,
                             int first_node_id, int second_node_id):
-    return _cross_trees(first_parent, second_parent, first_node_id, second_node_id)
+    cdef Tree child = _initialize_new_tree(first_parent)
+    _add_nodes_from_parents(child, first_parent.nodes, second_parent.nodes,
+                            first_node_id, second_node_id)
+    return child
 
 
 """
@@ -65,17 +69,16 @@ A child tree is created by replacing
 a subtree in first_parent from first_node_id 
 by a subtree in second_parent from second_node_id
 """
-cdef Tree _cross_trees(Tree first_parent, Tree second_parent,
-                       SIZE_t first_node_id, SIZE_t second_node_id):
-    cdef Tree child = _initialize_new_tree(first_parent)
-
+cdef void _add_nodes_from_parents(Tree child,
+                                  Node* first_parent_nodes, Node* second_parent_nodes,
+                                  SIZE_t first_node_id, SIZE_t second_node_id):
     cdef CrossoverPoint* result = <CrossoverPoint*> malloc(sizeof(StackRecord))
 
-    _copy_nodes(first_parent, first_node_id, child, 1, result)
-    _copy_nodes(second_parent, second_node_id, child, 0, result)
+    _copy_nodes(first_parent_nodes, first_node_id, child, 1, result)
+    _copy_nodes(second_parent_nodes, second_node_id, child, 0, result)
 
     free(result)
-    return child
+
 
 """
 Function copy nodes from parent to a child
@@ -94,14 +97,14 @@ While stack not empty repeat:
     d) Add left_child of node in parent tree to stack if conditions
     conditions == node exist in parent tree
 """
-cdef _copy_nodes(Tree donor, SIZE_t crossover_point,
+cdef _copy_nodes(Node* donor_nodes, SIZE_t crossover_point,
                  Tree recipient, bint is_first, CrossoverPoint* result):
     cdef SIZE_t new_parent_id = _TREE_UNDEFINED
     cdef SIZE_t old_self_id = 0
     cdef bint is_left = 0
     cdef bint is_leaf = 0
-    cdef SIZE_t feature = donor.nodes[0].feature
-    cdef double threshold = donor.nodes[0].threshold
+    cdef SIZE_t feature = donor_nodes[0].feature
+    cdef double threshold = donor_nodes[0].threshold
     cdef SIZE_t depth = 0
     cdef SIZE_t class_number = 0
 
@@ -111,10 +114,10 @@ cdef _copy_nodes(Tree donor, SIZE_t crossover_point,
         new_parent_id = result[0].new_parent_id
         old_self_id = crossover_point
         is_left = result[0].is_left
-        feature = donor.nodes[crossover_point].feature
-        threshold = donor.nodes[crossover_point].threshold
-        depth = donor.nodes[crossover_point].depth
-        depth_addition = result[0].depth_addition - donor.nodes[crossover_point].depth
+        feature = donor_nodes[crossover_point].feature
+        threshold = donor_nodes[crossover_point].threshold
+        depth = donor_nodes[crossover_point].depth
+        depth_addition = result[0].depth_addition - donor_nodes[crossover_point].depth
 
     cdef SIZE_t max_depth_seen = 0
     cdef SIZE_t success_code = 0
@@ -144,7 +147,7 @@ cdef _copy_nodes(Tree donor, SIZE_t crossover_point,
             depth = stack_record.depth + depth_addition
 
             is_leaf = 1
-            if donor.nodes[old_self_id].right_child != _TREE_LEAF:
+            if donor_nodes[old_self_id].right_child != _TREE_LEAF:
                 is_leaf = 0
 
             if is_leaf == 1:
@@ -162,13 +165,13 @@ cdef _copy_nodes(Tree donor, SIZE_t crossover_point,
             new_parent_id = recipient._add_node(new_parent_id, is_left, is_leaf,
                                             feature, threshold, depth, class_number)
 
-            _add_node_to_stack(donor, new_parent_id,
-                                    donor.nodes[old_self_id].left_child,
-                                    1, stack)
+            _add_node_to_stack(donor_nodes, new_parent_id,
+                               donor_nodes[old_self_id].left_child,
+                               1, stack)
 
-            _add_node_to_stack(donor, new_parent_id,
-                                    donor.nodes[old_self_id].right_child,
-                                    0, stack)
+            _add_node_to_stack(donor_nodes, new_parent_id,
+                               donor_nodes[old_self_id].right_child,
+                               0, stack)
 
             if depth > max_depth_seen:
                 max_depth_seen = depth
@@ -179,17 +182,19 @@ cdef _copy_nodes(Tree donor, SIZE_t crossover_point,
             if success_code >= 0:
                 recipient.depth = max_depth_seen
 
+
 """
 Adds node with id old_self_id to Stack
 """
-cdef void _add_node_to_stack(Tree donor,
+cdef void _add_node_to_stack(Node* donor_nodes,
                              SIZE_t new_parent_id, SIZE_t old_self_id,
                              bint is_left, Stack stack) nogil:
     if old_self_id != _TREE_LEAF:
         stack.push(new_parent_id, old_self_id, is_left,
-                   donor.nodes[old_self_id].feature,
-                   donor.nodes[old_self_id].threshold,
-                   donor.nodes[old_self_id].depth)
+                   donor_nodes[old_self_id].feature,
+                   donor_nodes[old_self_id].threshold,
+                   donor_nodes[old_self_id].depth)
+
 
 """
 Creates new tree with base params as previous tree
