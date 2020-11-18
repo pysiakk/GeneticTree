@@ -28,10 +28,10 @@ cdef class Builder:
         initial_depth: depth of tree
     """
 
-    def __cinit__(self, int initial_depth):
-        self.initial_depth = initial_depth
+    def __cinit__(self):
+        pass
 
-    cpdef build(self, Tree tree):
+    cpdef build(self, Tree tree, int initial_depth):
         """
         Build a random decision tree
         """
@@ -43,10 +43,10 @@ cdef class FullTreeBuilder(Builder):
     initial_depth depth
     """
 
-    def __cinit__(self, int initial_depth):
-        self.initial_depth = initial_depth
+    def __cinit__(self):
+        pass
 
-    cpdef build(self, Tree tree):
+    cpdef build(self, Tree tree, int initial_depth):
         """
         Build a random decision tree
         """
@@ -72,8 +72,8 @@ cdef class FullTreeBuilder(Builder):
         rng = <bitgen_t *>PyCapsule_GetPointer(capsule, capsule_name)
 
         with nogil:
-            for current_depth in range(self.initial_depth+1):
-                if current_depth == self.initial_depth:
+            for current_depth in range(initial_depth+1):
+                if current_depth == initial_depth:
                     is_leaf = 1
 
                 if rc == -1:
@@ -94,7 +94,7 @@ cdef class FullTreeBuilder(Builder):
                         current_node_number = 2**current_depth + node_number
                         parent = <SIZE_t> ((current_node_number-2+is_left) / 2)
 
-                    if current_depth == self.initial_depth:
+                    if current_depth == initial_depth:
                         class_number = self.bounded_uint(0, tree.n_classes-1, rng)
                     else:
                         feature = self.bounded_uint(0, tree.n_features-1, rng)
@@ -107,7 +107,7 @@ cdef class FullTreeBuilder(Builder):
                         rc = -1
                         break
 
-        tree.depth = self.initial_depth
+        tree.depth = initial_depth
 
     # function and usage from https://numpy.org/devdocs/reference/random/examples/cython/extending.pyx.html
     cdef SIZE_t bounded_uint(self, SIZE_t lb, SIZE_t ub, bitgen_t *rng) nogil:

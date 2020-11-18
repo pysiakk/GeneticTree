@@ -17,12 +17,12 @@ def check_thresholds_memory_usage(X, X2, y2, n_trees: int = 10, n_thresholds: in
     memory = memory_used()
     print(f"Memory after creating thresholds array {memory:0.02f}.")
     trees = []
-    builder: FullTreeBuilder = FullTreeBuilder(3)
+    builder: FullTreeBuilder = FullTreeBuilder()
     start = time.time()
     for i in range(n_trees):
         tree: Tree = Tree(3,  X2, y2, thresholds)
         tree.resize_by_initial_depth(depth)
-        builder.build(tree)
+        builder.build(tree, 3)
         trees.append(tree)
     end = time.time()
     memory_all = memory_used()
