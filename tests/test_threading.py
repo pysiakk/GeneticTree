@@ -1,3 +1,6 @@
+import os
+os.chdir("../")
+
 import time
 from threading import Thread
 

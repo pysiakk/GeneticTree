@@ -37,7 +37,8 @@ class Initializer:
         Returns:
             Builder: cython builder to initialize new trees
         """
-        if self.initialization_type == InitializationType.Random:
+        if self.initialization_type == InitializationType.Random\
+                or self.initialization_type == InitializationType.Half:
             return FullTreeBuilder()
 
     def set_params(self, initial_depth: int = None,
@@ -61,9 +62,10 @@ class Initializer:
             forest: Container with all trees
         """
         if self.initialization_type == InitializationType.Random:
-            self.initialize_random(X, y, threshold)
+            trees = self.initialize_random(X, y, threshold)
         elif self.initialization_type == InitializationType.Half:
-            self.initialize_half(X, y, threshold)
+            trees = self.initialize_half(X, y, threshold)
+        return trees
 
     def initialize_random(self, X, y, thresholds):
         """
@@ -99,13 +101,17 @@ class Initializer:
             if tree_index % 2 == 0:
                 tree: Tree = Tree(n_classes, X, y, thresholds)
                 tree.resize_by_initial_depth(self.initial_depth)
-                self.builder.build(tree)
+                self.builder.build(tree, self.initial_depth)
                 tree.initialize_observations()
                 trees.append(tree)
             else:
-                depth = np.randint(1, self.initial_depth)
+                if self.initial_depth > 1:
+                    depth = np.random.randint(low=1, high=self.initial_depth)
+                else:
+                    depth = self.initial_depth
                 tree: Tree = Tree(n_classes, X, y, thresholds)
                 tree.resize_by_initial_depth(depth)
                 self.builder.build(tree, depth)
                 tree.initialize_observations()
                 trees.append(tree)
+        return trees

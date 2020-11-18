@@ -1,3 +1,6 @@
+import os
+os.chdir("../")
+
 import psutil
 import time
 
