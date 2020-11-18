@@ -12,8 +12,8 @@ thresholds = prepare_thresholds_array(10, X)
 def initialize_tree(thresholds) -> Tree:
     tree: Tree = Tree(3, X, y, thresholds)
     tree.resize_by_initial_depth(3)
-    builder: FullTreeBuilder = FullTreeBuilder(3)
-    builder.build(tree)
+    builder: FullTreeBuilder = FullTreeBuilder()
+    builder.build(tree, 3)
     tree.initialize_observations(X, y)
     return tree
 
