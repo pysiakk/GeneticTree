@@ -1,3 +1,6 @@
+import os
+os.chdir("../")
+
 from genetic.evaluator import Evaluator, Metric
 from genetic.evaluator import get_accuracy, get_accuracy_and_size, get_accuracy_and_depth
 

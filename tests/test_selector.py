@@ -1,3 +1,6 @@
+import os
+os.chdir("../")
+
 from genetic.selector import SelectionType, Selector
 from genetic.selector import get_selected_indices_by_rank_selection
 from genetic.selector import get_selected_indices_by_tournament_selection
