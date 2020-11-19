@@ -1,3 +1,6 @@
+import os
+os.chdir("../")
+
 from genetic.mutator import Mutator, MutationType
 
 from tests.test_tree import build

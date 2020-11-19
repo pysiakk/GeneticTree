@@ -12,8 +12,8 @@ thresholds = prepare_thresholds_array(10, X)
 def initialize_tree(thresholds) -> Tree:
     tree: Tree = Tree(3, X, y, thresholds)
     tree.resize_by_initial_depth(3)
-    builder: FullTreeBuilder = FullTreeBuilder(3)
-    builder.build(tree)
+    builder: FullTreeBuilder = FullTreeBuilder()
+    builder.build(tree, 3)
     tree.initialize_observations(X, y)
     return tree
 
@@ -24,7 +24,7 @@ def initialization():
 
 
 def mutate_feature():
-    gt = GeneticTree(feature_prob=1, initial_depth=1, max_iterations=1,
+    gt = GeneticTree(initial_depth=1, max_iterations=1,
                      remove_other_trees=False, remove_variables=False)
     gt.fit(X, y)
     trees_before = gt._trees_
