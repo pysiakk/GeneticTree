@@ -29,11 +29,11 @@ cdef class Observations:
     cdef _assign_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id)
     cdef SIZE_t _find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil
 
-    cdef _copy_element_from_leaves_to_leaves_to_reassign(self)
-    cdef _delete_leaves_to_reassign(self)
-
     cdef SIZE_t _append_leaves(self, SIZE_t y_id)        # return leaves_id
     cdef _append_observations(self, SIZE_t leaves_id, SIZE_t y_id)
+
+    cdef _copy_element_from_leaves_to_leaves_to_reassign(self, SIZE_t leaves_id)
+    cdef _delete_leaves_to_reassign(self)
 
     cdef _push_empty_leaves_ids(self, SIZE_t leaves_id)
     cdef SIZE_t _pop_empty_leaves_ids(self)
@@ -44,3 +44,6 @@ cdef class Observations:
     cpdef test_create_leaves_array_many(self)
 
     cpdef test_empty_leaves_ids(self)
+
+    cpdef test_copy_to_leaves_to_reassign(self)
+    cpdef test_delete_leaves_to_reassign(self)

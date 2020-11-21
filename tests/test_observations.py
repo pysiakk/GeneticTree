@@ -31,3 +31,11 @@ def test_creating_leaves_array_complex(obs):
 
 def test_empty_leaves_ids(obs):
     obs.test_empty_leaves_ids()
+
+
+def test_copy_to_leaves_to_reassign(obs):
+    obs.test_copy_to_leaves_to_reassign()
+
+
+def test_delete_leaves_to_reassign(obs):
+    obs.test_delete_leaves_to_reassign()

@@ -113,19 +113,6 @@ cdef class Observations:
                     current_node_id = nodes[current_node_id].right_child
         return current_node_id
 
-    cdef _copy_element_from_leaves_to_leaves_to_reassign(self):
-        # TODO
-        # in leaves (for IntArray:) set count and capacity to 0 and elements to NULL
-        # in leaves_to_reassign add more capacity if needed
-        pass
-
-    cdef _delete_leaves_to_reassign(self):
-        # TODO
-        # free inner structures
-        # free elements
-        # set elements to NULL, counter and capacity o 0
-        pass
-
     cdef SIZE_t _append_leaves(self, SIZE_t y_id):
         cdef SIZE_t leaves_id = self.leaves.count
 
@@ -157,6 +144,37 @@ cdef class Observations:
         observation[0] = y_id
 
         observations.count += 1
+
+    cdef _copy_element_from_leaves_to_leaves_to_reassign(self, SIZE_t leaves_id):
+        cdef SIZE_t leaves_to_reassign_id = self.leaves_to_reassign.count
+
+        if leaves_to_reassign_id >= self.leaves_to_reassign.capacity:
+            if resize_c(&self.leaves_to_reassign) != 0:
+                return SIZE_MAX
+
+        cdef IntArray* observations = &self.leaves_to_reassign.elements[leaves_to_reassign_id]
+
+        observations.elements = self.leaves.elements[leaves_id].elements
+        observations.count = self.leaves.elements[leaves_id].count
+        observations.capacity = self.leaves.elements[leaves_id].capacity
+
+        self.leaves_to_reassign.count += 1
+
+        self.leaves.elements[leaves_id].elements = NULL
+        self.leaves.elements[leaves_id].count = 0
+        self.leaves.elements[leaves_id].capacity = 0
+
+        self._push_empty_leaves_ids(leaves_id)
+
+    cdef _delete_leaves_to_reassign(self):
+        cdef SIZE_t i
+        if self.leaves_to_reassign.elements != NULL:
+            for i in range(self.leaves_to_reassign.count):
+                free(self.leaves_to_reassign.elements[i].elements)
+        free(self.leaves_to_reassign.elements)
+        self.leaves_to_reassign.elements = NULL
+        self.leaves_to_reassign.count = 0
+        self.leaves_to_reassign.capacity = 0
 
     cdef _push_empty_leaves_ids(self, SIZE_t leaves_id):
         cdef SIZE_t empty_leaves_ids_id = self.empty_leaves_ids.count
@@ -249,3 +267,57 @@ cdef class Observations:
         self._resize_empty_leaves_ids()
         assert self.empty_leaves_ids.capacity == 50
         assert self.empty_leaves_ids.elements[49] == 49
+
+    cpdef test_copy_to_leaves_to_reassign(self):
+        self._append_leaves(1)
+        self._append_leaves(3)
+        self._append_leaves(2)
+        self._append_observations(1, 4)
+        self._append_observations(0, 5)
+        self._append_observations(2, 6)
+        cdef SIZE_t i
+        for i in range(100):
+            self._append_observations(1, i + 10)
+        self._copy_element_from_leaves_to_leaves_to_reassign(1)
+        self._copy_element_from_leaves_to_leaves_to_reassign(0)
+        assert self.leaves.elements[1].count == 0
+        assert self.leaves.elements[1].capacity == 0
+        assert self.leaves.elements[1].elements == NULL
+        assert self.leaves.elements[0].count == 0
+        assert self.leaves.elements[0].capacity == 0
+        assert self.leaves.elements[0].elements == NULL
+        assert self.leaves.elements[2].count == 2
+        assert self.leaves.elements[2].capacity >= 2
+        assert self.leaves.elements[2].elements != NULL
+        assert self.leaves.elements[2].elements[0] == 2
+        assert self.leaves.elements[2].elements[1] == 6
+        assert self.leaves_to_reassign.elements[0].count == 102
+        assert self.leaves_to_reassign.elements[0].capacity >= 102
+        assert self.leaves_to_reassign.elements[1].count == 2
+        assert self.leaves_to_reassign.elements[1].capacity >= 2
+        assert self.leaves_to_reassign.elements[1].elements[0] == 1
+        assert self.leaves_to_reassign.elements[1].elements[1] == 5
+        assert self.leaves_to_reassign.elements[0].elements[0] == 3
+        assert self.leaves_to_reassign.elements[0].elements[1] == 4
+        for i in range(100):
+            assert self.leaves_to_reassign.elements[0].elements[i+2] == i+10
+        assert self.empty_leaves_ids.count == 2
+        assert self.empty_leaves_ids.capacity >= 2
+        assert self.empty_leaves_ids.elements[0] == 1
+        assert self.empty_leaves_ids.elements[1] == 0
+
+    cpdef test_delete_leaves_to_reassign(self):
+        self._append_leaves(1)
+        self._append_leaves(3)
+        self._append_observations(1, 4)
+        self._append_observations(0, 5)
+        cdef SIZE_t i
+        for i in range(100):
+            self._append_observations(1, i + 10)
+        self._copy_element_from_leaves_to_leaves_to_reassign(1)
+        self._copy_element_from_leaves_to_leaves_to_reassign(0)
+        self._delete_leaves_to_reassign()
+        assert self.leaves_to_reassign.count == 0
+        assert self.leaves_to_reassign.capacity == 0
+        assert self.leaves_to_reassign.elements == NULL
+
