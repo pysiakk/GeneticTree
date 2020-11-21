@@ -132,7 +132,7 @@ def test_observation_pickling():
 
 
 def test_tree_pickling():
-    tree: Tree = build(20, 1)[0][0]
+    tree: Tree = build(10, 1)[0][0]
     depth = tree.depth
     feature = tree.feature
     node_count = tree.node_count
