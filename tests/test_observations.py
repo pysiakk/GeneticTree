@@ -27,3 +27,7 @@ def test_creating_leaves_array_many(obs):
 
 def test_creating_leaves_array_complex(obs):
     obs.test_create_leaves_array_complex()
+
+
+def test_empty_leaves_ids(obs):
+    obs.test_empty_leaves_ids()

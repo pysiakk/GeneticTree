@@ -3,7 +3,7 @@ from libc.string cimport memcpy
 from libc.stdint cimport SIZE_MAX
 from libc.stdio cimport printf
 
-from tree._utils cimport resize_c
+from tree._utils cimport resize_c, resize
 
 import numpy as np
 cimport numpy as np
@@ -113,6 +113,19 @@ cdef class Observations:
                     current_node_id = nodes[current_node_id].right_child
         return current_node_id
 
+    cdef _copy_element_from_leaves_to_leaves_to_reassign(self):
+        # TODO
+        # in leaves (for IntArray:) set count and capacity to 0 and elements to NULL
+        # in leaves_to_reassign add more capacity if needed
+        pass
+
+    cdef _delete_leaves_to_reassign(self):
+        # TODO
+        # free inner structures
+        # free elements
+        # set elements to NULL, counter and capacity o 0
+        pass
+
     cdef SIZE_t _append_leaves(self, SIZE_t y_id):
         cdef SIZE_t leaves_id = self.leaves.count
 
@@ -144,6 +157,31 @@ cdef class Observations:
         observation[0] = y_id
 
         observations.count += 1
+
+    cdef _push_empty_leaves_ids(self, SIZE_t leaves_id):
+        cdef SIZE_t empty_leaves_ids_id = self.empty_leaves_ids.count
+
+        if empty_leaves_ids_id >= self.empty_leaves_ids.capacity:
+            if resize_c(&self.empty_leaves_ids) != 0:
+                return SIZE_MAX
+
+        cdef SIZE_t* leaves_id_ptr = &self.empty_leaves_ids.elements[empty_leaves_ids_id]
+        leaves_id_ptr[0] = leaves_id
+
+        self.empty_leaves_ids.count += 1
+
+    cdef SIZE_t _pop_empty_leaves_ids(self):
+        if self.empty_leaves_ids.count == 0:
+            return -1
+
+        self.empty_leaves_ids.count -= 1
+
+        cdef SIZE_t* leaves_id_ptr = &self.empty_leaves_ids.elements[self.empty_leaves_ids.count]
+        return leaves_id_ptr[0]
+
+    cdef _resize_empty_leaves_ids(self):
+        if resize(&self.empty_leaves_ids, self.empty_leaves_ids.count) != 0:
+            return SIZE_MAX
 
     cpdef test_create_leaves_array_simple(self):
         self._append_leaves(1)
@@ -195,3 +233,19 @@ cdef class Observations:
             assert self.leaves.elements[i].count == 1
             assert self.leaves.elements[i].capacity >= 1
             assert self.leaves.elements[i].elements[0] == i
+
+    cpdef test_empty_leaves_ids(self):
+        cdef SIZE_t i
+        cdef SIZE_t value
+        for i in range(100):
+            self._push_empty_leaves_ids(i)
+        assert self.empty_leaves_ids.count == 100
+        assert self.empty_leaves_ids.capacity >= 100
+        for i in range(50):
+            value = self._pop_empty_leaves_ids()
+            assert i+value == 99
+        assert self.empty_leaves_ids.count == 50
+        assert self.empty_leaves_ids.capacity >= 100
+        self._resize_empty_leaves_ids()
+        assert self.empty_leaves_ids.capacity == 50
+        assert self.empty_leaves_ids.elements[49] == 49
