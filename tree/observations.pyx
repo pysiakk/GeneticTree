@@ -68,15 +68,25 @@ cdef class Observations:
         for y_id in range(self.n_observations):
             self._assign_observation(nodes, y_id, start_from_node_id)
 
-    cpdef remove_observations(self, SIZE_t leaves_id):
-        # TODO
-        # for each observation minus one from proper_classified if proper classified
-        # remember leaves_id (probably in new structure) that was removed
-        # maybe in new structure have a pointer to IntArray
-        # and then it can be possible to overwrite this index in Leaves
-        # to properly overwrite can be needed second structure with indices to overwrite
-        # and then all not overwritten indices should be moved to beginning (maybe - if possible)
-        pass
+    cdef void remove_observations(self, Node* nodes, SIZE_t below_node_id):
+        if nodes[below_node_id].left_child == _TREE_LEAF:
+            self._remove_observations_in_leaf(nodes[below_node_id].right_child, nodes[below_node_id].feature)
+
+        else:
+            if nodes[below_node_id].left_child != _TREE_LEAF:
+                self.remove_observations(nodes, nodes[below_node_id].left_child)
+
+            if nodes[below_node_id].right_child != _TREE_LEAF:
+                self.remove_observations(nodes, nodes[below_node_id].right_child)
+
+    cdef void _remove_observations_in_leaf(self, SIZE_t leaves_id, SIZE_t leaf_class):
+        cdef SIZE_t i
+        cdef IntArray observations = self.leaves.elements[leaves_id]
+        for i in range(observations.count):
+            if self.y[observations.elements[i]] == leaf_class:
+                self.proper_classified -= 1
+
+        self._copy_element_from_leaves_to_leaves_to_reassign(leaves_id)
 
     cpdef reassign_observations(self, SIZE_t below_node_id):
         # TODO

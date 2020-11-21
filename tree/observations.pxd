@@ -15,14 +15,16 @@ cdef class Observations:
     cdef IntArray empty_leaves_ids
 
     cdef public proper_classified
-    cdef public SIZE_t n_observations   # Number of observations in X and y
+    cdef public SIZE_t n_observations       # Number of observations in X and y
 
     cdef public object X                    # Array with observations features (TODO: possibility of sparse array)
     cdef DTYPE_t[:, :] X_ndarray
     cdef public SIZE_t[:] y                 # Array with classes of observations
 
     cdef initialize_observations(self, Node* nodes)
-    cpdef remove_observations(self, SIZE_t leaves_id)
+
+    cdef void remove_observations(self, Node* nodes, SIZE_t below_node_id)
+    cdef void _remove_observations_in_leaf(self, SIZE_t leaves_id, SIZE_t leaf_class)
 
     cpdef reassign_observations(self, SIZE_t below_node_id)
     cdef _reassign_observations_for_leaf(self, SIZE_t leaves_id, SIZE_t below_node_id)
