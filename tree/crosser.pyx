@@ -77,6 +77,8 @@ cdef void _add_nodes_from_parents(Tree child,
     _copy_nodes(first_parent_nodes, first_node_id, child, 1, result)
     _copy_nodes(second_parent_nodes, second_node_id, child, 0, result)
 
+    child._resize_c(child.node_count)
+
     free(result)
 
 
@@ -177,9 +179,6 @@ cdef _copy_nodes(Node* donor_nodes, SIZE_t crossover_point,
                 max_depth_seen = depth
 
             if success_code >= 0:
-                success_code = recipient._resize_c(recipient.node_count)
-
-            if success_code >= 0:
                 recipient.depth = max_depth_seen
 
 
@@ -201,8 +200,8 @@ Creates new tree with base params as previous tree
 """
 cdef Tree _initialize_new_tree(Tree previous_tree):
     cdef int n_classes = previous_tree.n_classes
-    cdef int depth = previous_tree.depth
+    cdef int node_count = previous_tree.node_count
 
     cdef Tree tree = Tree(n_classes, previous_tree.X, previous_tree.y, previous_tree.thresholds)
-    tree.resize_by_initial_depth(depth)
+    tree._resize(node_count)
     return tree
