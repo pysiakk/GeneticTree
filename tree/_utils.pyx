@@ -11,12 +11,14 @@
 #          Jacob Schreiber <jmschreiber91@gmail.com>
 #          Nelson Liu <nelson@nelsonliu.me>
 #
+# In context of authors there are copied methods from tree.pyx
 #
 # License: BSD 3 clause
 
 from libc.stdlib cimport free
 from libc.stdlib cimport malloc
 from libc.stdlib cimport realloc
+from libc.stdint cimport SIZE_MAX
 
 import numpy as np
 cimport numpy as np
@@ -44,6 +46,40 @@ cdef realloc_ptr safe_realloc(realloc_ptr* p, size_t nelems) nogil except *:
     p[0] = tmp
     return tmp  # for convenience
 
+cdef int resize(DynamicArray* array, SIZE_t capacity) nogil except -1:
+        """Resize all inner arrays to `capacity`, if `capacity` == -1, then
+           double the size of the inner arrays.
+        Returns -1 in case of failure to allocate memory (and raise MemoryError)
+        or 0 otherwise.
+        """
+        if resize_c(array, capacity) != 0:
+            # Acquire gil only if we need to raise
+            with gil:
+                raise MemoryError()
+
+
+cdef int resize_c(DynamicArray* array, SIZE_t capacity=SIZE_MAX) nogil except -1:
+        """Guts of _resize
+        Returns -1 in case of failure to allocate memory (and raise MemoryError)
+        or 0 otherwise.
+        """
+        if capacity == array[0].capacity and array[0].elements != NULL:
+            return 0
+
+        if capacity == SIZE_MAX:
+            if array[0].capacity == 0:
+                capacity = 3  # default initial value
+            else:
+                capacity = 2 * array[0].capacity
+
+        safe_realloc(&array[0].elements, capacity)
+
+        # if capacity smaller than node_count, adjust the counter
+        if capacity < array[0].count:
+            array[0].count = capacity
+
+        array[0].capacity = capacity
+        return 0
 
 def _realloc_test():
     # Helper for tests. Tries to allocate <size_t>(-1) / 2 * sizeof(size_t)
