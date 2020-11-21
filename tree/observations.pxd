@@ -7,7 +7,7 @@ ctypedef np.npy_float32 DTYPE_t         # Type of X
 ctypedef np.npy_intp SIZE_t             # Type for indices and counters
 
 from tree._utils cimport IntArray, Leaves
-from tree.tree cimport Node
+from tree.tree cimport Node, Tree
 
 cdef class Observations:
     cdef Leaves leaves
@@ -21,7 +21,7 @@ cdef class Observations:
     cdef DTYPE_t[:, :] X_ndarray
     cdef public SIZE_t[:] y                 # Array with classes of observations
 
-    cpdef initialize_observations(self)
+    cdef initialize_observations(self, Node* nodes)
     cpdef remove_observations(self, SIZE_t leaves_id)
 
     cpdef reassign_observations(self, SIZE_t below_node_id)
@@ -38,6 +38,8 @@ cdef class Observations:
     cdef _push_empty_leaves_ids(self, SIZE_t leaves_id)
     cdef SIZE_t _pop_empty_leaves_ids(self)
     cdef _resize_empty_leaves_ids(self)
+
+    cpdef test_initialization(self, Tree tree)
 
     cpdef test_create_leaves_array_simple(self)
     cpdef test_create_leaves_array_complex(self)

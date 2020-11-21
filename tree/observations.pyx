@@ -62,10 +62,11 @@ cdef class Observations:
         # TODO
         pass
 
-    cpdef initialize_observations(self):
-        # TODO
-        # for each observation in y _assign_observation
-        pass
+    cdef initialize_observations(self, Node* nodes):
+        cdef SIZE_t y_id
+        cdef SIZE_t start_from_node_id = 0
+        for y_id in range(self.n_observations):
+            self._assign_observation(nodes, y_id, start_from_node_id)
 
     cpdef remove_observations(self, SIZE_t leaves_id):
         # TODO
@@ -200,6 +201,14 @@ cdef class Observations:
     cdef _resize_empty_leaves_ids(self):
         if resize(&self.empty_leaves_ids, self.empty_leaves_ids.count) != 0:
             return SIZE_MAX
+
+    cpdef test_initialization(self, Tree tree):
+        self.initialize_observations(tree.nodes)
+        assert self.leaves.count > 0
+        assert self.leaves.capacity > 0
+        assert self.leaves.elements[0].count > 0
+        assert self.leaves.elements[0].capacity > 0
+        assert self.leaves.elements[0].elements[0] == 0
 
     cpdef test_create_leaves_array_simple(self):
         self._append_leaves(1)
