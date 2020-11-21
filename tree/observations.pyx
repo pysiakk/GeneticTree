@@ -33,6 +33,14 @@ cdef class Observations:
         self.leaves.count = 0
         self.leaves.capacity = 0
 
+        self.leaves_to_reassign.elements = NULL
+        self.leaves_to_reassign.count = 0
+        self.leaves_to_reassign.capacity = 0
+
+        self.empty_leaves_ids.elements = NULL
+        self.empty_leaves_ids.count = 0
+        self.empty_leaves_ids.capacity = 0
+
     def __dealloc__(self):
         if self.leaves.elements != NULL:
             for i in range(self.leaves.count):
@@ -80,13 +88,30 @@ cdef class Observations:
         # for each observation find new leaf and _assign_observation
         pass
 
-    cdef _assign_observation(self, SIZE_t y_id, SIZE_t below_node_id):
-        # TODO
-        # check where to add starting with below_node_id
-        # add using _append_leaves or _append_observations
-        # if _append_leaves add leaves_id to node.leaves_id
-        # add one to proper_classified if proper classified
-        pass
+    cdef _assign_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id):
+        cdef node_id = self._find_leaf_for_observation(nodes, y_id, below_node_id)
+
+        if nodes[node_id].right_child != TREE_LEAF:         # in right child is leaves_id
+            self._append_observations(nodes[node_id].right_child, y_id)
+        else:
+            nodes[node_id].right_child = self._append_leaves(y_id)
+
+        if nodes[node_id].feature == self.y[y_id]:          # feature means class
+            self.proper_classified += 1
+
+    cdef SIZE_t _find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil:
+        cdef SIZE_t current_node_id = below_node_id
+        cdef SIZE_t feature
+        cdef DOUBLE_t threshold
+        with nogil:
+            while nodes[current_node_id].left_child != _TREE_LEAF:
+                feature = nodes[current_node_id].feature
+                threshold = nodes[current_node_id].threshold
+                if self.X_ndarray[y_id, feature] <= threshold:
+                    current_node_id = nodes[current_node_id].left_child
+                else:
+                    current_node_id = nodes[current_node_id].right_child
+        return current_node_id
 
     cdef SIZE_t _append_leaves(self, SIZE_t y_id):
         cdef SIZE_t leaves_id = self.leaves.count
@@ -104,7 +129,6 @@ cdef class Observations:
         self._append_observations(leaves_id, y_id)
 
         self.leaves.count += 1
-        print(self.leaves.count)
         return leaves_id
 
     cdef _append_observations(self, SIZE_t leaves_id, SIZE_t y_id):

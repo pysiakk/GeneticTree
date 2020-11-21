@@ -7,9 +7,12 @@ ctypedef np.npy_float32 DTYPE_t         # Type of X
 ctypedef np.npy_intp SIZE_t             # Type for indices and counters
 
 from tree._utils cimport IntArray, Leaves
+from tree.tree cimport Node
 
 cdef class Observations:
     cdef Leaves leaves
+    cdef Leaves leaves_to_reassign
+    cdef IntArray empty_leaves_ids
 
     cdef public proper_classified
     cdef public SIZE_t n_observations   # Number of observations in X and y
@@ -23,7 +26,8 @@ cdef class Observations:
 
     cpdef reassign_observations(self, SIZE_t below_node_id)
     cdef _reassign_observations_for_leaf(self, SIZE_t leaves_id, SIZE_t below_node_id)
-    cdef _assign_observation(self, SIZE_t y_id, SIZE_t below_node_id)
+    cdef _assign_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id)
+    cdef SIZE_t _find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil
 
     cdef SIZE_t _append_leaves(self, SIZE_t y_id)        # return leaves_id
     cdef _append_observations(self, SIZE_t leaves_id, SIZE_t y_id)
