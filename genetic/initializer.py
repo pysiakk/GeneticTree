@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from tree.builder import Builder, FullTreeBuilder
+from tree.builder import Builder, FullTreeBuilder, SplitTreeBuilder
 from tree.tree import Tree
 import numpy as np
 
@@ -7,6 +7,7 @@ import numpy as np
 class InitializationType(Enum):
     Random = auto()
     Half = auto()
+    Split = auto()
 
 
 class Initializer:
@@ -40,6 +41,8 @@ class Initializer:
         if self.initialization_type == InitializationType.Random\
                 or self.initialization_type == InitializationType.Half:
             return FullTreeBuilder()
+        elif self.initialization_type == InitializationType.Split:
+            return SplitTreeBuilder()
 
     def set_params(self, initial_depth: int = None,
                    initialization_type: InitializationType = None,
@@ -65,6 +68,8 @@ class Initializer:
             trees = self.initialize_random(X, y, threshold)
         elif self.initialization_type == InitializationType.Half:
             trees = self.initialize_half(X, y, threshold)
+        elif self.initialization_type == InitializationType.Split:
+            trees = self.initialize_random(X, y, threshold)
         return trees
 
     def initialize_random(self, X, y, thresholds):
