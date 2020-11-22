@@ -25,7 +25,8 @@ class GeneticTree:
                  n_trees: int = 400,
                  n_thresholds: int = 10,
                  # TODO: change default initialization to splitting nodes with probability
-                 initial_depth: int = 1, initialization_type: InitializationType = InitializationType.Random,
+                 initial_depth: int = 1,
+                 initialization_type: InitializationType = InitializationType.Random,
                  mutation_prob: float = 0.4,
                  mutations_additional: list = None,
                  mutation_is_replace: bool = False,
