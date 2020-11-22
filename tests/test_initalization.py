@@ -21,7 +21,7 @@ def initialize_half(X, y, thresholds):
 
 
 def initialize_split(X, y, thresholds):
-    initializer = Initializer(n_trees=20, initial_depth=5, initialization_type=InitializationType.Split)
+    initializer = Initializer(n_trees=20, initial_depth=5, initialization_type=InitializationType.Split, split_prob=0.7)
     return initializer.initialize(X=X, y=y, threshold=thresholds)
 
 
