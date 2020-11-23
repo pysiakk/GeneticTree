@@ -26,8 +26,8 @@ cdef class Observations:
     cdef void remove_observations(self, Node* nodes, SIZE_t below_node_id)
     cdef void _remove_observations_in_leaf(self, SIZE_t leaves_id, SIZE_t leaf_class)
 
-    cpdef reassign_observations(self, SIZE_t below_node_id)
-    cdef _reassign_observations_for_leaf(self, SIZE_t leaves_id, SIZE_t below_node_id)
+    cdef void reassign_observations(self, Node* nodes, SIZE_t below_node_id)
+
     cdef _assign_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id)
     cdef SIZE_t _find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil
 
@@ -42,6 +42,7 @@ cdef class Observations:
     cdef _resize_empty_leaves_ids(self)
 
     cpdef test_initialization(self, Tree tree)
+    cpdef test_removing_and_reassigning(self, Tree tree)
 
     cpdef test_create_leaves_array_simple(self)
     cpdef test_create_leaves_array_complex(self)

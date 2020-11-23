@@ -62,3 +62,7 @@ def test_delete_leaves_to_reassign(obs):
 def test_initialization(obs, tree):
     obs.test_initialization(tree)
 
+
+def test_removing_and_reassigning(obs, tree):
+    obs.test_removing_and_reassigning(tree)
+
