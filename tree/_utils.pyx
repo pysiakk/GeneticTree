@@ -98,6 +98,40 @@ cdef inline np.ndarray sizet_ptr_to_ndarray(SIZE_t* data, SIZE_t size):
     return np.PyArray_SimpleNewFromData(1, shape, np.NPY_INTP, data).copy()
 
 
+cdef IntArray copy_int_array(IntArray* old_array):
+    cdef IntArray new_array
+    new_array.capacity = 0
+    new_array.count = 0
+    new_array.elements = NULL
+    resize_c(&new_array, old_array.count)
+    cdef SIZE_t i
+    for i in range(old_array.count):
+        new_array.elements[i] = old_array.elements[i]
+    new_array.count = old_array.count
+    return new_array
+
+
+cpdef void _test_copy_int_array():
+    cdef IntArray to_copy
+    to_copy.capacity = 0
+    to_copy.count = 0
+    to_copy.elements = NULL
+    resize_c(&to_copy, 10)
+    cdef SIZE_t i
+    for i in range(10):
+        to_copy.elements[i] = i*2 + 1
+    to_copy.count = 10
+    cdef IntArray copied = copy_int_array(&to_copy)
+    assert copied.count == copied.capacity == to_copy.count
+    assert copied.capacity <= to_copy.capacity
+    for i in range(10):
+        assert copied.elements[i] == to_copy.elements[i]
+    to_copy.elements[1] = 0
+    assert to_copy.elements[1] != copied.elements[1]
+    free(to_copy.elements)
+    free(copied.elements)
+
+
 # =============================================================================
 # Stack data structure - copied from sklearn.tree._utils
 # but changed to contain relevant information
