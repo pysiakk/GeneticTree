@@ -17,6 +17,7 @@ class StopCondition:
         self.max_iterations: int = max_iterations
         self.max_iterations_without_improvement: int = max_iterations_without_improvement
         self.use_without_improvement: bool = use_without_improvement
+        self.best_metric_hist = []
 
         #private variables
         self.reset_private_variables()
@@ -36,13 +37,18 @@ class StopCondition:
         self.best_result: float = -math.inf
         self.best_result_iteration: int = 1
 
-    def stop(self) -> bool:
+    def stop(self, score: float = None) -> bool:
         if self.actual_iteration > self.max_iterations:
             return True
 
         if self.use_without_improvement:
-            #TODO
-            pass
+            if len(self.best_metric_hist) < self.max_iterations_without_improvement:
+                self.best_metric_hist.append(score)
+            else:
+                self.best_metric_hist.append(score)
+                self.best_metric_hist.pop(0)
+            if self.best_metric_hist[0] <= min(self.best_metric_hist[1:]):
+                return True
 
         self.actual_iteration += 1
         return False
