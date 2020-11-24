@@ -3,7 +3,7 @@ from tree.observations import Observations
 from genetic_tree import GeneticTree
 from tree.thresholds import prepare_thresholds_array
 from tree.builder import FullTreeBuilder
-from tree._utils import _test_copy_int_array
+from tree._utils import _test_copy_int_array, _test_copy_leaves
 import pickle
 
 
@@ -86,3 +86,7 @@ def test_pickling(obs, tree):
 
 def test_copy_int_array():
     _test_copy_int_array()
+
+
+def test_copy_leaves():
+    _test_copy_leaves()

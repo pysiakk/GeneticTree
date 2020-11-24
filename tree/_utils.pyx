@@ -110,17 +110,45 @@ cdef IntArray copy_int_array(IntArray* old_array):
     new_array.count = old_array.count
     return new_array
 
+cdef Leaves copy_leaves(Leaves* old_leaves):
+    cdef Leaves new_leaves
+    new_leaves.capacity = 0
+    new_leaves.count = 0
+    new_leaves.elements = NULL
+    resize_c(&new_leaves, old_leaves.count)
+    cdef SIZE_t i
+    for i in range(old_leaves.count):
+        new_leaves.elements[i] = copy_int_array(&old_leaves.elements[i])
+    new_leaves.count = old_leaves.count
+    return new_leaves
 
-cpdef void _test_copy_int_array():
-    cdef IntArray to_copy
-    to_copy.capacity = 0
-    to_copy.count = 0
-    to_copy.elements = NULL
-    resize_c(&to_copy, 10)
+
+cdef IntArray create_int_array(SIZE_t factor):
+    cdef IntArray int_array
+    int_array.capacity = 0
+    int_array.count = 0
+    int_array.elements = NULL
+    resize_c(&int_array, 10)
     cdef SIZE_t i
     for i in range(10):
-        to_copy.elements[i] = i*2 + 1
-    to_copy.count = 10
+        int_array.elements[i] = i * factor + 1
+    int_array.count = 10
+    return int_array
+
+cdef Leaves create_leaves():
+    cdef Leaves leaves
+    leaves.capacity = 0
+    leaves.count = 0
+    leaves.elements = NULL
+    resize_c(&leaves, 10)
+    cdef SIZE_t i
+    for i in range(10):
+        leaves.elements[i] = create_int_array(i*2 + 1)
+    leaves.count = 10
+    return leaves
+
+cpdef void _test_copy_int_array():
+    cdef IntArray to_copy = create_int_array(4)
     cdef IntArray copied = copy_int_array(&to_copy)
     assert copied.count == copied.capacity == to_copy.count
     assert copied.capacity <= to_copy.capacity
@@ -131,6 +159,23 @@ cpdef void _test_copy_int_array():
     free(to_copy.elements)
     free(copied.elements)
 
+cpdef void _test_copy_leaves():
+    cdef Leaves to_copy = create_leaves()
+    cdef Leaves copied = copy_leaves(&to_copy)
+    assert copied.count == copied.capacity == to_copy.count
+    assert copied.capacity <= to_copy.capacity
+    for i in range(10):
+        assert copied.elements[i].count == copied.elements[i].capacity == to_copy.elements[i].count
+        assert copied.elements[i].capacity <= to_copy.elements[i].capacity
+        for j in range(10):
+            assert copied.elements[i].elements[j] == to_copy.elements[i].elements[j]
+    to_copy.elements[1].elements[1] = 0
+    assert to_copy.elements[1].elements[1] != copied.elements[1].elements[1]
+    for i in range(10):
+        free(to_copy.elements[i].elements)
+        free(copied.elements[i].elements)
+    free(to_copy.elements)
+    free(copied.elements)
 
 # =============================================================================
 # Stack data structure - copied from sklearn.tree._utils

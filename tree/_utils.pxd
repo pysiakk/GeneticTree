@@ -49,6 +49,7 @@ cdef int resize_c(DynamicArray* array, SIZE_t capacity=*) nogil except -1
 cdef np.ndarray sizet_ptr_to_ndarray(SIZE_t* data, SIZE_t size)
 
 cdef IntArray copy_int_array(IntArray* old_array)
+cdef Leaves copy_leaves(Leaves* old_leaves)
 
 # =============================================================================
 # Stack data structure - copied from sklearn.tree._utils
