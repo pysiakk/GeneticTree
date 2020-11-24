@@ -1,5 +1,5 @@
 from tests.set_up_variables_and_imports import *
-from tree.observations import Observations
+from tree.observations import Observations, copy_observations
 from genetic_tree import GeneticTree
 from tree.thresholds import prepare_thresholds_array
 from tree.builder import FullTreeBuilder
@@ -78,6 +78,13 @@ def test_pickling(obs, tree):
     assert observations.proper_classified == obs.proper_classified
     assert observations.n_observations == obs.n_observations
     # TODO: assertions about leaves, empty_leaves_ids
+
+
+def test_copy_observations(obs, tree):
+    obs.test_removing_and_reassigning(tree)
+    obs_new = copy_observations(obs)
+    assert obs.proper_classified == obs_new.proper_classified
+    assert obs.n_observations == obs_new.n_observations
 
 
 # ==============================================================================

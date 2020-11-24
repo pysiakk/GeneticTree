@@ -123,7 +123,7 @@ cdef Leaves copy_leaves(Leaves* old_leaves):
     return new_leaves
 
 
-cdef IntArray create_int_array(SIZE_t factor):
+cdef IntArray _create_int_array(SIZE_t factor):
     cdef IntArray int_array
     int_array.capacity = 0
     int_array.count = 0
@@ -135,7 +135,7 @@ cdef IntArray create_int_array(SIZE_t factor):
     int_array.count = 10
     return int_array
 
-cdef Leaves create_leaves():
+cdef Leaves _create_leaves():
     cdef Leaves leaves
     leaves.capacity = 0
     leaves.count = 0
@@ -143,12 +143,12 @@ cdef Leaves create_leaves():
     resize_c(&leaves, 10)
     cdef SIZE_t i
     for i in range(10):
-        leaves.elements[i] = create_int_array(i*2 + 1)
+        leaves.elements[i] = _create_int_array(i*2 + 1)
     leaves.count = 10
     return leaves
 
 cpdef void _test_copy_int_array():
-    cdef IntArray to_copy = create_int_array(4)
+    cdef IntArray to_copy = _create_int_array(4)
     cdef IntArray copied = copy_int_array(&to_copy)
     assert copied.count == copied.capacity == to_copy.count
     assert copied.capacity <= to_copy.capacity
@@ -160,7 +160,7 @@ cpdef void _test_copy_int_array():
     free(copied.elements)
 
 cpdef void _test_copy_leaves():
-    cdef Leaves to_copy = create_leaves()
+    cdef Leaves to_copy = _create_leaves()
     cdef Leaves copied = copy_leaves(&to_copy)
     assert copied.count == copied.capacity == to_copy.count
     assert copied.capacity <= to_copy.capacity

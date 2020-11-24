@@ -52,3 +52,7 @@ cdef class Observations:
 
     cpdef test_copy_to_leaves_to_reassign(self)
     cpdef test_delete_leaves_to_reassign(self)
+
+
+cpdef Observations copy_observations(Observations observations)
+

@@ -2,7 +2,7 @@ from libc.stdlib cimport free
 from libc.string cimport memcpy
 from libc.stdint cimport SIZE_MAX
 
-from tree._utils cimport resize_c, resize
+from tree._utils cimport resize_c, resize, copy_leaves, copy_int_array
 
 import numpy as np
 cimport numpy as np
@@ -390,4 +390,13 @@ cdef class Observations:
         assert self.leaves_to_reassign.count == 0
         assert self.leaves_to_reassign.capacity == 0
         assert self.leaves_to_reassign.elements == NULL
+
+
+cpdef Observations copy_observations(Observations observations):
+    cdef Observations observations_copied = Observations(observations.X, observations.y)
+    observations_copied.leaves = copy_leaves(&observations.leaves)
+    observations_copied.empty_leaves_ids = copy_int_array(&observations.empty_leaves_ids)
+    observations_copied.leaves_to_reassign = copy_leaves(&observations.leaves_to_reassign)
+    observations_copied.proper_classified = observations.proper_classified
+    return observations_copied
 
