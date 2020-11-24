@@ -3,6 +3,7 @@ from tree.observations import Observations
 from genetic_tree import GeneticTree
 from tree.thresholds import prepare_thresholds_array
 from tree.builder import FullTreeBuilder
+import pickle
 
 
 @pytest.fixture
@@ -66,3 +67,13 @@ def test_initialization(obs, tree):
 def test_removing_and_reassigning(obs, tree):
     obs.test_removing_and_reassigning(tree)
 
+
+def test_pickling(obs, tree):
+    obs.test_initialization(tree)
+    bytes_io = io.BytesIO()
+    pickle.dump(obs, bytes_io)
+    bytes_io.seek(0)
+    observations = pickle.load(bytes_io)
+    assert observations.proper_classified == obs.proper_classified
+    assert observations.n_observations == obs.n_observations
+    # TODO: assertions about leaves, empty_leaves_ids

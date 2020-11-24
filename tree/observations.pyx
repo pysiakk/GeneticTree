@@ -1,4 +1,5 @@
 from libc.stdlib cimport free
+from libc.string cimport memcpy
 from libc.stdint cimport SIZE_MAX
 
 from tree._utils cimport resize_c, resize
@@ -52,18 +53,39 @@ cdef class Observations:
 
     def __reduce__(self):
         """Reduce re-implementation, for pickling."""
-        # TODO
-        pass
+        # never pickle observations during fit
+        # after unpickling need to pass pointers to X and y arrays
+        empty_2d_array = np.empty((1, 1), dtype=np.float32)
+        empty_1d_array = np.empty(1, dtype=np.intp)
+        return (Observations,
+                (empty_2d_array, empty_1d_array),
+                self.__getstate__())
 
     def __getstate__(self):
         """Getstate re-implementation, for pickling."""
-        # TODO
-        pass
+        state = {}
+
+        state["proper_classified"] = self.proper_classified
+        state["n_observations"] = self.n_observations
+
+        if self.leaves_to_reassign.count != 0:
+            raise ValueError("Pickle observations with leaves_to_reassign "
+                             "not empty is not supported")
+
+        # TODO: add pickling of leaves and empty_leaves_ids
+
+        return state
 
     def __setstate__(self, state):
         """Setstate re-implementation, for unpickling."""
-        # TODO
-        pass
+        self.proper_classified = state["proper_classified"]
+        self.n_observations = state["n_observations"]
+
+        # if 'leaves' not in state or 'empty_leaves_ids' not in state:
+        #     raise ValueError('You have loaded Tree version which '
+        #                      'cannot be imported')
+
+        # TODO: add unpickling of leaves and empty_leaves_ids
 
     cdef initialize_observations(self, Node* nodes):
         cdef SIZE_t y_id
