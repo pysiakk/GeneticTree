@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from tree.builder import Builder, FullTreeBuilder
+from tree.builder import Builder, FullTreeBuilder, SplitTreeBuilder
 from tree.tree import Tree
 import numpy as np
 
@@ -7,6 +7,7 @@ import numpy as np
 class InitializationType(Enum):
     Random = auto()
     Half = auto()
+    Split = auto()
 
 
 class Initializer:
@@ -26,10 +27,12 @@ class Initializer:
     def __init__(self,
                  n_trees: int = 200, initial_depth: int = 1,
                  initialization_type: InitializationType = InitializationType.Random,
+                 split_prob: float = 0.7,
                  **kwargs):
         self.n_trees: int = n_trees
         self.initial_depth: int = initial_depth
         self.initialization_type: InitializationType = initialization_type
+        self.split_prob: float = split_prob
         self.builder: Builder = self.initialize_builder()
 
     def initialize_builder(self):
@@ -40,6 +43,8 @@ class Initializer:
         if self.initialization_type == InitializationType.Random\
                 or self.initialization_type == InitializationType.Half:
             return FullTreeBuilder()
+        elif self.initialization_type == InitializationType.Split:
+            return SplitTreeBuilder()
 
     def set_params(self, initial_depth: int = None,
                    initialization_type: InitializationType = None,
@@ -65,6 +70,8 @@ class Initializer:
             trees = self.initialize_random(X, y, threshold)
         elif self.initialization_type == InitializationType.Half:
             trees = self.initialize_half(X, y, threshold)
+        elif self.initialization_type == InitializationType.Split:
+            trees = self.initialize_split(X, y, threshold)
         return trees
 
     def initialize_random(self, X, y, thresholds):
@@ -114,4 +121,23 @@ class Initializer:
                 self.builder.build(tree, depth)
                 tree.initialize_observations()
                 trees.append(tree)
+        return trees
+
+    def initialize_split(self, X, y, thresholds):
+        """
+        Function to initialize forest
+
+        Args:
+            forest: Container with all trees
+        """
+        trees = []
+        tree: Tree
+        n_classes: int = np.unique(y).shape[0]
+
+        for tree_index in range(self.n_trees):
+            tree: Tree = Tree(n_classes, X, y, thresholds)
+            tree.resize_by_initial_depth(self.initial_depth)
+            self.builder.build(tree, self.initial_depth, self.split_prob)
+            tree.initialize_observations()
+            trees.append(tree)
         return trees

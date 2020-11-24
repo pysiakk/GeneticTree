@@ -10,7 +10,7 @@ from cpython.pycapsule cimport PyCapsule_IsValid, PyCapsule_GetPointer
 
 import numpy as np
 cimport numpy as np
-import cython
+cimport cython
 from numpy.random cimport bitgen_t
 from numpy.random import PCG64
 np.import_array()
@@ -108,6 +108,113 @@ cdef class FullTreeBuilder(Builder):
                         break
 
         tree.depth = initial_depth
+
+    # function and usage from https://numpy.org/devdocs/reference/random/examples/cython/extending.pyx.html
+    cdef SIZE_t bounded_uint(self, SIZE_t lb, SIZE_t ub, bitgen_t *rng) nogil:
+        cdef SIZE_t mask, delta, val
+        mask = delta = ub - lb
+        mask |= mask >> 1
+        mask |= mask >> 2
+        mask |= mask >> 4
+        mask |= mask >> 8
+        mask |= mask >> 16
+
+        val = rng.next_uint32(rng.state) & mask
+        while val > delta:
+            val = rng.next_uint32(rng.state) & mask
+
+        return lb + val
+
+cdef class SplitTreeBuilder(Builder):
+    """
+    FullTreeBuilder creates tree without empty spaces for nodes to the
+    initial_depth depth
+    """
+
+    def __cinit__(self):
+        pass
+
+    cpdef build(self, Tree tree, int initial_depth, double split_prob = 0.7):
+        """
+        Build a random decision tree
+        """
+        cdef max_node_number = 2**initial_depth
+        cdef SIZE_t parent = TREE_UNDEFINED
+        cdef bint is_left = 0
+        cdef bint is_leaf = 0
+        cdef int feature
+        cdef double threshold
+        cdef int class_number
+
+        cdef int rc = 0
+        cdef int current_depth
+        cdef int node_number
+        cdef int right
+        cdef int left
+
+        # declaration to use nogil random generator (self.bounded_uint)
+        cdef bitgen_t *rng
+        cdef const char *capsule_name = "BitGenerator"
+        x = PCG64(np.random.randint(0, 10**8))
+        capsule = x.capsule
+        if not PyCapsule_IsValid(capsule, capsule_name):
+            raise ValueError("Invalid pointer to anon_func_state")
+        rng = <bitgen_t *>PyCapsule_GetPointer(capsule, capsule_name)
+
+        # trzymaj tabelę nodeów, które nie są liściami i losowo lub po kolei wybieraj i zastanawiaj się czy splitować
+        with nogil:
+            node_number = self._node_creation(tree, initial_depth, _TREE_UNDEFINED, 0, rng, 1, 1, split_prob)
+            if node_number == -1:
+                with gil:
+                    raise MemoryError()
+
+        tree.depth = node_number
+
+    cdef int _node_creation(self, Tree tree, int initial_depth, int parent, int current_depth,
+                            bitgen_t * rng, int is_left, int is_root, double split_prob) nogil:
+
+        cdef int feature
+        cdef double threshold
+        cdef int class_number
+
+        if current_depth == 0:
+            is_leaf = 0
+        elif current_depth == initial_depth:
+            is_leaf = 1
+        else:
+            if self.bounded_uint(0, 1000000000, rng)/1000000000 < split_prob:
+                is_leaf = 0
+            else:
+                is_leaf = 1
+
+        if is_leaf == 1:
+            class_number = self.bounded_uint(0, tree.n_classes-1, rng)
+        else:
+            feature = self.bounded_uint(0, tree.n_features-1, rng)
+            threshold = tree.thresholds[self.bounded_uint(0, tree.n_thresholds-1, rng), feature]
+
+        node_id = tree._add_node(parent, is_left, is_leaf, feature,
+                         threshold, current_depth, class_number)
+
+        if node_id == SIZE_MAX:
+            rc = -1
+            return -1
+
+        if is_leaf == 0:
+            right = self._node_creation(tree, initial_depth, node_id, current_depth+1, rng, 1, 0, split_prob)
+            if right == -1:
+                with gil:
+                    raise MemoryError()
+            left = self._node_creation(tree, initial_depth, node_id, current_depth+1, rng, 0, 0, split_prob)
+            if left == -1:
+                with gil:
+                    raise MemoryError()
+            return max(right, left)
+        else:
+            return current_depth
+
+        return 0
+
 
     # function and usage from https://numpy.org/devdocs/reference/random/examples/cython/extending.pyx.html
     cdef SIZE_t bounded_uint(self, SIZE_t lb, SIZE_t ub, bitgen_t *rng) nogil:
