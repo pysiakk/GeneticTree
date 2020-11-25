@@ -17,12 +17,12 @@ from tree.tree cimport Node
 ctypedef np.npy_float64 DOUBLE_t         # Type of y, sample_weight
 ctypedef np.npy_intp SIZE_t              # Type for indices and counters
 
-cdef struct Leaves:
+ctypedef struct Leaves:
     SIZE_t count                # current number of elements in DynamicArray
     SIZE_t capacity             # current max capacity of DynamicArray
     IntArray* elements          # pointer to Array with elements
 
-cdef struct IntArray:
+ctypedef struct IntArray:
     SIZE_t count                # current number of elements in DynamicArray
     SIZE_t capacity             # current max capacity of DynamicArray
     SIZE_t* elements            # pointer to Array with elements
@@ -48,8 +48,8 @@ cdef int resize_c(DynamicArray* array, SIZE_t capacity=*) nogil except -1
 
 cdef np.ndarray sizet_ptr_to_ndarray(SIZE_t* data, SIZE_t size)
 
-cdef IntArray copy_int_array(IntArray* old_array)
-cdef Leaves copy_leaves(Leaves* old_leaves)
+cdef copy_int_array(IntArray* old_array, IntArray* new_array)
+cdef copy_leaves(Leaves* old_leaves, Leaves* new_leaves)
 
 # =============================================================================
 # Stack data structure - copied from sklearn.tree._utils

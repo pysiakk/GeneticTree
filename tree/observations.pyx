@@ -2,7 +2,7 @@ from libc.stdlib cimport free
 from libc.string cimport memcpy
 from libc.stdint cimport SIZE_MAX
 
-from tree._utils cimport resize_c, resize, copy_leaves, copy_int_array
+from tree._utils cimport resize_c, resize, copy_leaves, copy_int_array, safe_realloc
 
 import numpy as np
 cimport numpy as np
@@ -28,6 +28,13 @@ cdef class Observations:
         self.X_ndarray = X_ndarray
         self.y = y
 
+        self.leaves = NULL
+        safe_realloc(&self.leaves, 1)
+        self.leaves_to_reassign = NULL
+        safe_realloc(&self.leaves_to_reassign, 1)
+        self.empty_leaves_ids = NULL
+        safe_realloc(&self.empty_leaves_ids, 1)
+
         self.leaves.elements = NULL
         self.leaves.count = 0
         self.leaves.capacity = 0
@@ -50,6 +57,9 @@ cdef class Observations:
                 free(self.leaves_to_reassign.elements[i].elements)
         free(self.leaves_to_reassign.elements)
         free(self.empty_leaves_ids.elements)
+        free(self.leaves)
+        free(self.leaves_to_reassign)
+        free(self.empty_leaves_ids)
 
     def __reduce__(self):
         """Reduce re-implementation, for pickling."""
@@ -87,24 +97,24 @@ cdef class Observations:
 
         # TODO: add unpickling of leaves and empty_leaves_ids
 
-    cdef initialize_observations(self, Node* nodes):
+    cdef void initialize_observations(self, Tree tree):
         cdef SIZE_t y_id
         cdef SIZE_t start_from_node_id = 0
         for y_id in range(self.n_observations):
-            self._assign_observation(nodes, y_id, start_from_node_id)
+            self._assign_observation(tree.nodes, y_id, start_from_node_id)
 
-    cdef void remove_observations(self, Node* nodes, SIZE_t below_node_id):
-        if nodes[below_node_id].left_child == _TREE_LEAF:
-            if nodes[below_node_id].right_child != TREE_LEAF:  # means there are at least one observation inside node
-                self._remove_observations_in_leaf(nodes[below_node_id].right_child, nodes[below_node_id].feature)
-                nodes[below_node_id].right_child = TREE_LEAF
+    cdef void remove_observations(self, Tree tree, SIZE_t below_node_id):
+        if tree.nodes[below_node_id].left_child == _TREE_LEAF:
+            if tree.nodes[below_node_id].right_child != TREE_LEAF:  # means there are at least one observation inside node
+                self._remove_observations_in_leaf(tree.nodes[below_node_id].right_child, tree.nodes[below_node_id].feature)
+                tree.nodes[below_node_id].right_child = TREE_LEAF
 
         else:
-            if nodes[below_node_id].left_child != _TREE_LEAF:
-                self.remove_observations(nodes, nodes[below_node_id].left_child)
+            if tree.nodes[below_node_id].left_child != _TREE_LEAF:
+                self.remove_observations(tree, tree.nodes[below_node_id].left_child)
 
-            if nodes[below_node_id].right_child != _TREE_LEAF:
-                self.remove_observations(nodes, nodes[below_node_id].right_child)
+            if tree.nodes[below_node_id].right_child != _TREE_LEAF:
+                self.remove_observations(tree, tree.nodes[below_node_id].right_child)
 
     cdef void _remove_observations_in_leaf(self, SIZE_t leaves_id, SIZE_t leaf_class):
         cdef SIZE_t i
@@ -115,14 +125,14 @@ cdef class Observations:
 
         self._copy_element_from_leaves_to_leaves_to_reassign(leaves_id)
 
-    cdef void reassign_observations(self, Node* nodes, SIZE_t below_node_id):
+    cdef void reassign_observations(self, Tree tree, SIZE_t below_node_id):
         cdef SIZE_t i
         cdef SIZE_t j
         cdef IntArray* observations
         for i in range(self.leaves_to_reassign.count):
             observations = &self.leaves_to_reassign.elements[i]
             for j in range(observations.count):
-                self._assign_observation(nodes, observations.elements[j], below_node_id)
+                self._assign_observation(tree.nodes, observations.elements[j], below_node_id)
 
         self._delete_leaves_to_reassign()
         self._resize_empty_leaves_ids()
@@ -161,7 +171,7 @@ cdef class Observations:
             self.leaves.count -= 1  # minus 1 from counter, because at the end of function it will be added +1
 
         if leaves_id >= self.leaves.capacity:
-            if resize_c(&self.leaves) != 0:
+            if resize_c(self.leaves) != 0:
                 return SIZE_MAX
 
         cdef IntArray* observations = &self.leaves.elements[leaves_id]
@@ -193,7 +203,7 @@ cdef class Observations:
         cdef SIZE_t leaves_to_reassign_id = self.leaves_to_reassign.count
 
         if leaves_to_reassign_id >= self.leaves_to_reassign.capacity:
-            if resize_c(&self.leaves_to_reassign) != 0:
+            if resize_c(self.leaves_to_reassign) != 0:
                 return SIZE_MAX
 
         cdef IntArray* observations = &self.leaves_to_reassign.elements[leaves_to_reassign_id]
@@ -224,7 +234,7 @@ cdef class Observations:
         cdef SIZE_t empty_leaves_ids_id = self.empty_leaves_ids.count
 
         if empty_leaves_ids_id >= self.empty_leaves_ids.capacity:
-            if resize_c(&self.empty_leaves_ids) != 0:
+            if resize_c(self.empty_leaves_ids) != 0:
                 return SIZE_MAX
 
         cdef SIZE_t* leaves_id_ptr = &self.empty_leaves_ids.elements[empty_leaves_ids_id]
@@ -245,11 +255,11 @@ cdef class Observations:
         cdef SIZE_t new_size = 3
         if self.empty_leaves_ids.count > 3:
             new_size = self.empty_leaves_ids.count
-        if resize(&self.empty_leaves_ids, new_size) != 0:
+        if resize(self.empty_leaves_ids, new_size) != 0:
             return SIZE_MAX
 
     cpdef test_initialization(self, Tree tree):
-        self.initialize_observations(tree.nodes)
+        self.initialize_observations(tree)
         assert self.leaves.count > 0
         assert self.leaves.capacity > 0
         assert self.leaves.elements[0].count > 0
@@ -257,14 +267,14 @@ cdef class Observations:
         assert self.leaves.elements[0].elements[0] == 0
 
     cpdef test_removing_and_reassigning(self, Tree tree):
-        self.initialize_observations(tree.nodes)
+        self.initialize_observations(tree)
         cdef SIZE_t proper_classified = self.proper_classified
         cdef SIZE_t leaves_count = self.leaves.count
         assert self.leaves_to_reassign.count == 0
-        self.remove_observations(tree.nodes, 0)
+        self.remove_observations(tree, 0)
         assert self.leaves_to_reassign.count == self.leaves.count == self.empty_leaves_ids.count == leaves_count
         assert self.proper_classified == 0
-        self.reassign_observations(tree.nodes, 0)
+        self.reassign_observations(tree, 0)
         assert proper_classified == self.proper_classified
         assert self.leaves.count == leaves_count
         assert self.leaves_to_reassign.count == 0
@@ -394,9 +404,9 @@ cdef class Observations:
 
 cpdef Observations copy_observations(Observations observations):
     cdef Observations observations_copied = Observations(observations.X, observations.y)
-    observations_copied.leaves = copy_leaves(&observations.leaves)
-    observations_copied.empty_leaves_ids = copy_int_array(&observations.empty_leaves_ids)
-    observations_copied.leaves_to_reassign = copy_leaves(&observations.leaves_to_reassign)
+    copy_leaves(observations.leaves, observations_copied.leaves)
+    copy_int_array(observations.empty_leaves_ids, observations_copied.empty_leaves_ids)
+    copy_leaves(observations.leaves_to_reassign, observations_copied.leaves_to_reassign)
     observations_copied.proper_classified = observations.proper_classified
     return observations_copied
 

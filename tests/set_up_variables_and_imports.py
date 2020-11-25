@@ -2,7 +2,7 @@ import os
 os.chdir("../")
 import io
 
-from tree.tree import Tree, Observation
+from tree.tree import Tree
 from tree.builder import Builder, FullTreeBuilder
 from tree.crosser import cross_trees, test_cross_trees
 

@@ -98,29 +98,25 @@ cdef inline np.ndarray sizet_ptr_to_ndarray(SIZE_t* data, SIZE_t size):
     return np.PyArray_SimpleNewFromData(1, shape, np.NPY_INTP, data).copy()
 
 
-cdef IntArray copy_int_array(IntArray* old_array):
-    cdef IntArray new_array
-    new_array.capacity = 0
+cdef copy_int_array(IntArray* old_array, IntArray* new_array):
     new_array.count = 0
+    new_array.capacity = 0
     new_array.elements = NULL
-    resize_c(&new_array, old_array.count)
+    resize_c(new_array, old_array.count)
     cdef SIZE_t i
     for i in range(old_array.count):
         new_array.elements[i] = old_array.elements[i]
     new_array.count = old_array.count
-    return new_array
 
-cdef Leaves copy_leaves(Leaves* old_leaves):
-    cdef Leaves new_leaves
-    new_leaves.capacity = 0
+cdef copy_leaves(Leaves* old_leaves, Leaves* new_leaves):
     new_leaves.count = 0
+    new_leaves.capacity = 0
     new_leaves.elements = NULL
-    resize_c(&new_leaves, old_leaves.count)
+    resize_c(new_leaves, old_leaves.count)
     cdef SIZE_t i
     for i in range(old_leaves.count):
-        new_leaves.elements[i] = copy_int_array(&old_leaves.elements[i])
+        copy_int_array(&old_leaves.elements[i], &new_leaves.elements[i])
     new_leaves.count = old_leaves.count
-    return new_leaves
 
 
 cdef IntArray _create_int_array(SIZE_t factor):
@@ -149,7 +145,9 @@ cdef Leaves _create_leaves():
 
 cpdef void _test_copy_int_array():
     cdef IntArray to_copy = _create_int_array(4)
-    cdef IntArray copied = copy_int_array(&to_copy)
+    cdef IntArray* copied = NULL
+    safe_realloc(&copied, 1)
+    copy_int_array(&to_copy, copied)
     assert copied.count == copied.capacity == to_copy.count
     assert copied.capacity <= to_copy.capacity
     for i in range(10):
@@ -158,10 +156,13 @@ cpdef void _test_copy_int_array():
     assert to_copy.elements[1] != copied.elements[1]
     free(to_copy.elements)
     free(copied.elements)
+    free(copied)
 
 cpdef void _test_copy_leaves():
     cdef Leaves to_copy = _create_leaves()
-    cdef Leaves copied = copy_leaves(&to_copy)
+    cdef Leaves* copied = NULL
+    safe_realloc(&copied, 1)
+    copy_leaves(&to_copy, copied)
     assert copied.count == copied.capacity == to_copy.count
     assert copied.capacity <= to_copy.capacity
     for i in range(10):
@@ -176,6 +177,7 @@ cpdef void _test_copy_leaves():
         free(copied.elements[i].elements)
     free(to_copy.elements)
     free(copied.elements)
+    free(copied)
 
 # =============================================================================
 # Stack data structure - copied from sklearn.tree._utils
