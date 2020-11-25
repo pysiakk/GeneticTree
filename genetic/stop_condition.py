@@ -1,4 +1,5 @@
 import math
+import statisitcs
 
 class StopCondition:
     """
@@ -47,7 +48,7 @@ class StopCondition:
             else:
                 self.best_metric_hist.append(score)
                 self.best_metric_hist.pop(0)
-            if self.best_metric_hist[0] <= min(self.best_metric_hist[1:]):
+            if self.best_metric_hist[self.max_iterations_without_improvement-1] <= statistics.median(self.best_metric_hist[:self.max_iterations_without_improvement-1]):
                 return True
 
         self.actual_iteration += 1
