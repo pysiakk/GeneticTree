@@ -68,7 +68,11 @@ cdef class Tree:
     cdef SIZE_t _add_node(self, SIZE_t parent, bint is_left, bint is_leaf,
                           SIZE_t feature, double threshold, SIZE_t depth,
                           SIZE_t class_number) nogil except -1
+
     cdef void _add_node_as_removed(self, SIZE_t node_id) nogil
+    cdef void _compress_removed_nodes(self) nogil
+    cdef void _copy_node(self, Node* from_node, SIZE_t from_node_id, Node* to_node, SIZE_t to_node_id) nogil
+
     cdef np.ndarray _get_node_ndarray(self)
 
     # Mutation functions
