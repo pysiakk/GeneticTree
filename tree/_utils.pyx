@@ -11,12 +11,14 @@
 #          Jacob Schreiber <jmschreiber91@gmail.com>
 #          Nelson Liu <nelson@nelsonliu.me>
 #
+# In context of authors there are copied methods from tree.pyx
 #
 # License: BSD 3 clause
 
 from libc.stdlib cimport free
 from libc.stdlib cimport malloc
 from libc.stdlib cimport realloc
+from libc.stdint cimport SIZE_MAX
 
 import numpy as np
 cimport numpy as np
@@ -44,6 +46,40 @@ cdef realloc_ptr safe_realloc(realloc_ptr* p, size_t nelems) nogil except *:
     p[0] = tmp
     return tmp  # for convenience
 
+cdef int resize(DynamicArray* array, SIZE_t capacity) nogil except -1:
+        """Resize all inner arrays to `capacity`, if `capacity` == -1, then
+           double the size of the inner arrays.
+        Returns -1 in case of failure to allocate memory (and raise MemoryError)
+        or 0 otherwise.
+        """
+        if resize_c(array, capacity) != 0:
+            # Acquire gil only if we need to raise
+            with gil:
+                raise MemoryError()
+
+
+cdef int resize_c(DynamicArray* array, SIZE_t capacity=SIZE_MAX) nogil except -1:
+        """Guts of _resize
+        Returns -1 in case of failure to allocate memory (and raise MemoryError)
+        or 0 otherwise.
+        """
+        if capacity == array[0].capacity and array[0].elements != NULL:
+            return 0
+
+        if capacity == SIZE_MAX:
+            if array[0].capacity == 0:
+                capacity = 3  # default initial value
+            else:
+                capacity = 2 * array[0].capacity
+
+        safe_realloc(&array[0].elements, capacity)
+
+        # if capacity smaller than node_count, adjust the counter
+        if capacity < array[0].count:
+            array[0].count = capacity
+
+        array[0].capacity = capacity
+        return 0
 
 def _realloc_test():
     # Helper for tests. Tries to allocate <size_t>(-1) / 2 * sizeof(size_t)
@@ -61,6 +97,87 @@ cdef inline np.ndarray sizet_ptr_to_ndarray(SIZE_t* data, SIZE_t size):
     shape[0] = <np.npy_intp> size
     return np.PyArray_SimpleNewFromData(1, shape, np.NPY_INTP, data).copy()
 
+
+cdef copy_int_array(IntArray* old_array, IntArray* new_array):
+    new_array.count = 0
+    new_array.capacity = 0
+    new_array.elements = NULL
+    resize_c(new_array, old_array.count)
+    cdef SIZE_t i
+    for i in range(old_array.count):
+        new_array.elements[i] = old_array.elements[i]
+    new_array.count = old_array.count
+
+cdef copy_leaves(Leaves* old_leaves, Leaves* new_leaves):
+    new_leaves.count = 0
+    new_leaves.capacity = 0
+    new_leaves.elements = NULL
+    resize_c(new_leaves, old_leaves.count)
+    cdef SIZE_t i
+    for i in range(old_leaves.count):
+        copy_int_array(&old_leaves.elements[i], &new_leaves.elements[i])
+    new_leaves.count = old_leaves.count
+
+
+cdef IntArray _create_int_array(SIZE_t factor):
+    cdef IntArray int_array
+    int_array.capacity = 0
+    int_array.count = 0
+    int_array.elements = NULL
+    resize_c(&int_array, 10)
+    cdef SIZE_t i
+    for i in range(10):
+        int_array.elements[i] = i * factor + 1
+    int_array.count = 10
+    return int_array
+
+cdef Leaves _create_leaves():
+    cdef Leaves leaves
+    leaves.capacity = 0
+    leaves.count = 0
+    leaves.elements = NULL
+    resize_c(&leaves, 10)
+    cdef SIZE_t i
+    for i in range(10):
+        leaves.elements[i] = _create_int_array(i*2 + 1)
+    leaves.count = 10
+    return leaves
+
+cpdef void _test_copy_int_array():
+    cdef IntArray to_copy = _create_int_array(4)
+    cdef IntArray* copied = NULL
+    safe_realloc(&copied, 1)
+    copy_int_array(&to_copy, copied)
+    assert copied.count == copied.capacity == to_copy.count
+    assert copied.capacity <= to_copy.capacity
+    for i in range(10):
+        assert copied.elements[i] == to_copy.elements[i]
+    to_copy.elements[1] = 0
+    assert to_copy.elements[1] != copied.elements[1]
+    free(to_copy.elements)
+    free(copied.elements)
+    free(copied)
+
+cpdef void _test_copy_leaves():
+    cdef Leaves to_copy = _create_leaves()
+    cdef Leaves* copied = NULL
+    safe_realloc(&copied, 1)
+    copy_leaves(&to_copy, copied)
+    assert copied.count == copied.capacity == to_copy.count
+    assert copied.capacity <= to_copy.capacity
+    for i in range(10):
+        assert copied.elements[i].count == copied.elements[i].capacity == to_copy.elements[i].count
+        assert copied.elements[i].capacity <= to_copy.elements[i].capacity
+        for j in range(10):
+            assert copied.elements[i].elements[j] == to_copy.elements[i].elements[j]
+    to_copy.elements[1].elements[1] = 0
+    assert to_copy.elements[1].elements[1] != copied.elements[1].elements[1]
+    for i in range(10):
+        free(to_copy.elements[i].elements)
+        free(copied.elements[i].elements)
+    free(to_copy.elements)
+    free(copied.elements)
+    free(copied)
 
 # =============================================================================
 # Stack data structure - copied from sklearn.tree._utils

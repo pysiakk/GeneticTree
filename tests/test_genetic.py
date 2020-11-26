@@ -14,7 +14,7 @@ def initialize_tree(thresholds) -> Tree:
     tree.resize_by_initial_depth(3)
     builder: FullTreeBuilder = FullTreeBuilder()
     builder.build(tree, 3)
-    tree.initialize_observations(X, y)
+    tree.initialize_observations()
     return tree
 
 

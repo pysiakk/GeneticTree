@@ -51,9 +51,8 @@ class GeneticTree:
 
         kwargs = vars()
         kwargs.pop('self')
-        kwargs.pop('mutations_additional')
         kwargs.pop('seed')
-        none_arg = self.is_any_arg_none(**kwargs)
+        none_arg = self._is_any_arg_none(['mutations_additional'], **kwargs)
         if none_arg:
             raise ValueError(f"The argument {none_arg} is None. "
                              f"GeneticTree does not support None arguments.")
@@ -77,10 +76,11 @@ class GeneticTree:
         self._can_predict_ = False
 
     @staticmethod
-    def is_any_arg_none(**kwargs):
+    def _is_any_arg_none(possible_nones, **kwargs):
         for k, val in kwargs.items():
             if val is None:
-                return k
+                if k not in possible_nones:
+                    return k
         return False
 
     def set_params(self, remove_other_trees: bool = None, remove_variables: bool = None):

@@ -97,42 +97,8 @@ def test_independence_of_created_trees_by_crosser(crosses: int = 10, mutations: 
         old_features = new_features
 
 
-def test_observation_creation():
-    trees = build(2, 10)
-    tree: Tree = trees[0][0]
-    print("\n Observation existence test: ")
-    node_id: int = 6
-    for k, val in tree.observations.items():
-        node_id = k
-        print(f'Node id: {k}, observations assigned: {len(val)}')
-    observation: Observation = tree.observations[node_id][0]
-    print(f'Observation id: {observation.observation_id}')
-    print(f'Last node id: {observation.last_node_id}')
-    print(f'Proper class: {observation.proper_class}')
-    print(f'Current class: {observation.current_class}')
-
-
-def test_observations_reassigning():
-    trees = build(2, 10)
-    tree: Tree = trees[0][0]
-    for i in range(10):
-        tree.mutate_random_node()
-    print(f'Observations not assigned just after mutation: {len(tree.observations[-1])}')
-    tree.assign_all_not_registered_observations()
-    assert len(tree.observations[-1]) == 0
-
-
-def test_observation_pickling():
-    observation: Observation = Observation(1, 1, 1, 1)
-    bytes_io = io.BytesIO()
-    pickle.dump(observation, bytes_io)
-    bytes_io.seek(0)
-    observation = pickle.load(bytes_io)
-    assert observation.current_class == 1
-
-
 def test_tree_pickling():
-    tree: Tree = build(20, 1)[0][0]
+    tree: Tree = build(10, 1)[0][0]
     depth = tree.depth
     feature = tree.feature
     node_count = tree.node_count

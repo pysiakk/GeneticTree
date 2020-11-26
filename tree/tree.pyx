@@ -38,6 +38,10 @@ from tree._utils cimport safe_realloc
 import multiprocessing
 import copy
 
+from tree.observations cimport Observations
+from tree.observations import Observations, copy_observations
+
+
 import numpy as np
 cimport numpy as np
 np.import_array()
@@ -76,18 +80,6 @@ NODE_DTYPE = np.dtype({
         <Py_ssize_t> &(<Node*> NULL).depth
     ]
 })
-
-cdef class Observation:
-    def __cinit__(self, SIZE_t proper_class, SIZE_t current_class,
-                  SIZE_t observation_id, SIZE_t last_node_id):
-        self.proper_class = proper_class
-        self.current_class = current_class
-        self.observation_id = observation_id
-        self.last_node_id = last_node_id
-
-    def __reduce__(self):
-        return (Observation, (self.proper_class, self.current_class,
-                              self.observation_id, self.last_node_id))
 
 cdef class Tree:
     property children_left:
@@ -140,8 +132,7 @@ cdef class Tree:
         self.capacity = 0
         self.nodes = NULL
 
-        self.proper_classified = NOT_CLASSIFIED
-        self.observations = {}   # dictionary from node id to list of observation struct
+        self.observations = Observations(X, y)
 
     def __dealloc__(self):
         """Destructor."""
@@ -163,13 +154,13 @@ cdef class Tree:
 
     def __getstate__(self):
         """Getstate re-implementation, for pickling."""
+        # TODO pickle observations
+
         state = {}
         # capacity is inferred during the __setstate__ using nodes
         state["depth"] = self.depth
         state["node_count"] = self.node_count
         state["nodes"] = self._get_node_ndarray()
-        state["proper_classified"] = self.proper_classified
-        state["observations"] = self.observations
 
         state["n_features"] = self.n_features
         state["n_observations"] = self.n_observations
@@ -179,10 +170,9 @@ cdef class Tree:
 
     def __setstate__(self, state):
         """Setstate re-implementation, for unpickling."""
+        # TODO unpickle observations
         self.depth = state["depth"]
         self.node_count = state["node_count"]
-        self.proper_classified = state["proper_classified"]
-        self.observations = state["observations"]
 
         self.n_features = state["n_features"]
         self.n_observations = state["n_observations"]
@@ -368,14 +358,16 @@ cdef class Tree:
         self._mutate_threshold(node_id, 1)
 
     cdef _mutate_threshold(self, SIZE_t node_id, bint feature_changed):
+        self.observations.remove_observations(self, node_id)
         cdef DOUBLE_t threshold = self._get_new_random_threshold(self.nodes[node_id].threshold, self.nodes[node_id].feature, feature_changed)
         self._change_threshold(node_id, threshold)
-        self._remove_observations_below_node(node_id)
+        self.observations.reassign_observations(self, node_id)
 
     cdef _mutate_class(self, SIZE_t node_id):
+        self.observations.remove_observations(self, node_id)
         cdef SIZE_t new_class = self._get_new_random_class(self.nodes[node_id].feature)
         self._change_feature_or_class(node_id, new_class)
-        self._remove_observations_below_node(node_id)
+        self.observations.reassign_observations(self, node_id)
 
     cpdef public SIZE_t get_random_node(self):
         return self._get_random_node()
@@ -429,44 +421,7 @@ cdef class Tree:
 # ===========================================================================================================
     # initialization of observations
     cpdef initialize_observations(self):
-        cdef SIZE_t node_id
-        cdef SIZE_t proper_class
-        cdef SIZE_t current_class
-        cdef SIZE_t observation_id
-        cdef Observation observation
-
-        cdef DTYPE_t[:, :] X_ndarray = self.X
-
-        for observation_id in range(self.n_observations):
-            node_id = self._find_leaf_for_observation(observation_id, X_ndarray, 0)
-            proper_class = self.y[observation_id]
-            current_class = self.nodes[node_id].feature
-            observation = Observation(proper_class, current_class, observation_id, node_id)
-            self._assign_leaf_for_observation(observation, node_id)
-
-    # assigning only not registered observations (because of crossing or mutation)
-    cpdef assign_all_not_registered_observations(self):
-        if not self.observations.__contains__(NOT_REGISTERED):
-            return
-        cdef SIZE_t node_id
-        cdef list observations = self.observations[NOT_REGISTERED]
-
-        cdef DTYPE_t[:, :] X_ndarray = self.X
-
-        for observation in observations:
-            node_id = self._find_leaf_for_observation(observation.observation_id,
-                                                      X_ndarray, observation.last_node_id)
-            observation.current_class = self.nodes[node_id].feature
-            observation.last_node_id = node_id
-            self._assign_leaf_for_observation(observation, node_id)
-        self.observations[NOT_REGISTERED] = []
-
-    # adding observation to proper leaf
-    cdef _assign_leaf_for_observation(self, Observation observation, SIZE_t node_id):
-        if self.observations.__contains__(node_id):
-            self.observations[node_id].append(observation)
-        else:
-            self.observations[node_id] = [observation]
+        self.observations.initialize_observations(self)
 
     # finding proper leaf for observation
     cdef SIZE_t _find_leaf_for_observation(self, SIZE_t observation_id, DTYPE_t[:, :] X_ndarray,
@@ -485,51 +440,12 @@ cdef class Tree:
                     current_node_id = self.nodes[current_node_id].right_child
         return current_node_id
 
-    # remove all observations below node (fe. node changed in mutation)
-    cdef _remove_observations_below_node(self, SIZE_t node_id):
-        self._remove_observations_of_node_recurrent(node_id, node_id)
-
-    # and the recurrent version of above
-    cdef _remove_observations_of_node_recurrent(self, SIZE_t current_node_id, SIZE_t node_id_as_last):
-        self._remove_observations_of_node(current_node_id, node_id_as_last)
-        cdef Node node = self.nodes[current_node_id]
-        if node.left_child != _TREE_LEAF:
-            self._remove_observations_of_node_recurrent(node.left_child, node_id_as_last)
-        if node.right_child != _TREE_LEAF:
-            self._remove_observations_of_node_recurrent(node.right_child, node_id_as_last)
-
-    # the main function to reassign all observations that should be removed to NOT_REGISTERED node id
-    cdef _remove_observations_of_node(self, SIZE_t current_node_id, SIZE_t node_id_as_last):
-        self.proper_classified = NOT_CLASSIFIED
-        if not self.observations.__contains__(current_node_id):
-            return
-        cdef list observations = self.observations[current_node_id]
-        if not self.observations.__contains__(NOT_REGISTERED):
-            self.observations[NOT_REGISTERED] = []
-        for observation in observations:
-            observation.last_node_id = node_id_as_last
-            self.observations[NOT_REGISTERED].append(observation)
-        self.observations[current_node_id] = []
-
-
 # ===========================================================================================================
 # Evaluation functions
 # ===========================================================================================================
 
     cpdef SIZE_t get_proper_classified(self):
-        if self.proper_classified == NOT_CLASSIFIED:
-            self._evaluate_tree()
-        return self.proper_classified
-
-    cdef _evaluate_tree(self):
-        self.assign_all_not_registered_observations()
-        cdef int proper_classified = 0
-        for k, val in self.observations.items():
-            for item in val:
-                if item.proper_class == item.current_class:
-                    proper_classified += 1
-        self.proper_classified = proper_classified
-
+        return self.observations.proper_classified
 
 # ===========================================================================================================
 # Prediction functions
@@ -604,8 +520,18 @@ cdef class Tree:
 
 
 cpdef Tree copy_tree(Tree tree):
-    cdef Tree tree_copied = copy.deepcopy(tree)
-    tree_copied.X = tree.X
-    tree_copied.y = tree.y
-    tree_copied.thresholds = tree.thresholds
+    cdef Tree tree_copied = Tree(tree.n_classes, tree.X, tree.y, tree.thresholds)
+    tree_copied.depth = tree.depth
+    tree_copied.node_count = tree.node_count
+
+    cdef np.ndarray node_ndarray = tree._get_node_ndarray()
+    tree_copied.nodes = NULL
+
+    tree_copied.capacity = node_ndarray.shape[0]
+    if tree_copied._resize_c(tree_copied.capacity) != 0:
+        raise MemoryError("resizing tree to %d" % tree_copied.capacity)
+    nodes = memcpy(tree_copied.nodes, (<np.ndarray> node_ndarray).data,
+                   tree_copied.capacity * sizeof(Node))
+
+    tree_copied.observations = copy_observations(tree.observations)
     return tree_copied

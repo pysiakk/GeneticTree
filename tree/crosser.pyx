@@ -149,7 +149,7 @@ cdef _copy_nodes(Node* donor_nodes, SIZE_t crossover_point,
             depth = stack_record.depth + depth_addition
 
             is_leaf = 1
-            if donor_nodes[old_self_id].right_child != _TREE_LEAF:
+            if donor_nodes[old_self_id].left_child != _TREE_LEAF:
                 is_leaf = 0
 
             if is_leaf == 1:
@@ -169,11 +169,11 @@ cdef _copy_nodes(Node* donor_nodes, SIZE_t crossover_point,
 
             _add_node_to_stack(donor_nodes, new_parent_id,
                                donor_nodes[old_self_id].left_child,
-                               1, stack)
+                               1, stack, donor_nodes[old_self_id].left_child)
 
             _add_node_to_stack(donor_nodes, new_parent_id,
                                donor_nodes[old_self_id].right_child,
-                               0, stack)
+                               0, stack, donor_nodes[old_self_id].left_child)
 
             if depth > max_depth_seen:
                 max_depth_seen = depth
@@ -187,8 +187,8 @@ Adds node with id old_self_id to Stack
 """
 cdef void _add_node_to_stack(Node* donor_nodes,
                              SIZE_t new_parent_id, SIZE_t old_self_id,
-                             bint is_left, Stack stack) nogil:
-    if old_self_id != _TREE_LEAF:
+                             bint is_left, Stack stack, SIZE_t check_leaf) nogil:
+    if check_leaf != _TREE_LEAF:
         stack.push(new_parent_id, old_self_id, is_left,
                    donor_nodes[old_self_id].feature,
                    donor_nodes[old_self_id].threshold,
