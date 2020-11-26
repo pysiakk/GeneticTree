@@ -1,5 +1,5 @@
 import math
-import statisitcs
+import statistics
 
 class StopCondition:
     """
