@@ -27,6 +27,7 @@ class GeneticTree:
                  # TODO: change default initialization to splitting nodes with probability
                  initial_depth: int = 1,
                  initialization_type: InitializationType = InitializationType.Random,
+                 split_prob: float = 0.7,
                  mutation_prob: float = 0.4,
                  mutations_additional: list = None,
                  mutation_is_replace: bool = False,
@@ -117,7 +118,7 @@ class GeneticTree:
         offspring = self._trees_
         trees_metrics = self.evaluator.evaluate(offspring)
 
-        while not self.stop_condition.stop():
+        while not self.stop_condition.stop(max(trees_metrics)):
             elite = self.selector.get_elite_population(offspring, trees_metrics)
             selected_parents = self.selector.select(offspring, trees_metrics)
             mutated_population = self.mutator.mutate(selected_parents)
