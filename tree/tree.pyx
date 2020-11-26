@@ -30,6 +30,7 @@ from cpython cimport Py_INCREF, PyObject, PyTypeObject
 
 from libc.stdlib cimport free
 from libc.string cimport memcpy
+from libc.stdlib cimport malloc
 from libc.stdint cimport SIZE_MAX
 from libc.stdio cimport printf
 
@@ -41,6 +42,7 @@ import copy
 from tree.observations cimport Observations
 from tree.observations import Observations, copy_observations
 
+from tree._utils cimport IntArray, resize_c
 
 import numpy as np
 cimport numpy as np
@@ -132,12 +134,19 @@ cdef class Tree:
         self.capacity = 0
         self.nodes = NULL
 
+        self.removed_nodes = <IntArray*> malloc(sizeof(IntArray))
+        self.removed_nodes.count = 0
+        self.removed_nodes.capacity = 0
+        self.removed_nodes.elements = NULL
+
         self.observations = Observations(X, y)
 
     def __dealloc__(self):
         """Destructor."""
         # Free all inner structures
         free(self.nodes)
+        free(self.removed_nodes.elements)
+        free(self.removed_nodes)
 
     def __reduce__(self):
         """Reduce re-implementation, for pickling."""
@@ -276,6 +285,18 @@ cdef class Tree:
 
         return node_id
 
+    cdef void _add_node_as_removed(self, SIZE_t node_id) nogil:
+        with nogil:
+            if self.removed_nodes.count == self.removed_nodes.capacity:
+                resize_c(self.removed_nodes)
+
+            self.removed_nodes.elements[self.removed_nodes.count] = node_id
+
+            if self.nodes[node_id].left_child != _TREE_LEAF:
+                self._add_node_as_removed(self.nodes[node_id].left_child)
+                self._add_node_as_removed(self.nodes[node_id].right_child)
+
+
     cdef np.ndarray _get_node_ndarray(self):
         """Wraps nodes as a NumPy struct array.
         The array keeps a reference to this Tree, which manages the underlying
@@ -358,13 +379,13 @@ cdef class Tree:
         self._mutate_threshold(node_id, 1)
 
     cdef _mutate_threshold(self, SIZE_t node_id, bint feature_changed):
-        self.observations.remove_observations(self, node_id)
+        self.observations.remove_observations(self.nodes, node_id)
         cdef DOUBLE_t threshold = self._get_new_random_threshold(self.nodes[node_id].threshold, self.nodes[node_id].feature, feature_changed)
         self._change_threshold(node_id, threshold)
         self.observations.reassign_observations(self, node_id)
 
     cdef _mutate_class(self, SIZE_t node_id):
-        self.observations.remove_observations(self, node_id)
+        self.observations.remove_observations(self.nodes, node_id)
         cdef SIZE_t new_class = self._get_new_random_class(self.nodes[node_id].feature)
         self._change_feature_or_class(node_id, new_class)
         self.observations.reassign_observations(self, node_id)

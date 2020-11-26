@@ -103,18 +103,18 @@ cdef class Observations:
         for y_id in range(self.n_observations):
             self._assign_observation(tree.nodes, y_id, start_from_node_id)
 
-    cdef void remove_observations(self, Tree tree, SIZE_t below_node_id):
-        if tree.nodes[below_node_id].left_child == _TREE_LEAF:
-            if tree.nodes[below_node_id].right_child != TREE_LEAF:  # means there are at least one observation inside node
-                self._remove_observations_in_leaf(tree.nodes[below_node_id].right_child, tree.nodes[below_node_id].feature)
-                tree.nodes[below_node_id].right_child = TREE_LEAF
+    cdef void remove_observations(self, Node* nodes, SIZE_t below_node_id):
+        if nodes[below_node_id].left_child == _TREE_LEAF:
+            if nodes[below_node_id].right_child != TREE_LEAF:  # means there are at least one observation inside node
+                self._remove_observations_in_leaf(nodes[below_node_id].right_child, nodes[below_node_id].feature)
+                nodes[below_node_id].right_child = TREE_LEAF
 
         else:
-            if tree.nodes[below_node_id].left_child != _TREE_LEAF:
-                self.remove_observations(tree, tree.nodes[below_node_id].left_child)
+            if nodes[below_node_id].left_child != _TREE_LEAF:
+                self.remove_observations(nodes, nodes[below_node_id].left_child)
 
-            if tree.nodes[below_node_id].right_child != _TREE_LEAF:
-                self.remove_observations(tree, tree.nodes[below_node_id].right_child)
+            if nodes[below_node_id].right_child != _TREE_LEAF:
+                self.remove_observations(nodes, nodes[below_node_id].right_child)
 
     cdef void _remove_observations_in_leaf(self, SIZE_t leaves_id, SIZE_t leaf_class):
         cdef SIZE_t i
@@ -271,7 +271,7 @@ cdef class Observations:
         cdef SIZE_t proper_classified = self.proper_classified
         cdef SIZE_t leaves_count = self.leaves.count
         assert self.leaves_to_reassign.count == 0
-        self.remove_observations(tree, 0)
+        self.remove_observations(tree.nodes, 0)
         assert self.leaves_to_reassign.count == self.leaves.count == self.empty_leaves_ids.count == leaves_count
         assert self.proper_classified == 0
         self.reassign_observations(tree, 0)

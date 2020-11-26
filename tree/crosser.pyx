@@ -1,7 +1,7 @@
 # cython: linetrace=True
 
 from tree.tree cimport Tree, Node
-from tree._utils cimport Stack, StackRecord
+from tree._utils cimport Stack, StackRecord, IntArray
 
 from libc.stdlib cimport free
 from libc.stdlib cimport malloc
@@ -165,7 +165,7 @@ cdef _copy_nodes(Node* donor_nodes, SIZE_t crossover_point,
                 continue
 
             new_parent_id = recipient._add_node(new_parent_id, is_left, is_leaf,
-                                            feature, threshold, depth, class_number)
+                                                feature, threshold, depth, class_number)
 
             _add_node_to_stack(donor_nodes, new_parent_id,
                                donor_nodes[old_self_id].left_child,
@@ -180,6 +180,25 @@ cdef _copy_nodes(Node* donor_nodes, SIZE_t crossover_point,
 
             if success_code >= 0:
                 recipient.depth = max_depth_seen
+
+
+cdef void _remove_nodes_below_crossover_point(Tree recipient, SIZE_t crossover_point,
+                                              CrossoverPoint* result, IntArray* removed_nodes) nogil:
+    cdef Node* nodes = recipient.nodes
+
+    # remove observations
+    with gil:
+        recipient.observations.remove_observations(recipient.nodes, crossover_point)
+
+    with nogil:
+        result.new_parent_id = nodes[crossover_point].parent
+        result.depth_addition = nodes[crossover_point].depth
+        result.is_left = 0
+        if nodes[result.new_parent_id].left_child == crossover_point:
+            result.is_left = 1
+
+    with gil:
+        recipient._add_node_as_removed(crossover_point)
 
 
 """

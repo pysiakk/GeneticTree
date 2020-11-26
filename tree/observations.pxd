@@ -24,7 +24,7 @@ cdef class Observations:
 
     cdef void initialize_observations(self, Tree tree)
 
-    cdef void remove_observations(self, Tree tree, SIZE_t below_node_id)
+    cdef void remove_observations(self, Node* nodes, SIZE_t below_node_id)
     cdef void _remove_observations_in_leaf(self, SIZE_t leaves_id, SIZE_t leaf_class)
 
     cdef void reassign_observations(self, Tree tree, SIZE_t below_node_id)

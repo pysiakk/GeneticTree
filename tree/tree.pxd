@@ -20,6 +20,7 @@ cimport numpy as np
 
 from tree.observations cimport Observations
 from tree.observations import Observations, copy_observations
+from tree._utils cimport IntArray
 
 ctypedef np.npy_float64 DOUBLE_t        # Type of thresholds
 ctypedef np.npy_float32 DTYPE_t         # Type of X
@@ -51,6 +52,7 @@ cdef class Tree:
     cdef public SIZE_t node_count       # Counter for node IDs
     cdef public SIZE_t capacity         # Capacity of tree, in terms of nodes
     cdef Node* nodes                    # Array of nodes
+    cdef IntArray* removed_nodes
 
     cdef Observations observations   # Class with y array metadata
 
@@ -66,6 +68,7 @@ cdef class Tree:
     cdef SIZE_t _add_node(self, SIZE_t parent, bint is_left, bint is_leaf,
                           SIZE_t feature, double threshold, SIZE_t depth,
                           SIZE_t class_number) nogil except -1
+    cdef void _add_node_as_removed(self, SIZE_t node_id) nogil
     cdef np.ndarray _get_node_ndarray(self)
 
     # Mutation functions
