@@ -69,8 +69,8 @@ cdef class Tree:
                           SIZE_t feature, double threshold, SIZE_t depth,
                           SIZE_t class_number) nogil except -1
 
-    cdef void _add_node_as_removed(self, SIZE_t node_id) nogil
-    cdef void _compress_removed_nodes(self) nogil
+    cdef SIZE_t _add_node_as_removed(self, SIZE_t node_id)
+    cdef SIZE_t _compress_removed_nodes(self, SIZE_t crossover_point) nogil
     cdef void _copy_node(self, Node* from_node, SIZE_t from_node_id, Node* to_node, SIZE_t to_node_id) nogil
 
     cdef np.ndarray _get_node_ndarray(self)

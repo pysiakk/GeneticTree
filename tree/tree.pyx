@@ -136,7 +136,8 @@ cdef class Tree:
         self.capacity = 0
         self.nodes = NULL
 
-        self.removed_nodes = <IntArray*> malloc(sizeof(IntArray))
+        self.removed_nodes = NULL
+        safe_realloc(&self.removed_nodes, 1)
         self.removed_nodes.count = 0
         self.removed_nodes.capacity = 0
         self.removed_nodes.elements = NULL
@@ -292,40 +293,46 @@ cdef class Tree:
 
         return node_id
 
-    cdef void _add_node_as_removed(self, SIZE_t node_id) nogil:
-        with nogil:
-            if self.removed_nodes.count == self.removed_nodes.capacity:
-                resize_c(self.removed_nodes)
+    cdef SIZE_t _add_node_as_removed(self, SIZE_t node_id):
+        if self.removed_nodes.count >= self.removed_nodes.capacity:
+            if resize_c(self.removed_nodes) != 0:
+                return SIZE_MAX
 
-            self.removed_nodes.elements[self.removed_nodes.count] = node_id
-            self.nodes[node_id].parent = _NODE_REMOVED
+        self.removed_nodes.elements[self.removed_nodes.count] = node_id
+        self.nodes[node_id].parent = _NODE_REMOVED
 
-            if self.nodes[node_id].left_child != _TREE_LEAF:
-                self._add_node_as_removed(self.nodes[node_id].left_child)
-                self._add_node_as_removed(self.nodes[node_id].right_child)
+        self.removed_nodes.count += 1
 
-    cdef void _compress_removed_nodes(self) nogil:
+        if self.nodes[node_id].left_child != _TREE_LEAF:
+            self._add_node_as_removed(self.nodes[node_id].left_child)
+            self._add_node_as_removed(self.nodes[node_id].right_child)
+
+    cdef SIZE_t _compress_removed_nodes(self, SIZE_t crossover_point) nogil:
         cdef SIZE_t i
-        cdef SIZE_t* node_id = self.removed_nodes.elements - sizeof(SIZE_t)
+        cdef SIZE_t* node_id = self.removed_nodes.elements
         cdef SIZE_t copy_from
         with nogil:
             for i in range(self.removed_nodes.count):
-                node_id += sizeof(SIZE_t)
-                if self.node_count < node_id[0]:
+                if i != 0:
+                    node_id += 1
+                if self.node_count <= node_id[0]:
                     continue
                 copy_from = self.node_count - 1
                 while self.nodes[copy_from].parent == _NODE_REMOVED:
                     copy_from -= 1
                 self.node_count = copy_from
-                if node_id[0] > copy_from:
+                if node_id[0] >= copy_from:
                     self.node_count += 1
                     continue
+                if copy_from == crossover_point:
+                    crossover_point = node_id[0]
                 self._copy_node(&self.nodes[copy_from], copy_from, &self.nodes[node_id[0]], node_id[0])
 
             self.removed_nodes.count = 0
             self.removed_nodes.capacity = 0
             free(self.removed_nodes.elements)
             self.removed_nodes.elements = NULL
+        return crossover_point
 
     cdef void _copy_node(self, Node* from_node, SIZE_t from_node_id, Node* to_node, SIZE_t to_node_id) nogil:
         to_node.depth = from_node.depth
@@ -337,12 +344,10 @@ cdef class Tree:
         else:
             self.nodes[from_node.parent].right_child = to_node_id
         to_node.left_child = from_node.left_child
+        to_node.right_child = from_node.right_child
         if from_node.left_child != _TREE_LEAF:
             self.nodes[from_node.left_child].parent = to_node_id
             self.nodes[from_node.right_child].parent = to_node_id
-            to_node.right_child = from_node.right_child
-        else:
-            to_node.right_child = _TREE_LEAF  # remove possible reference to leaves_id in Observations
 
     cdef np.ndarray _get_node_ndarray(self):
         """Wraps nodes as a NumPy struct array.
@@ -592,7 +597,7 @@ cpdef Tree copy_tree(Tree tree):
     tree_copied.depth = tree.depth
     tree_copied.node_count = tree.node_count
 
-    cdef np.ndarray node_ndarray = tree._get_node_ndarray()
+    cdef np.ndarray node_ndarray = np.array(tree._get_node_ndarray())
     tree_copied.nodes = NULL
 
     tree_copied.capacity = node_ndarray.shape[0]
@@ -603,3 +608,9 @@ cpdef Tree copy_tree(Tree tree):
 
     tree_copied.observations = copy_observations(tree.observations)
     return tree_copied
+
+cpdef void _test_independence_of_copied_tree(Tree tree):
+    cdef Tree tree_copied = copy_tree(tree)
+
+    tree_copied.nodes[0].parent += 1
+    assert tree.nodes[0].parent != tree_copied.nodes[0].parent

@@ -1,6 +1,6 @@
 # cython: linetrace=True
 
-from tree.tree cimport Tree, Node
+from tree.tree cimport Tree, Node, copy_tree
 from tree._utils cimport Stack, StackRecord, IntArray
 
 from libc.stdlib cimport free
@@ -37,17 +37,24 @@ At the end it initializes observations dictionary
 cpdef Tree cross_trees(Tree first_parent, Tree second_parent,
                        int first_node_id, int second_node_id):
 
-    cdef Tree child = _initialize_new_tree(first_parent)
+    cdef CrossoverPoint* result
+    cdef Tree child
+
+    if first_node_id == 0:
+        result = <CrossoverPoint*> malloc(sizeof(StackRecord))
+        result[0].new_parent_id = _TREE_UNDEFINED
+        result[0].is_left = 0
+        result[0].depth_addition = 0
+        child = Tree(first_parent.n_classes, first_parent.X, first_parent.y, first_parent.thresholds)
+        _copy_nodes(second_parent.nodes, second_node_id, child, 0, result)
+        child.initialize_observations()
+        free(result)
+        return child
+
+    child = _initialize_new_tree(first_parent)
 
     _add_nodes_from_parents(child, first_parent.nodes, second_parent.nodes,
                             first_node_id, second_node_id)
-
-
-    # TODO change below line to more complicated way that should be less time consuming
-    # During copying nodes from first tree copy also all observations dict
-    # and replace observations below changed node as NOT_REGISTERED
-    # Then after completion of all tree only need to run assign_all_not_registered_observations
-    child.initialize_observations()
 
     return child
 
@@ -74,8 +81,16 @@ cdef void _add_nodes_from_parents(Tree child,
                                   SIZE_t first_node_id, SIZE_t second_node_id):
     cdef CrossoverPoint* result = <CrossoverPoint*> malloc(sizeof(StackRecord))
 
-    _copy_nodes(first_parent_nodes, first_node_id, child, 1, result)
+    _remove_nodes_below_crossover_point(child, first_node_id, result)
+
     _copy_nodes(second_parent_nodes, second_node_id, child, 0, result)
+
+    result.new_parent_id = child._compress_removed_nodes(result.new_parent_id)
+
+    cdef SIZE_t below_node_id = child.nodes[result.new_parent_id].right_child
+    if result.is_left == 1:
+        below_node_id = child.nodes[result.new_parent_id].left_child
+    child.observations.reassign_observations(child, below_node_id)
 
     child._resize_c(child.node_count)
 
@@ -183,7 +198,7 @@ cdef _copy_nodes(Node* donor_nodes, SIZE_t crossover_point,
 
 
 cdef void _remove_nodes_below_crossover_point(Tree recipient, SIZE_t crossover_point,
-                                              CrossoverPoint* result, IntArray* removed_nodes) nogil:
+                                              CrossoverPoint* result) nogil:
     cdef Node* nodes = recipient.nodes
 
     # remove observations
@@ -218,9 +233,4 @@ cdef void _add_node_to_stack(Node* donor_nodes,
 Creates new tree with base params as previous tree
 """
 cdef Tree _initialize_new_tree(Tree previous_tree):
-    cdef int n_classes = previous_tree.n_classes
-    cdef int node_count = previous_tree.node_count
-
-    cdef Tree tree = Tree(n_classes, previous_tree.X, previous_tree.y, previous_tree.thresholds)
-    tree._resize(node_count)
-    return tree
+    return copy_tree(previous_tree)

@@ -4,7 +4,7 @@ os.chdir("../")
 from tests.set_up_variables_and_imports import *
 from genetic_tree import GeneticTree
 from tree.thresholds import prepare_thresholds_array
-from tree.tree import copy_tree
+from tree.tree import copy_tree, _test_independence_of_copied_tree
 
 import pickle
 
@@ -63,13 +63,37 @@ def assert_array_not_the_same_in_at_most_one_index(array, other) -> int:
     return counter
 
 
+def test_crossing_one_leaf():
+    trees = build(2, 10)
+    trees[0][0].initialize_observations()
+    trees[1][0].initialize_observations()
+    cross_trees(trees[0][0], trees[1][0], 0, 6)
+
+
+def test_crossing_only_from_second_parent():
+    trees = build(2, 10)
+    trees[0][0].initialize_observations()
+    trees[1][0].initialize_observations()
+    cross_trees(trees[0][0], trees[1][0], 0, 0)
+
+
+@pytest.mark.parametrize("first, second",
+                         [(6, 1), (6, 0), (0, 0), (0, 1), (1, 6), (1, 3),
+                          (1, 0), (6, 3), (3, 0), (3, 1), (3, 2), (3, 3), (3, 6)])
+def test_crossing(first, second):
+    trees = build(2, 10)
+    trees[0][0].initialize_observations()
+    trees[1][0].initialize_observations()
+    cross_trees(trees[0][0], trees[1][0], first, second)
+
+
 def test_crosser():
     trees = build(2, 10)
     tree: Tree = test_cross_trees(trees[0][0], trees[1][0], 2, 0)
-    new_features = np.append(np.append(np.append(trees[0][1][0:2], np.array([trees[0][1][4], trees[0][1][3], trees[1][1][0]])),
-                                       np.array([trees[1][1][2], trees[1][1][6], trees[1][1][5]])),
+    new_features = np.append(np.append(np.append(trees[0][1][0:2], np.array([trees[1][1][6], trees[0][1][3], trees[0][1][4]])),
+                                       np.array([trees[1][1][2], trees[1][1][0], trees[1][1][5]])),
                              np.array([trees[1][1][1], trees[1][1][4], trees[1][1][3]]))
-    new_depth = np.array([0, 1, 2, 2, 1, 2, 3, 3, 2, 3, 3])
+    new_depth = np.array([0, 1, 3, 2, 2, 2, 1, 3, 2, 3, 3])
     assert_array_equal(new_features, tree.feature)
     assert_array_equal(new_depth, tree.nodes_depth)
 
@@ -84,6 +108,8 @@ def test_independence_of_created_trees_by_crosser(crosses: int = 10, mutations: 
 
     # check if crossing is proper
     new_features = np.repeat(np.array([[trees[0][1][0], trees[0][1][2]]]).transpose(), crosses, axis=1).reshape(crosses*2, order='F')
+    new_features[1] = trees[0][1][0]
+    new_features[2] = trees[0][1][2]
     new_features = np.append(new_features, np.array([trees[1][1][0], trees[1][1][2], trees[1][1][1]]))
     assert_array_equal(new_features, tree.feature)
 
@@ -124,4 +150,9 @@ def test_tree_copying():
     # because two memoryviews of the same object can have different ids
     # assert id(tree.y) == id(tree_copied.y)
     # assert id(tree.thresholds) == id(tree_copied.thresholds)
+
+
+def test_independence_of_copied_tree():
+    tree: Tree = build(10, 1)[0][0]
+    _test_independence_of_copied_tree(tree)
 
