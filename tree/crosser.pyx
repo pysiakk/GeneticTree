@@ -42,7 +42,7 @@ cpdef Tree cross_trees(Tree first_parent, Tree second_parent,
 
     else:
         child = copy_tree(first_parent)
-        _cross_trees(child, first_parent.nodes, second_parent.nodes,
+        _cross_trees(child, first_parent.nodes.elements, second_parent.nodes.elements,
                      first_node_id, second_node_id)
 
     return child
@@ -82,7 +82,7 @@ cdef Tree _cut_branch(Tree parent, int node_id):
 
     cdef Tree child = Tree(parent.n_classes, parent.X, parent.y, parent.thresholds)
     child.depth = 0
-    _copy_nodes(parent.nodes, node_id, child, result)
+    _copy_nodes(parent.nodes.elements, node_id, child, result)
     child.initialize_observations()
 
     free(result)
@@ -93,7 +93,7 @@ Function to remove nodes and observations from recipient below crossover point
 """
 cdef void _remove_parent_nodes(Tree recipient, SIZE_t crossover_point,
                                BranchParent* result) nogil:
-    cdef Node* nodes = recipient.nodes
+    cdef Node* nodes = recipient.nodes.elements
 
     with nogil:
         result.id = nodes[crossover_point].parent
@@ -104,16 +104,16 @@ cdef void _remove_parent_nodes(Tree recipient, SIZE_t crossover_point,
 
     # remove nodes and observations
     with gil:
-        recipient.observations.remove_observations(recipient.nodes, crossover_point)
+        recipient.observations.remove_observations(recipient.nodes.elements, crossover_point)
         recipient.mark_nodes_as_removed(crossover_point)
 
 """
 Function to assign observations in tree that was previously removed
 """
 cdef void _reassign_observations(Tree child, BranchParent* branch_parent):
-    cdef SIZE_t below_node_id = child.nodes[branch_parent.id].right_child
+    cdef SIZE_t below_node_id = child.nodes.elements[branch_parent.id].right_child
     if branch_parent.is_child_left == 1:
-        below_node_id = child.nodes[branch_parent.id].left_child
+        below_node_id = child.nodes.elements[branch_parent.id].left_child
     child.observations.reassign_observations(child, below_node_id)
 
 """

@@ -101,7 +101,7 @@ cdef class Observations:
         cdef SIZE_t y_id
         cdef SIZE_t start_from_node_id = 0
         for y_id in range(self.n_observations):
-            self._assign_observation(tree.nodes, y_id, start_from_node_id)
+            self._assign_observation(tree.nodes.elements, y_id, start_from_node_id)
 
     cdef void remove_observations(self, Node* nodes, SIZE_t below_node_id):
         if nodes[below_node_id].left_child == _TREE_LEAF:
@@ -132,7 +132,7 @@ cdef class Observations:
         for i in range(self.leaves_to_reassign.count):
             observations = &self.leaves_to_reassign.elements[i]
             for j in range(observations.count):
-                self._assign_observation(tree.nodes, observations.elements[j], below_node_id)
+                self._assign_observation(tree.nodes.elements, observations.elements[j], below_node_id)
 
         self._delete_leaves_to_reassign()
         self._resize_empty_leaves_ids()
@@ -271,7 +271,7 @@ cdef class Observations:
         cdef SIZE_t proper_classified = self.proper_classified
         cdef SIZE_t leaves_count = self.leaves.count
         assert self.leaves_to_reassign.count == 0
-        self.remove_observations(tree.nodes, 0)
+        self.remove_observations(tree.nodes.elements, 0)
         assert self.leaves_to_reassign.count == self.leaves.count == self.empty_leaves_ids.count == leaves_count
         assert self.proper_classified == 0
         self.reassign_observations(tree, 0)

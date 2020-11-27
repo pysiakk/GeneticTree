@@ -20,22 +20,11 @@ cimport numpy as np
 
 from tree.observations cimport Observations
 from tree.observations import Observations, copy_observations
-from tree._utils cimport IntArray
+from tree._utils cimport Node, NodeArray, IntArray, resize, resize_c
 
 ctypedef np.npy_float64 DOUBLE_t        # Type of thresholds
 ctypedef np.npy_float32 DTYPE_t         # Type of X
 ctypedef np.npy_intp SIZE_t             # Type for indices and counters
-
-cdef struct Node:
-    # Base storage structure for the nodes in a Tree object
-    SIZE_t left_child                   # id of the left child of the node
-    SIZE_t right_child                  # id of the right child of the node
-    SIZE_t parent                       # id of the parent of the node
-    SIZE_t feature                      # Feature used for splitting the node
-                                        # or predicted class if the node is leaf
-    DOUBLE_t threshold                  # Threshold value at the node
-    SIZE_t depth                        # the size of path from root to node
-
 
 cdef class Tree:
     # The Tree object is a binary tree structure.
@@ -49,12 +38,10 @@ cdef class Tree:
     # Inner structures: values are stored separately from node structure,
     # since size is determined at runtime.
     cdef public SIZE_t depth            # Max depth seen of the tree
-    cdef public SIZE_t node_count       # Counter for node IDs
-    cdef public SIZE_t capacity         # Capacity of tree, in terms of nodes
-    cdef Node* nodes                    # Array of nodes
+    cdef NodeArray* nodes               # Array of nodes
     cdef IntArray* removed_nodes
 
-    cdef Observations observations   # Class with y array metadata
+    cdef Observations observations      # Class with y array metadata
 
     cdef public DTYPE_t[:, :] thresholds    # Array with possible thresholds for each feature
     cdef public object X                    # Array with observations features (TODO: possibility of sparse array)
@@ -62,8 +49,6 @@ cdef class Tree:
 
     # Methods
     cpdef resize_by_initial_depth(self, int initial_depth)
-    cdef int _resize(self, SIZE_t capacity) nogil except -1
-    cdef int _resize_c(self, SIZE_t capacity=*) nogil except -1
 
     cdef SIZE_t _add_node(self, SIZE_t parent, bint is_left, bint is_leaf,
                           SIZE_t feature, double threshold, SIZE_t depth,

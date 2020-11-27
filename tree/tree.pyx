@@ -30,19 +30,15 @@ from cpython cimport Py_INCREF, PyObject, PyTypeObject
 
 from libc.stdlib cimport free
 from libc.string cimport memcpy
-from libc.stdlib cimport malloc
 from libc.stdint cimport SIZE_MAX
 from libc.stdio cimport printf
 
 from tree._utils cimport safe_realloc
 
 import multiprocessing
-import copy
 
 from tree.observations cimport Observations
 from tree.observations import Observations, copy_observations
-
-from tree._utils cimport IntArray, resize_c
 
 import numpy as np
 cimport numpy as np
@@ -88,15 +84,15 @@ NODE_DTYPE = np.dtype({
 cdef class Tree:
     property children_left:
         def __get__(self):
-            return self._get_node_ndarray()['left_child'][:self.node_count]
+            return self._get_node_ndarray()['left_child'][:self.nodes.count]
 
     property children_right:
         def __get__(self):
-            return self._get_node_ndarray()['right_child'][:self.node_count]
+            return self._get_node_ndarray()['right_child'][:self.nodes.count]
 
     property parent:
         def __get__(self):
-            return self._get_node_ndarray()['parent'][:self.node_count]
+            return self._get_node_ndarray()['parent'][:self.nodes.count]
 
     property n_leaves:
         def __get__(self):
@@ -106,15 +102,19 @@ cdef class Tree:
 
     property feature:
         def __get__(self):
-            return self._get_node_ndarray()['feature'][:self.node_count]
+            return self._get_node_ndarray()['feature'][:self.nodes.count]
 
     property threshold:
         def __get__(self):
-            return self._get_node_ndarray()['threshold'][:self.node_count]
+            return self._get_node_ndarray()['threshold'][:self.nodes.count]
 
     property nodes_depth:
         def __get__(self):
-            return self._get_node_ndarray()['depth'][:self.node_count]
+            return self._get_node_ndarray()['depth'][:self.nodes.count]
+
+    property node_count:
+        def __get__(self):
+            return self.nodes.count
 
     def __cinit__(self, int n_classes,
                   object X,
@@ -132,9 +132,12 @@ cdef class Tree:
 
         # Inner structures
         self.depth = 0
-        self.node_count = 0
-        self.capacity = 0
+
         self.nodes = NULL
+        safe_realloc(&self.nodes, 1)
+        self.nodes.count = 0
+        self.nodes.capacity = 0
+        self.nodes.elements = NULL
 
         self.removed_nodes = NULL
         safe_realloc(&self.removed_nodes, 1)
@@ -147,6 +150,7 @@ cdef class Tree:
     def __dealloc__(self):
         """Destructor."""
         # Free all inner structures
+        free(self.nodes.elements)
         free(self.nodes)
         free(self.removed_nodes.elements)
         free(self.removed_nodes)
@@ -171,7 +175,7 @@ cdef class Tree:
         state = {}
         # capacity is inferred during the __setstate__ using nodes
         state["depth"] = self.depth
-        state["node_count"] = self.node_count
+        state["node_count"] = self.nodes.count
         state["nodes"] = self._get_node_ndarray()
 
         state["n_features"] = self.n_features
@@ -184,7 +188,7 @@ cdef class Tree:
         """Setstate re-implementation, for unpickling."""
         # TODO unpickle observations
         self.depth = state["depth"]
-        self.node_count = state["node_count"]
+        self.nodes.count = state["node_count"]
 
         self.n_features = state["n_features"]
         self.n_observations = state["n_observations"]
@@ -201,11 +205,11 @@ cdef class Tree:
                 not node_ndarray.flags.c_contiguous):
             raise ValueError('Did not recognise loaded array layout')
 
-        self.capacity = node_ndarray.shape[0]
-        if self._resize_c(self.capacity) != 0:
-            raise MemoryError("resizing tree to %d" % self.capacity)
-        nodes = memcpy(self.nodes, (<np.ndarray> node_ndarray).data,
-                       self.capacity * sizeof(Node))
+        self.nodes.capacity = node_ndarray.shape[0]
+        if resize_c(self.nodes, self.nodes.capacity) != 0:
+            raise MemoryError("resizing tree to %d" % self.nodes.capacity)
+        nodes = memcpy(self.nodes.elements, (<np.ndarray> node_ndarray).data,
+                       self.nodes.capacity * sizeof(Node))
 
     cpdef resize_by_initial_depth(self, int initial_depth):
         if initial_depth <= 10:
@@ -213,41 +217,7 @@ cdef class Tree:
         else:
             init_capacity = 2047
 
-        self._resize(init_capacity)
-
-    cdef int _resize(self, SIZE_t capacity) nogil except -1:
-        """Resize all inner arrays to `capacity`, if `capacity` == -1, then
-           double the size of the inner arrays.
-        Returns -1 in case of failure to allocate memory (and raise MemoryError)
-        or 0 otherwise.
-        """
-        if self._resize_c(capacity) != 0:
-            # Acquire gil only if we need to raise
-            with gil:
-                raise MemoryError()
-
-    cdef int _resize_c(self, SIZE_t capacity=SIZE_MAX) nogil except -1:
-        """Guts of _resize
-        Returns -1 in case of failure to allocate memory (and raise MemoryError)
-        or 0 otherwise.
-        """
-        if capacity == self.capacity and self.nodes != NULL:
-            return 0
-
-        if capacity == SIZE_MAX:
-            if self.capacity == 0:
-                capacity = 3  # default initial value
-            else:
-                capacity = 2 * self.capacity
-
-        safe_realloc(&self.nodes, capacity)
-
-        # if capacity smaller than node_count, adjust the counter
-        if capacity < self.node_count:
-            self.node_count = capacity
-
-        self.capacity = capacity
-        return 0
+        resize(self.nodes, init_capacity)
 
     cdef SIZE_t _add_node(self, SIZE_t parent, bint is_left, bint is_leaf,
                           SIZE_t feature, double threshold, SIZE_t depth,
@@ -256,27 +226,27 @@ cdef class Tree:
         The new node registers itself as the child of its parent.
         Returns (size_t)(-1) on error.
         """
-        cdef SIZE_t node_id = self.node_count
+        cdef SIZE_t node_id = self.nodes.count
 
         if self.removed_nodes.count != 0:
             self.removed_nodes.count -= 1
             node_id = self.removed_nodes.elements[self.removed_nodes.count]
-            self.node_count -= 1  # because it will be added 1 at the end
+            self.nodes.count -= 1  # because it will be added 1 at the end
 
-        if node_id >= self.capacity:
-            if self._resize_c() != 0:
+        if node_id >= self.nodes.capacity:
+            if resize_c(self.nodes) != 0:
                 return SIZE_MAX
 
-        cdef Node* node = &self.nodes[node_id]
+        cdef Node* node = &self.nodes.elements[node_id]
 
         node.parent = parent
         node.depth = depth
 
         if parent != _TREE_UNDEFINED:
             if is_left:
-                self.nodes[parent].left_child = node_id
+                self.nodes.elements[parent].left_child = node_id
             else:
-                self.nodes[parent].right_child = node_id
+                self.nodes.elements[parent].right_child = node_id
 
         if is_leaf:
             node.left_child = _TREE_LEAF
@@ -289,7 +259,7 @@ cdef class Tree:
             node.feature = feature
             node.threshold = threshold
 
-        self.node_count += 1
+        self.nodes.count += 1
 
         return node_id
 
@@ -299,13 +269,13 @@ cdef class Tree:
                 return SIZE_MAX
 
         self.removed_nodes.elements[self.removed_nodes.count] = below_node_id
-        self.nodes[below_node_id].parent = _NODE_REMOVED
+        self.nodes.elements[below_node_id].parent = _NODE_REMOVED
 
         self.removed_nodes.count += 1
 
-        if self.nodes[below_node_id].left_child != _TREE_LEAF:
-            self.mark_nodes_as_removed(self.nodes[below_node_id].left_child)
-            self.mark_nodes_as_removed(self.nodes[below_node_id].right_child)
+        if self.nodes.elements[below_node_id].left_child != _TREE_LEAF:
+            self.mark_nodes_as_removed(self.nodes.elements[below_node_id].left_child)
+            self.mark_nodes_as_removed(self.nodes.elements[below_node_id].right_child)
 
     cdef SIZE_t compact_removed_nodes(self, SIZE_t crossover_point) nogil:
         cdef SIZE_t i
@@ -315,24 +285,24 @@ cdef class Tree:
             for i in range(self.removed_nodes.count):
                 if i != 0:
                     node_id += 1
-                if self.node_count <= node_id[0]:
+                if self.nodes.count <= node_id[0]:
                     continue
-                copy_from = self.node_count - 1
-                while self.nodes[copy_from].parent == _NODE_REMOVED:
+                copy_from = self.nodes.count - 1
+                while self.nodes.elements[copy_from].parent == _NODE_REMOVED:
                     copy_from -= 1
-                self.node_count = copy_from
+                self.nodes.count = copy_from
                 if node_id[0] >= copy_from:
-                    self.node_count += 1
+                    self.nodes.count += 1
                     continue
                 if copy_from == crossover_point:
                     crossover_point = node_id[0]
-                self._copy_node(&self.nodes[copy_from], copy_from, &self.nodes[node_id[0]], node_id[0])
+                self._copy_node(&self.nodes.elements[copy_from], copy_from, &self.nodes.elements[node_id[0]], node_id[0])
 
             self.removed_nodes.count = 0
             self.removed_nodes.capacity = 0
             free(self.removed_nodes.elements)
             self.removed_nodes.elements = NULL
-        self._resize_c(self.node_count)
+        resize_c(self.nodes, self.nodes.count)
         return crossover_point
 
     cdef void _copy_node(self, Node* from_node, SIZE_t from_node_id, Node* to_node, SIZE_t to_node_id) nogil:
@@ -340,15 +310,15 @@ cdef class Tree:
         to_node.threshold = from_node.threshold
         to_node.feature = from_node.feature
         to_node.parent = from_node.parent
-        if self.nodes[from_node.parent].left_child == from_node_id:
-            self.nodes[from_node.parent].left_child = to_node_id
+        if self.nodes.elements[from_node.parent].left_child == from_node_id:
+            self.nodes.elements[from_node.parent].left_child = to_node_id
         else:
-            self.nodes[from_node.parent].right_child = to_node_id
+            self.nodes.elements[from_node.parent].right_child = to_node_id
         to_node.left_child = from_node.left_child
         to_node.right_child = from_node.right_child
         if from_node.left_child != _TREE_LEAF:
-            self.nodes[from_node.left_child].parent = to_node_id
-            self.nodes[from_node.right_child].parent = to_node_id
+            self.nodes.elements[from_node.left_child].parent = to_node_id
+            self.nodes.elements[from_node.right_child].parent = to_node_id
 
     cdef np.ndarray _get_node_ndarray(self):
         """Wraps nodes as a NumPy struct array.
@@ -357,14 +327,14 @@ cdef class Tree:
         Tree.
         """
         cdef np.npy_intp shape[1]
-        shape[0] = <np.npy_intp> self.node_count
+        shape[0] = <np.npy_intp> self.nodes.count
         cdef np.npy_intp strides[1]
         strides[0] = sizeof(Node)
         cdef np.ndarray arr
         Py_INCREF(NODE_DTYPE)
         arr = PyArray_NewFromDescr(<PyTypeObject *> np.ndarray,
                                    <np.dtype> NODE_DTYPE, 1, shape,
-                                   strides, <void*> self.nodes,
+                                   strides, <void*> self.nodes.elements,
                                    np.NPY_DEFAULT, None)
         Py_INCREF(self)
         arr.base = <PyObject*> self
@@ -380,10 +350,10 @@ cdef class Tree:
     In other case it changes feature and threshold
     """
     cpdef mutate_random_node(self):
-        if self.node_count == 0:  # empty tree
+        if self.nodes.count == 0:  # empty tree
             return
         cdef SIZE_t node_id = self._get_random_node()
-        if self.nodes[node_id].left_child == _TREE_LEAF:
+        if self.nodes.elements[node_id].left_child == _TREE_LEAF:
             self._mutate_class(node_id)
         else:
             self._mutate_feature(node_id)
@@ -394,10 +364,10 @@ cdef class Tree:
     In other case it changes only threshold
     """
     cpdef mutate_random_class_or_threshold(self):
-        if self.node_count == 0:  # empty tree
+        if self.nodes.count == 0:  # empty tree
             return
         cdef SIZE_t node_id = self._get_random_node()
-        if self.nodes[node_id].left_child == _TREE_LEAF:
+        if self.nodes.elements[node_id].left_child == _TREE_LEAF:
             self._mutate_class(node_id)
         else:
             self._mutate_threshold(node_id, 0)
@@ -406,7 +376,7 @@ cdef class Tree:
     Function to mutate random decision node by changing feature and threshold
     """
     cpdef mutate_random_feature(self):
-        if self.node_count <= 1:  # there is only one or 0 leaf
+        if self.nodes.count <= 1:  # there is only one or 0 leaf
             return
         self._mutate_feature(self._get_random_decision_node())
 
@@ -414,7 +384,7 @@ cdef class Tree:
     Function to mutate random decision node by changing only threshold
     """
     cpdef mutate_random_threshold(self):
-        if self.node_count <= 1:  # there is only one or 0 leaf
+        if self.nodes.count <= 1:  # there is only one or 0 leaf
             return
         self._mutate_threshold(self._get_random_decision_node(), 0)
 
@@ -422,24 +392,24 @@ cdef class Tree:
     Function to mutate random leaf by changing class
     """
     cpdef mutate_random_class(self):
-        if self.node_count == 0:  # empty tree
+        if self.nodes.count == 0:  # empty tree
             return
         self._mutate_class(self._get_random_leaf())
 
     cdef _mutate_feature(self, SIZE_t node_id):
-        cdef SIZE_t feature = self._get_new_random_feature(self.nodes[node_id].feature)
+        cdef SIZE_t feature = self._get_new_random_feature(self.nodes.elements[node_id].feature)
         self._change_feature_or_class(node_id, feature)
         self._mutate_threshold(node_id, 1)
 
     cdef _mutate_threshold(self, SIZE_t node_id, bint feature_changed):
-        self.observations.remove_observations(self.nodes, node_id)
-        cdef DOUBLE_t threshold = self._get_new_random_threshold(self.nodes[node_id].threshold, self.nodes[node_id].feature, feature_changed)
+        self.observations.remove_observations(self.nodes.elements, node_id)
+        cdef DOUBLE_t threshold = self._get_new_random_threshold(self.nodes.elements[node_id].threshold, self.nodes.elements[node_id].feature, feature_changed)
         self._change_threshold(node_id, threshold)
         self.observations.reassign_observations(self, node_id)
 
     cdef _mutate_class(self, SIZE_t node_id):
-        self.observations.remove_observations(self.nodes, node_id)
-        cdef SIZE_t new_class = self._get_new_random_class(self.nodes[node_id].feature)
+        self.observations.remove_observations(self.nodes.elements, node_id)
+        cdef SIZE_t new_class = self._get_new_random_class(self.nodes.elements[node_id].feature)
         self._change_feature_or_class(node_id, new_class)
         self.observations.reassign_observations(self, node_id)
 
@@ -447,19 +417,19 @@ cdef class Tree:
         return self._get_random_node()
 
     cdef SIZE_t _get_random_node(self):
-        cdef SIZE_t random_id = np.random.randint(0, self.node_count)
+        cdef SIZE_t random_id = np.random.randint(0, self.nodes.count)
         return random_id
 
     cdef SIZE_t _get_random_decision_node(self):
-        cdef SIZE_t random_id = np.random.randint(0, self.node_count)
-        while self.nodes[random_id].left_child == _TREE_LEAF:
-            random_id = np.random.randint(0, self.node_count)
+        cdef SIZE_t random_id = np.random.randint(0, self.nodes.count)
+        while self.nodes.elements[random_id].left_child == _TREE_LEAF:
+            random_id = np.random.randint(0, self.nodes.count)
         return random_id
 
     cdef SIZE_t _get_random_leaf(self):
-        cdef SIZE_t random_id = np.random.randint(0, self.node_count)
-        while self.nodes[random_id].left_child != _TREE_LEAF:
-            random_id = np.random.randint(0, self.node_count)
+        cdef SIZE_t random_id = np.random.randint(0, self.nodes.count)
+        while self.nodes.elements[random_id].left_child != _TREE_LEAF:
+            random_id = np.random.randint(0, self.nodes.count)
         return random_id
 
     cdef SIZE_t _get_new_random_feature(self, SIZE_t last_feature):
@@ -485,10 +455,10 @@ cdef class Tree:
         return new_class
 
     cdef _change_feature_or_class(self, SIZE_t node_id, SIZE_t new_feature):
-        self.nodes[node_id].feature = new_feature
+        self.nodes.elements[node_id].feature = new_feature
 
     cdef _change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold):
-        self.nodes[node_id].threshold = new_threshold
+        self.nodes.elements[node_id].threshold = new_threshold
 
 # ===========================================================================================================
 # Observations functions
@@ -505,13 +475,13 @@ cdef class Tree:
         cdef SIZE_t feature
         cdef DOUBLE_t threshold
         with nogil:
-            while self.nodes[current_node_id].left_child != _TREE_LEAF:
-                feature = self.nodes[current_node_id].feature
-                threshold = self.nodes[current_node_id].threshold
+            while self.nodes.elements[current_node_id].left_child != _TREE_LEAF:
+                feature = self.nodes.elements[current_node_id].feature
+                threshold = self.nodes.elements[current_node_id].threshold
                 if X_row[feature] <= threshold:
-                    current_node_id = self.nodes[current_node_id].left_child
+                    current_node_id = self.nodes.elements[current_node_id].left_child
                 else:
-                    current_node_id = self.nodes[current_node_id].right_child
+                    current_node_id = self.nodes.elements[current_node_id].right_child
         return current_node_id
 
 # ===========================================================================================================
@@ -537,7 +507,7 @@ cdef class Tree:
 
         for observation_id in range(n_observations):
             node_id = self._find_leaf_for_observation(observation_id, X_ndarray, 0)
-            y[observation_id] = self.nodes[node_id].feature  # feature means class for leaf
+            y[observation_id] = self.nodes.elements[node_id].feature  # feature means class for leaf
 
         return y
 
@@ -596,16 +566,16 @@ cdef class Tree:
 cpdef Tree copy_tree(Tree tree):
     cdef Tree tree_copied = Tree(tree.n_classes, tree.X, tree.y, tree.thresholds)
     tree_copied.depth = tree.depth
-    tree_copied.node_count = tree.node_count
+    tree_copied.nodes.count = tree.nodes.count
 
     cdef np.ndarray node_ndarray = np.array(tree._get_node_ndarray())
-    tree_copied.nodes = NULL
+    tree_copied.nodes.elements = NULL
 
-    tree_copied.capacity = node_ndarray.shape[0]
-    if tree_copied._resize_c(tree_copied.capacity) != 0:
-        raise MemoryError("resizing tree to %d" % tree_copied.capacity)
-    nodes = memcpy(tree_copied.nodes, (<np.ndarray> node_ndarray).data,
-                   tree_copied.capacity * sizeof(Node))
+    tree_copied.nodes.capacity = node_ndarray.shape[0]
+    if resize_c(tree_copied.nodes, tree_copied.nodes.capacity) != 0:
+        raise MemoryError("resizing tree to %d" % tree_copied.nodes.capacity)
+    nodes = memcpy(tree_copied.nodes.elements, (<np.ndarray> node_ndarray).data,
+                   tree_copied.nodes.capacity * sizeof(Node))
 
     tree_copied.observations = copy_observations(tree.observations)
     return tree_copied
@@ -613,5 +583,5 @@ cpdef Tree copy_tree(Tree tree):
 cpdef void _test_independence_of_copied_tree(Tree tree):
     cdef Tree tree_copied = copy_tree(tree)
 
-    tree_copied.nodes[0].parent += 1
-    assert tree.nodes[0].parent != tree_copied.nodes[0].parent
+    tree_copied.nodes.elements[0].parent += 1
+    assert tree.nodes.elements[0].parent != tree_copied.nodes.elements[0].parent
