@@ -207,7 +207,6 @@ cdef class Tree:
         nodes = memcpy(self.nodes.elements, (<np.ndarray> node_ndarray).data,
                        self.nodes.capacity * sizeof(Node))
 
-
     cpdef resize_by_initial_depth(self, int initial_depth):
         if initial_depth <= 10:
             init_capacity = (2 ** (initial_depth + 1)) - 1
@@ -337,125 +336,9 @@ cdef class Tree:
         arr.base = <PyObject*> self
         return arr
 
-# ===========================================================================================================
-# Mutation functions
-# ===========================================================================================================
-
-    """
-    Function to mutate random node in tree (it can be leaf or decision node)
-    In case the selected node is leaf it changes class
-    In other case it changes feature and threshold
-    """
-    cpdef mutate_random_node(self):
-        if self.nodes.count == 0:  # empty tree
-            return
-        cdef SIZE_t node_id = self._get_random_node()
-        if self.nodes.elements[node_id].left_child == _TREE_LEAF:
-            self._mutate_class(node_id)
-        else:
-            self._mutate_feature(node_id)
-
-    """
-    Function to mutate random node in tree (it can be leaf or decision node)
-    In case the selected node is leaf it changes class
-    In other case it changes only threshold
-    """
-    cpdef mutate_random_class_or_threshold(self):
-        if self.nodes.count == 0:  # empty tree
-            return
-        cdef SIZE_t node_id = self._get_random_node()
-        if self.nodes.elements[node_id].left_child == _TREE_LEAF:
-            self._mutate_class(node_id)
-        else:
-            self._mutate_threshold(node_id, 0)
-
-    """
-    Function to mutate random decision node by changing feature and threshold
-    """
-    cpdef mutate_random_feature(self):
-        if self.nodes.count <= 1:  # there is only one or 0 leaf
-            return
-        self._mutate_feature(self._get_random_decision_node())
-
-    """
-    Function to mutate random decision node by changing only threshold
-    """
-    cpdef mutate_random_threshold(self):
-        if self.nodes.count <= 1:  # there is only one or 0 leaf
-            return
-        self._mutate_threshold(self._get_random_decision_node(), 0)
-
-    """
-    Function to mutate random leaf by changing class
-    """
-    cpdef mutate_random_class(self):
-        if self.nodes.count == 0:  # empty tree
-            return
-        self._mutate_class(self._get_random_leaf())
-
-    cdef _mutate_feature(self, SIZE_t node_id):
-        cdef SIZE_t feature = self._get_new_random_feature(self.nodes.elements[node_id].feature)
-        self._change_feature_or_class(node_id, feature)
-        self._mutate_threshold(node_id, 1)
-
-    cdef _mutate_threshold(self, SIZE_t node_id, bint feature_changed):
-        self.observations.remove_observations(self.nodes.elements, node_id)
-        cdef DOUBLE_t threshold = self._get_new_random_threshold(self.nodes.elements[node_id].threshold, self.nodes.elements[node_id].feature, feature_changed)
-        self._change_threshold(node_id, threshold)
-        self.observations.reassign_observations(self, node_id)
-
-    cdef _mutate_class(self, SIZE_t node_id):
-        self.observations.remove_observations(self.nodes.elements, node_id)
-        cdef SIZE_t new_class = self._get_new_random_class(self.nodes.elements[node_id].feature)
-        self._change_feature_or_class(node_id, new_class)
-        self.observations.reassign_observations(self, node_id)
-
     cpdef public SIZE_t get_random_node(self):
-        return self._get_random_node()
-
-    cdef SIZE_t _get_random_node(self):
         cdef SIZE_t random_id = np.random.randint(0, self.nodes.count)
         return random_id
-
-    cdef SIZE_t _get_random_decision_node(self):
-        cdef SIZE_t random_id = np.random.randint(0, self.nodes.count)
-        while self.nodes.elements[random_id].left_child == _TREE_LEAF:
-            random_id = np.random.randint(0, self.nodes.count)
-        return random_id
-
-    cdef SIZE_t _get_random_leaf(self):
-        cdef SIZE_t random_id = np.random.randint(0, self.nodes.count)
-        while self.nodes.elements[random_id].left_child != _TREE_LEAF:
-            random_id = np.random.randint(0, self.nodes.count)
-        return random_id
-
-    cdef SIZE_t _get_new_random_feature(self, SIZE_t last_feature):
-        cdef SIZE_t new_feature = np.random.randint(0, self.n_features-1)
-        if new_feature >= last_feature:
-            new_feature += 1
-        return new_feature
-
-    cdef DOUBLE_t _get_new_random_threshold(self, DOUBLE_t last_threshold, SIZE_t feature, bint feature_changed):
-        cdef SIZE_t new_threshold_index
-        if feature_changed == 1:
-            new_threshold_index = np.random.randint(0, self.n_thresholds)
-        else:
-            new_threshold_index = np.random.randint(0, self.n_thresholds-1)
-            if self.thresholds[new_threshold_index, feature] >= last_threshold:
-                new_threshold_index += 1
-        return self.thresholds[new_threshold_index, feature]
-
-    cdef SIZE_t _get_new_random_class(self, SIZE_t last_class):
-        cdef SIZE_t new_class = np.random.randint(0, self.n_classes-1)
-        if new_class >= last_class:
-            new_class += 1
-        return new_class
-
-    cdef _change_feature_or_class(self, SIZE_t node_id, SIZE_t new_feature):
-        self.nodes.elements[node_id].feature = new_feature
-
-    cdef _change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold):
-        self.nodes.elements[node_id].threshold = new_threshold
 
 # ===========================================================================================================
 # Observations functions

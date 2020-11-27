@@ -60,28 +60,7 @@ cdef class Tree:
 
     cdef np.ndarray _get_node_ndarray(self)
 
-    # Mutation functions
-    cpdef mutate_random_node(self)
-    cpdef mutate_random_class_or_threshold(self)
-    cpdef mutate_random_feature(self)
-    cpdef mutate_random_threshold(self)
-    cpdef mutate_random_class(self)
-
-    cdef _mutate_feature(self, SIZE_t node_id)
-    cdef _mutate_threshold(self, SIZE_t node_id, bint feature_changed)
-    cdef _mutate_class(self, SIZE_t node_id)
-
     cpdef public SIZE_t get_random_node(self)
-    cdef SIZE_t _get_random_node(self)
-    cdef SIZE_t _get_random_decision_node(self)
-    cdef SIZE_t _get_random_leaf(self)
-
-    cdef SIZE_t _get_new_random_feature(self, SIZE_t last_feature)
-    cdef DOUBLE_t _get_new_random_threshold(self, DOUBLE_t last_threshold, SIZE_t feature, bint feature_changed)
-    cdef SIZE_t _get_new_random_class(self, SIZE_t last_class)
-
-    cdef _change_feature_or_class(self, SIZE_t node_id, SIZE_t new_feature)
-    cdef _change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold)
 
     # Observations functions
     cpdef initialize_observations(self)
