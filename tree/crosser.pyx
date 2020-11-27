@@ -27,7 +27,6 @@ cdef struct BranchParent:
     bint is_child_left      # if first copied node should be registered as left
     SIZE_t depth_addition   # what is the depth of copied node in child tree
 
-
 """
 Function to cross 2 trees depends on first parents' node_id
 If it is 0 -> it only cut branch
@@ -71,6 +70,11 @@ cdef _cross_trees(Tree child,
 
     return child
 
+"""
+Cut branch from parent tree induced by node_id
+Initialize observations in new created tree
+Return new tree
+"""
 cdef Tree _cut_branch(Tree parent, int node_id):
     cdef BranchParent* result = <BranchParent*> malloc(sizeof(StackRecord))
     result[0].id = _TREE_UNDEFINED
@@ -85,7 +89,9 @@ cdef Tree _cut_branch(Tree parent, int node_id):
     free(result)
     return child
 
-
+"""
+Function to remove nodes and observations from recipient below crossover point
+"""
 cdef void _remove_parent_nodes(Tree recipient, SIZE_t crossover_point,
                                BranchParent* result) nogil:
     cdef Node* nodes = recipient.nodes
@@ -102,13 +108,14 @@ cdef void _remove_parent_nodes(Tree recipient, SIZE_t crossover_point,
         recipient.observations.remove_observations(recipient.nodes, crossover_point)
         recipient.mark_nodes_as_removed(crossover_point)
 
-
+"""
+Function to assign observations in tree that was previously removed
+"""
 cdef void _reassign_observations(Tree child, BranchParent* branch_parent):
     cdef SIZE_t below_node_id = child.nodes[branch_parent.id].right_child
     if branch_parent.is_child_left == 1:
         below_node_id = child.nodes[branch_parent.id].left_child
     child.observations.reassign_observations(child, below_node_id)
-
 
 """
 Function copy nodes from parent to a child
