@@ -205,11 +205,15 @@ cdef class Tree:
                 not node_ndarray.flags.c_contiguous):
             raise ValueError('Did not recognise loaded array layout')
 
+        self.unpickle_nodes(node_ndarray)
+
+    def unpickle_nodes(self, node_ndarray):
         self.nodes.capacity = node_ndarray.shape[0]
         if resize_c(self.nodes, self.nodes.capacity) != 0:
             raise MemoryError("resizing tree to %d" % self.nodes.capacity)
         nodes = memcpy(self.nodes.elements, (<np.ndarray> node_ndarray).data,
                        self.nodes.capacity * sizeof(Node))
+
 
     cpdef resize_by_initial_depth(self, int initial_depth):
         if initial_depth <= 10:
@@ -525,16 +529,9 @@ cpdef Tree copy_tree(Tree tree):
     tree_copied.depth = tree.depth
     tree_copied.nodes.count = tree.nodes.count
 
-    cdef np.ndarray node_ndarray = np.array(tree._get_node_ndarray())
-    tree_copied.nodes.elements = NULL
-
-    tree_copied.nodes.capacity = node_ndarray.shape[0]
-    if resize_c(tree_copied.nodes, tree_copied.nodes.capacity) != 0:
-        raise MemoryError("resizing tree to %d" % tree_copied.nodes.capacity)
-    nodes = memcpy(tree_copied.nodes.elements, (<np.ndarray> node_ndarray).data,
-                   tree_copied.nodes.capacity * sizeof(Node))
-
+    tree_copied.unpickle_nodes(tree._get_node_ndarray())
     tree_copied.observations = copy_observations(tree.observations)
+
     return tree_copied
 
 cpdef void _test_independence_of_copied_tree(Tree tree):
