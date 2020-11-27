@@ -98,15 +98,5 @@ cdef class Tree:
     cpdef np.ndarray predict_proba(self, object X)
     cpdef np.ndarray apply(self, object X)
 
-    # Multithreading test functions
-    cpdef test_function_with_args_core(self, char* name, long long size, int print_size)
-    cpdef test_function_with_args(self, char* name, long long size, int print_size)
-
-    cpdef time_test2(self, long long size)
-    cpdef time_test(self, long long size)
-
-    cpdef time_test_nogil(self, long long size)
-    cdef void _time_test_nogil_(self, long long size) nogil
-
 
 cpdef Tree copy_tree(Tree tree)
