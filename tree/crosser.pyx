@@ -59,12 +59,11 @@ cdef _cross_trees(Tree child,
     cdef BranchParent* branch_parent = <BranchParent*> malloc(sizeof(StackRecord))
 
     _remove_parent_nodes(child, first_node_id, branch_parent)
-    # TODO compute depth (because can be lower)
-
     _copy_nodes(second_parent_nodes, second_node_id, child, branch_parent)
 
     branch_parent.id = child.compact_removed_nodes(branch_parent.id)
     _reassign_observations(child, branch_parent)
+    child.depth = np.max(child.nodes_depth)
 
     free(branch_parent)
 
