@@ -293,21 +293,21 @@ cdef class Tree:
 
         return node_id
 
-    cdef SIZE_t _add_node_as_removed(self, SIZE_t node_id):
+    cdef SIZE_t mark_nodes_as_removed(self, SIZE_t below_node_id):
         if self.removed_nodes.count >= self.removed_nodes.capacity:
             if resize_c(self.removed_nodes) != 0:
                 return SIZE_MAX
 
-        self.removed_nodes.elements[self.removed_nodes.count] = node_id
-        self.nodes[node_id].parent = _NODE_REMOVED
+        self.removed_nodes.elements[self.removed_nodes.count] = below_node_id
+        self.nodes[below_node_id].parent = _NODE_REMOVED
 
         self.removed_nodes.count += 1
 
-        if self.nodes[node_id].left_child != _TREE_LEAF:
-            self._add_node_as_removed(self.nodes[node_id].left_child)
-            self._add_node_as_removed(self.nodes[node_id].right_child)
+        if self.nodes[below_node_id].left_child != _TREE_LEAF:
+            self.mark_nodes_as_removed(self.nodes[below_node_id].left_child)
+            self.mark_nodes_as_removed(self.nodes[below_node_id].right_child)
 
-    cdef SIZE_t _compress_removed_nodes(self, SIZE_t crossover_point) nogil:
+    cdef SIZE_t compact_removed_nodes(self, SIZE_t crossover_point) nogil:
         cdef SIZE_t i
         cdef SIZE_t* node_id = self.removed_nodes.elements
         cdef SIZE_t copy_from
@@ -332,6 +332,7 @@ cdef class Tree:
             self.removed_nodes.capacity = 0
             free(self.removed_nodes.elements)
             self.removed_nodes.elements = NULL
+        self._resize_c(self.node_count)
         return crossover_point
 
     cdef void _copy_node(self, Node* from_node, SIZE_t from_node_id, Node* to_node, SIZE_t to_node_id) nogil:
