@@ -19,7 +19,7 @@ import numpy as np
 cimport numpy as np
 
 from tree.observations cimport Observations
-from tree.observations import Observations, copy_observations
+from tree.observations import Observations
 from tree._utils cimport Node, NodeArray, IntArray, resize, resize_c
 
 ctypedef np.npy_float64 DOUBLE_t        # Type of thresholds

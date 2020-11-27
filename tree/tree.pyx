@@ -31,11 +31,8 @@ from cpython cimport Py_INCREF, PyObject, PyTypeObject
 from libc.stdlib cimport free
 from libc.string cimport memcpy
 from libc.stdint cimport SIZE_MAX
-from libc.stdio cimport printf
 
 from tree._utils cimport safe_realloc
-
-import multiprocessing
 
 from tree.observations cimport Observations
 from tree.observations import Observations, copy_observations
@@ -44,7 +41,6 @@ import numpy as np
 cimport numpy as np
 np.import_array()
 
-from numpy import float32 as DTYPE
 from numpy import float64 as DOUBLE
 
 cdef extern from "numpy/arrayobject.h":
@@ -59,12 +55,9 @@ cdef extern from "numpy/arrayobject.h":
 
 TREE_LEAF = -1
 TREE_UNDEFINED = -2
-NOT_REGISTERED = -1
-NOT_CLASSIFIED = -1
 NODE_REMOVED = -3
 cdef SIZE_t _TREE_LEAF = TREE_LEAF
 cdef SIZE_t _TREE_UNDEFINED = TREE_UNDEFINED
-cdef SIZE_t _NOT_REGISTERED = NOT_REGISTERED
 cdef SIZE_t _NODE_REMOVED = NODE_REMOVED
 
 # Repeat struct definition for numpy
