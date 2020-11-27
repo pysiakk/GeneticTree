@@ -46,7 +46,7 @@ cpdef Tree cross_trees(Tree first_parent, Tree second_parent,
         result[0].is_left = 0
         result[0].depth_addition = 0
         child = Tree(first_parent.n_classes, first_parent.X, first_parent.y, first_parent.thresholds)
-        _copy_nodes(second_parent.nodes, second_node_id, child, 0, result)
+        _copy_nodes(second_parent.nodes, second_node_id, child, result)
         child.initialize_observations()
         free(result)
         return child
@@ -56,17 +56,6 @@ cpdef Tree cross_trees(Tree first_parent, Tree second_parent,
     _add_nodes_from_parents(child, first_parent.nodes, second_parent.nodes,
                             first_node_id, second_node_id)
 
-    return child
-
-
-"""
-Function to run _cross_trees with testing purpose
-"""
-cpdef Tree test_cross_trees(Tree first_parent, Tree second_parent,
-                            int first_node_id, int second_node_id):
-    cdef Tree child = _initialize_new_tree(first_parent)
-    _add_nodes_from_parents(child, first_parent.nodes, second_parent.nodes,
-                            first_node_id, second_node_id)
     return child
 
 
@@ -83,7 +72,7 @@ cdef void _add_nodes_from_parents(Tree child,
 
     _remove_nodes_below_crossover_point(child, first_node_id, result)
 
-    _copy_nodes(second_parent_nodes, second_node_id, child, 0, result)
+    _copy_nodes(second_parent_nodes, second_node_id, child, result)
 
     result.new_parent_id = child._compress_removed_nodes(result.new_parent_id)
 
@@ -115,26 +104,18 @@ While stack not empty repeat:
     conditions == node exist in parent tree
 """
 cdef _copy_nodes(Node* donor_nodes, SIZE_t crossover_point,
-                 Tree recipient, bint is_first, CrossoverPoint* result):
-    cdef SIZE_t new_parent_id = _TREE_UNDEFINED
-    cdef SIZE_t old_self_id = 0
-    cdef bint is_left = 0
+                 Tree recipient, CrossoverPoint* result):
+    cdef SIZE_t new_parent_id = result[0].new_parent_id
+    cdef SIZE_t old_self_id = crossover_point
+    cdef bint is_left = result[0].is_left
     cdef bint is_leaf = 0
-    cdef SIZE_t feature = donor_nodes[0].feature
-    cdef double threshold = donor_nodes[0].threshold
-    cdef SIZE_t depth = 0
+    cdef SIZE_t feature = donor_nodes[crossover_point].feature
+    cdef double threshold = donor_nodes[crossover_point].threshold
+    cdef SIZE_t depth = donor_nodes[crossover_point].depth
     cdef SIZE_t class_number = 0
 
     # to use with second donor
-    cdef SIZE_t depth_addition = 0
-    if is_first == 0:
-        new_parent_id = result[0].new_parent_id
-        old_self_id = crossover_point
-        is_left = result[0].is_left
-        feature = donor_nodes[crossover_point].feature
-        threshold = donor_nodes[crossover_point].threshold
-        depth = donor_nodes[crossover_point].depth
-        depth_addition = result[0].depth_addition - donor_nodes[crossover_point].depth
+    cdef SIZE_t depth_addition = result[0].depth_addition - donor_nodes[crossover_point].depth
 
     cdef SIZE_t max_depth_seen = 0
     cdef SIZE_t success_code = 0
@@ -170,15 +151,6 @@ cdef _copy_nodes(Node* donor_nodes, SIZE_t crossover_point,
             if is_leaf == 1:
                 class_number = feature
 
-            # when to stop adding nodes for first donor
-            if old_self_id == crossover_point and is_first == 1:
-                # remember: new_parent_id and is_left
-                # and not register node
-                result[0].new_parent_id = new_parent_id
-                result[0].is_left = is_left
-                result[0].depth_addition = depth
-                continue
-
             new_parent_id = recipient._add_node(new_parent_id, is_left, is_leaf,
                                                 feature, threshold, depth, class_number)
 
@@ -193,8 +165,8 @@ cdef _copy_nodes(Node* donor_nodes, SIZE_t crossover_point,
             if depth > max_depth_seen:
                 max_depth_seen = depth
 
-            if success_code >= 0:
-                recipient.depth = max_depth_seen
+        if success_code >= 0:
+            recipient.depth = max_depth_seen
 
 
 cdef void _remove_nodes_below_crossover_point(Tree recipient, SIZE_t crossover_point,

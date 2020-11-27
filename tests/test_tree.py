@@ -89,7 +89,7 @@ def test_crossing(first, second):
 
 def test_crosser():
     trees = build(2, 10)
-    tree: Tree = test_cross_trees(trees[0][0], trees[1][0], 2, 0)
+    tree: Tree = cross_trees(trees[0][0], trees[1][0], 2, 0)
     new_features = np.append(np.append(np.append(trees[0][1][0:2], np.array([trees[1][1][6], trees[0][1][3], trees[0][1][4]])),
                                        np.array([trees[1][1][2], trees[1][1][0], trees[1][1][5]])),
                              np.array([trees[1][1][1], trees[1][1][4], trees[1][1][3]]))
@@ -102,9 +102,9 @@ def test_independence_of_created_trees_by_crosser(crosses: int = 10, mutations: 
     trees = build(1, 10)
 
     # cross tree many times with the same tree
-    tree: Tree = test_cross_trees(trees[0][0], trees[1][0], 1, 0)
+    tree: Tree = cross_trees(trees[0][0], trees[1][0], 1, 0)
     for i in range(1, crosses):
-        tree = test_cross_trees(trees[0][0], tree, 1, 0)
+        tree = cross_trees(trees[0][0], tree, 1, 0)
 
     # check if crossing is proper
     new_features = np.repeat(np.array([[trees[0][1][0], trees[0][1][2]]]).transpose(), crosses, axis=1).reshape(crosses*2, order='F')
