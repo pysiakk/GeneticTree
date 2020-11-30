@@ -23,7 +23,7 @@ def check_thresholds_memory_usage(X, X2, y2, n_trees: int = 10, n_thresholds: in
     builder: FullTreeBuilder = FullTreeBuilder()
     start = time.time()
     for i in range(n_trees):
-        tree: Tree = Tree(3,  X2, y2, thresholds)
+        tree: Tree = Tree(3,  X2, y2, thresholds, np.random.randint(10**8))
         tree.resize_by_initial_depth(depth)
         builder.build(tree, 3)
         trees.append(tree)

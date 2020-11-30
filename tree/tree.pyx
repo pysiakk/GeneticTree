@@ -27,6 +27,7 @@
 # the last thing copied was utils (exactly 2 functions) used directly in tree
 
 from cpython cimport Py_INCREF, PyObject, PyTypeObject
+from cpython.pycapsule cimport PyCapsule_IsValid, PyCapsule_GetPointer
 
 from libc.stdlib cimport free
 from libc.string cimport memcpy
@@ -112,7 +113,8 @@ cdef class Tree:
     def __cinit__(self, int n_classes,
                   object X,
                   SIZE_t[:] y,
-                  DTYPE_t[:, :] thresholds):
+                  DTYPE_t[:, :] thresholds,
+                  uint64_t seed):
         """Constructor."""
         self.n_features = X.shape[1]
         self.n_observations = X.shape[0]
@@ -140,6 +142,11 @@ cdef class Tree:
 
         self.observations = Observations(X, y)
 
+        self.seed1 = seed
+        self.seed2 = 987654321
+        self.seed3 = 43219876
+        self.seed4 = 6543217
+
     def __dealloc__(self):
         """Destructor."""
         # Free all inner structures
@@ -159,6 +166,7 @@ cdef class Tree:
                empty_2d_array,
                empty_1d_array,
                empty_2d_array,
+               self.seed1,
                ), self.__getstate__())
 
     def __getstate__(self):
@@ -174,6 +182,9 @@ cdef class Tree:
         state["n_features"] = self.n_features
         state["n_observations"] = self.n_observations
         state["n_thresholds"] = self.n_thresholds
+        state["seed2"] = self.seed2
+        state["seed3"] = self.seed3
+        state["seed4"] = self.seed4
 
         return state
 
@@ -186,6 +197,9 @@ cdef class Tree:
         self.n_features = state["n_features"]
         self.n_observations = state["n_observations"]
         self.n_thresholds = state["n_thresholds"]
+        self.seed2 = state["seed2"]
+        self.seed3 = state["seed3"]
+        self.seed4 = state["seed4"]
 
         if 'nodes' not in state:
             raise ValueError('You have loaded Tree version which '
@@ -336,9 +350,68 @@ cdef class Tree:
         arr.base = <PyObject*> self
         return arr
 
+    cdef change_feature_or_class(self, SIZE_t node_id, SIZE_t new_feature):
+        self.nodes.elements[node_id].feature = new_feature
+
+    cdef change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold):
+        self.nodes.elements[node_id].threshold = new_threshold
+
+# ===========================================================================================================
+# Random functions
+# ===========================================================================================================
+
+    # it is one of JKISS generators - found in lecture notes
+    # KISS in JKISS means keep it simple stupid
+    cdef SIZE_t randint(self, SIZE_t lb, SIZE_t ub) nogil:
+        cdef uint64_t temp
+        cdef SIZE_t result
+        self.seed1 = 314527869 * self.seed1 + 1234567
+        self.seed2 ^= self.seed2 << 5
+        self.seed2 ^= self.seed2 >> 7
+        self.seed2 ^= self.seed2 << 22
+        temp = 4294584393ULL * self.seed3 + self.seed4
+        self.seed4 = temp >> 32
+        self.seed3 = temp
+        result = lb + (self.seed1 + self.seed2 + self.seed3) % (ub - lb)
+        return result
+
     cpdef public SIZE_t get_random_node(self):
-        cdef SIZE_t random_id = np.random.randint(0, self.nodes.count)
+        cdef SIZE_t random_id = self.randint(0, self.nodes.count)
         return random_id
+
+    cdef SIZE_t get_random_decision_node(self):
+        cdef SIZE_t random_id = self.randint(0, self.nodes.count)
+        while self.nodes.elements[random_id].left_child == _TREE_LEAF:
+            random_id = self.randint(0, self.nodes.count)
+        return random_id
+
+    cdef SIZE_t get_random_leaf(self):
+        cdef SIZE_t random_id = self.randint(0, self.nodes.count)
+        while self.nodes.elements[random_id].left_child != _TREE_LEAF:
+            random_id = self.randint(0, self.nodes.count)
+        return random_id
+
+    cdef SIZE_t get_new_random_feature(self, SIZE_t last_feature):
+        cdef SIZE_t new_feature = self.randint(0, self.n_features - 1)
+        if new_feature >= last_feature:
+            new_feature += 1
+        return new_feature
+
+    cdef DOUBLE_t get_new_random_threshold(self, DOUBLE_t last_threshold, SIZE_t feature, bint feature_changed):
+        cdef SIZE_t new_threshold_index
+        if feature_changed == 1:
+            new_threshold_index = self.randint(0, self.n_thresholds)
+        else:
+            new_threshold_index = self.randint(0, self.n_thresholds - 1)
+            if self.thresholds[new_threshold_index, feature] >= last_threshold:
+                new_threshold_index += 1
+        return self.thresholds[new_threshold_index, feature]
+
+    cdef SIZE_t get_new_random_class(self, SIZE_t last_class):
+        cdef SIZE_t new_class = self.randint(0, self.n_classes - 1)
+        if new_class >= last_class:
+            new_class += 1
+        return new_class
 
 # ===========================================================================================================
 # Observations functions
@@ -401,7 +474,7 @@ cdef class Tree:
 
 
 cpdef Tree copy_tree(Tree tree):
-    cdef Tree tree_copied = Tree(tree.n_classes, tree.X, tree.y, tree.thresholds)
+    cdef Tree tree_copied = Tree(tree.n_classes, tree.X, tree.y, tree.thresholds, np.random.randint(10**8))
     tree_copied.depth = tree.depth
     tree_copied.nodes.count = tree.nodes.count
 

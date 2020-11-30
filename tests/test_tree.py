@@ -22,7 +22,7 @@ thresholds = prepare_thresholds_array(n_thresholds, X)
 def test_builder_tree_size():
     builder: FullTreeBuilder = FullTreeBuilder()
     for initial_depth in range(5, 0, -1):
-        tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds)
+        tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds, np.random.randint(10**8))
         tree.resize_by_initial_depth(initial_depth)
         builder.build(tree, initial_depth)
         assert tree.node_count == tree.feature.shape[0] == tree.threshold.shape[0] == 2 ** (initial_depth+1) - 1
@@ -32,7 +32,7 @@ def build(depth: int = 1, n_trees: int = 10):
     builder: FullTreeBuilder = FullTreeBuilder()
     trees = []
     for i in range(n_trees):
-        tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds)
+        tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds, np.random.randint(10**8))
         tree.resize_by_initial_depth(depth)
         builder.build(tree, depth)
         tree.initialize_observations()

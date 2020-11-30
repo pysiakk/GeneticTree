@@ -25,6 +25,7 @@ from tree._utils cimport Node, NodeArray, IntArray, resize, resize_c
 ctypedef np.npy_float64 DOUBLE_t        # Type of thresholds
 ctypedef np.npy_float32 DTYPE_t         # Type of X
 ctypedef np.npy_intp SIZE_t             # Type for indices and counters
+ctypedef np.npy_uint64 uint64_t             # Type for random generator JKISS
 
 cdef class Tree:
     # The Tree object is a binary tree structure.
@@ -47,6 +48,11 @@ cdef class Tree:
     cdef public object X                    # Array with observations features (TODO: possibility of sparse array)
     cdef public SIZE_t[:] y                 # Array with classes of observations
 
+    cdef uint64_t seed1
+    cdef uint64_t seed2
+    cdef uint64_t seed3
+    cdef uint64_t seed4
+
     # Methods
     cpdef resize_by_initial_depth(self, int initial_depth)
 
@@ -60,7 +66,17 @@ cdef class Tree:
 
     cdef np.ndarray _get_node_ndarray(self)
 
+    cdef change_feature_or_class(self, SIZE_t node_id, SIZE_t new_feature)
+    cdef change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold)
+
+    # Random functions
+    cdef SIZE_t randint(self, SIZE_t lb, SIZE_t ub) nogil
     cpdef public SIZE_t get_random_node(self)
+    cdef SIZE_t get_random_decision_node(self)
+    cdef SIZE_t get_random_leaf(self)
+    cdef SIZE_t get_new_random_feature(self, SIZE_t last_feature)
+    cdef DOUBLE_t get_new_random_threshold(self, DOUBLE_t last_threshold, SIZE_t feature, bint feature_changed)
+    cdef SIZE_t get_new_random_class(self, SIZE_t last_class)
 
     # Observations functions
     cpdef initialize_observations(self)
