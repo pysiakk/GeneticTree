@@ -24,7 +24,7 @@ def obs(X_converted):
 @pytest.fixture
 def tree(X_converted):
     thresholds = prepare_thresholds_array(10, X_converted)
-    tree = Tree(3, X_converted, y, thresholds)
+    tree = Tree(3, X_converted, y, thresholds, np.random.randint(10**8))
     FullTreeBuilder.build(FullTreeBuilder(), tree, 10)
     return tree
 

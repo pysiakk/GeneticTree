@@ -5,6 +5,9 @@ from tests.set_up_variables_and_imports import *
 from genetic_tree import GeneticTree
 from tree.thresholds import prepare_thresholds_array
 from tree.tree import copy_tree, _test_independence_of_copied_tree
+from tree.mutator import mutate_random_node, mutate_random_class_or_threshold
+from tree.mutator import mutate_random_feature, mutate_random_threshold
+from tree.mutator import mutate_random_class
 
 import pickle
 
@@ -19,7 +22,7 @@ thresholds = prepare_thresholds_array(n_thresholds, X)
 def test_builder_tree_size():
     builder: FullTreeBuilder = FullTreeBuilder()
     for initial_depth in range(5, 0, -1):
-        tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds)
+        tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds, np.random.randint(10**8))
         tree.resize_by_initial_depth(initial_depth)
         builder.build(tree, initial_depth)
         assert tree.node_count == tree.feature.shape[0] == tree.threshold.shape[0] == 2 ** (initial_depth+1) - 1
@@ -29,7 +32,7 @@ def build(depth: int = 1, n_trees: int = 10):
     builder: FullTreeBuilder = FullTreeBuilder()
     trees = []
     for i in range(n_trees):
-        tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds)
+        tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds, np.random.randint(10**8))
         tree.resize_by_initial_depth(depth)
         builder.build(tree, depth)
         tree.initialize_observations()
@@ -38,10 +41,10 @@ def build(depth: int = 1, n_trees: int = 10):
 
 
 @pytest.mark.parametrize("function,features_assertion,threshold_assertion",
-                         [(Tree.mutate_random_node,     10,  0),
-                          (Tree.mutate_random_feature,  10, 10),
-                          (Tree.mutate_random_threshold, 0, 10),
-                          (Tree.mutate_random_class,    10,  0)])
+                         [(mutate_random_node,     10,  0),
+                          (mutate_random_feature,  10, 10),
+                          (mutate_random_threshold, 0, 10),
+                          (mutate_random_class,    10,  0)])
 def test_mutator(function: callable, features_assertion: int, threshold_assertion: int):
     trees = build(3, 10)
     not_same_features: int = 0
@@ -117,7 +120,7 @@ def test_independence_of_created_trees_by_crosser(crosses: int = 10, mutations: 
     # if there are no two pointers for exactly the same node it should not mutate more than one place in genom
     old_features = np.array(tree.feature)
     for i in range(mutations):
-        tree.mutate_random_node()
+        mutate_random_node(tree)
         new_features = np.array(tree.feature)
         assert_array_not_the_same_in_at_most_one_index(new_features, old_features)
         old_features = new_features

@@ -10,7 +10,7 @@ thresholds = prepare_thresholds_array(10, X)
 
 
 def initialize_tree(thresholds) -> Tree:
-    tree: Tree = Tree(3, X, y, thresholds)
+    tree: Tree = Tree(3, X, y, thresholds, np.random.randint(10**8))
     tree.resize_by_initial_depth(3)
     builder: FullTreeBuilder = FullTreeBuilder()
     builder.build(tree, 3)

@@ -3,6 +3,9 @@ import math
 import numpy as np
 
 from aenum import Enum, extend_enum
+from tree.mutator import mutate_random_node, mutate_random_class_or_threshold
+from tree.mutator import mutate_random_feature, mutate_random_threshold
+from tree.mutator import mutate_random_class
 
 
 class MutationType(Enum):
@@ -30,10 +33,10 @@ class MutationType(Enum):
     # after each entry should be at least delimiter
     # (also can be more arguments which will be ignored)
     # this is needed because value is callable type
-    Class = Tree.mutate_random_class,
-    Threshold = Tree.mutate_random_threshold,
-    Feature = Tree.mutate_random_feature,
-    ClassOrThreshold = Tree.mutate_random_class_or_threshold,
+    Class = mutate_random_class,
+    Threshold = mutate_random_threshold,
+    Feature = mutate_random_feature,
+    ClassOrThreshold = mutate_random_class_or_threshold,
 
 
 class Mutator:
@@ -172,7 +175,7 @@ class Mutator:
             mutation_type: MutationType
         """
         if mutation_type is None:
-            tree.mutate_random_node()
+            mutate_random_node(tree)
         else:
             mutation_type.mutate(tree)
 

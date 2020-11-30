@@ -86,7 +86,7 @@ class Initializer:
         n_classes: int = np.unique(y).shape[0]
 
         for tree_index in range(self.n_trees):
-            tree: Tree = Tree(n_classes, X, y, thresholds)
+            tree: Tree = Tree(n_classes, X, y, thresholds, np.random.randint(10**8))
             tree.resize_by_initial_depth(self.initial_depth)
             self.builder.build(tree, self.initial_depth)
             tree.initialize_observations()
@@ -106,7 +106,7 @@ class Initializer:
 
         for tree_index in range(self.n_trees):
             if tree_index % 2 == 0:
-                tree: Tree = Tree(n_classes, X, y, thresholds)
+                tree: Tree = Tree(n_classes, X, y, thresholds, np.random.randint(10**8))
                 tree.resize_by_initial_depth(self.initial_depth)
                 self.builder.build(tree, self.initial_depth)
                 tree.initialize_observations()
@@ -116,7 +116,7 @@ class Initializer:
                     depth = np.random.randint(low=1, high=self.initial_depth)
                 else:
                     depth = self.initial_depth
-                tree: Tree = Tree(n_classes, X, y, thresholds)
+                tree: Tree = Tree(n_classes, X, y, thresholds, np.random.randint(10**8))
                 tree.resize_by_initial_depth(depth)
                 self.builder.build(tree, depth)
                 tree.initialize_observations()
@@ -135,7 +135,7 @@ class Initializer:
         n_classes: int = np.unique(y).shape[0]
 
         for tree_index in range(self.n_trees):
-            tree: Tree = Tree(n_classes, X, y, thresholds)
+            tree: Tree = Tree(n_classes, X, y, thresholds, np.random.randint(10**8))
             tree.resize_by_initial_depth(self.initial_depth)
             self.builder.build(tree, self.initial_depth, self.split_prob)
             tree.initialize_observations()
