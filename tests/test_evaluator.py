@@ -9,7 +9,7 @@ from tests.test_tree import build
 def trees():
     trees = []
     for i in range(20):
-        trees.append(build(5, 1)[0][0])
+        trees.append(build(5, 1)[0])
     return trees
 
 

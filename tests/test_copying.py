@@ -5,7 +5,7 @@ from tests.test_tree import build
 
 
 def test_copy_tree(n: int = 2, depth: int = 10):
-    tree: Tree = build(depth, 1)[0][0]
+    tree: Tree = build(depth, 1)[0]
     start = time.time()
     for i in range(n):
         copy_tree(tree)
@@ -13,8 +13,8 @@ def test_copy_tree(n: int = 2, depth: int = 10):
 
 
 def test_crossing_tree(n: int = 2, depth: int = 10):
-    tree: Tree = build(depth, 1)[0][0]
-    tree2: Tree = build(depth, 1)[0][0]
+    tree: Tree = build(depth, 1)[0]
+    tree2: Tree = build(depth, 1)[0]
     start = time.time()
     node_id = tree.node_count - 1
     for i in range(n):

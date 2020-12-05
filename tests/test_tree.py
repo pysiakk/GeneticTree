@@ -18,7 +18,7 @@ def build(depth: int = 1, n_trees: int = 10):
         tree.resize_by_initial_depth(depth)
         builder.build(tree, depth)
         tree.initialize_observations()
-        trees.append((tree, np.array(tree.feature), np.array(tree.threshold)))
+        trees.append(tree)
     return trees
 
 
@@ -31,7 +31,9 @@ def test_mutator(function: callable, features_assertion: int, threshold_assertio
     trees = build(3, 10)
     not_same_features: int = 0
     not_same_thresholds: int = 0
-    for tree, feature, threshold in trees:
+    for tree in trees:
+        feature = np.array(tree.feature)
+        threshold = np.array(tree.threshold)
         function(tree)
         not_same_features += assert_array_not_the_same_in_at_most_one_index(feature, tree.feature)
         not_same_thresholds += assert_array_not_the_same_in_at_most_one_index(threshold, tree.threshold)
@@ -49,31 +51,33 @@ def assert_array_not_the_same_in_at_most_one_index(array, other) -> int:
 
 
 def test_crossing_one_leaf():
-    trees = build(2, 10)
-    trees[0][0].initialize_observations()
-    trees[1][0].initialize_observations()
-    cross_trees(trees[0][0], trees[1][0], 0, 6)
+    trees = build(2, 2)
+    trees[0].initialize_observations()
+    trees[1].initialize_observations()
+    cross_trees(trees[0], trees[1], 0, 6)
 
 
 def test_crossing_only_from_second_parent():
-    trees = build(2, 10)
-    trees[0][0].initialize_observations()
-    trees[1][0].initialize_observations()
-    cross_trees(trees[0][0], trees[1][0], 0, 0)
+    trees = build(2, 2)
+    trees[0].initialize_observations()
+    trees[1].initialize_observations()
+    cross_trees(trees[0], trees[1], 0, 0)
 
 
 @pytest.mark.parametrize("first, second",
                          [(6, 1), (6, 0), (0, 0), (0, 1), (1, 6), (1, 3),
                           (1, 0), (6, 3), (3, 0), (3, 1), (3, 2), (3, 3), (3, 6)])
 def test_crossing(first, second):
-    trees = build(2, 10)
-    trees[0][0].initialize_observations()
-    trees[1][0].initialize_observations()
-    cross_trees(trees[0][0], trees[1][0], first, second)
+    trees = build(2, 2)
+    trees[0].initialize_observations()
+    trees[1].initialize_observations()
+    cross_trees(trees[0], trees[1], first, second)
 
 
 def test_crosser():
-    trees = build(2, 10)
+    trees = build(2, 2)
+    trees[0] = trees[0], trees[0].feature, trees[0].threshold
+    trees[1] = trees[1], trees[1].feature, trees[1].threshold
     tree: Tree = cross_trees(trees[0][0], trees[1][0], 2, 0)
     new_features = np.append(np.append(np.append(trees[0][1][0:2], np.array([trees[1][1][6], trees[0][1][3], trees[0][1][4]])),
                                        np.array([trees[1][1][2], trees[1][1][0], trees[1][1][5]])),
@@ -84,7 +88,9 @@ def test_crosser():
 
 
 def test_independence_of_created_trees_by_crosser(crosses: int = 10, mutations: int = 10):
-    trees = build(1, 10)
+    trees = build(1, 2)
+    trees[0] = trees[0], trees[0].feature, trees[0].threshold
+    trees[1] = trees[1], trees[1].feature, trees[1].threshold
 
     # cross tree many times with the same tree
     tree: Tree = cross_trees(trees[0][0], trees[1][0], 1, 0)
@@ -109,7 +115,7 @@ def test_independence_of_created_trees_by_crosser(crosses: int = 10, mutations: 
 
 
 def test_tree_pickling():
-    tree: Tree = build(10, 1)[0][0]
+    tree: Tree = build(10, 1)[0]
     depth = tree.depth
     feature = tree.feature
     node_count = tree.node_count
@@ -123,7 +129,7 @@ def test_tree_pickling():
 
 
 def test_tree_copying():
-    tree: Tree = build(10, 1)[0][0]
+    tree: Tree = build(10, 1)[0]
     tree_copied: Tree = copy_tree(tree)
     assert tree.node_count == tree_copied.node_count
     assert_array_equal(tree.X, tree_copied.X)
@@ -138,6 +144,6 @@ def test_tree_copying():
 
 
 def test_independence_of_copied_tree_():
-    tree: Tree = build(10, 1)[0][0]
+    tree: Tree = build(10, 1)[0]
     test_independence_of_copied_tree(tree)
 

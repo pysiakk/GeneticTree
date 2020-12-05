@@ -215,7 +215,7 @@ def test_elitism_above_trees_len(selector, metrics, trees, trees_len):
 def real_trees():
     trees = []
     for i in range(3):
-        trees.append(build(5, 1)[0][0])
+        trees.append(build(5, 1)[0])
     return trees
 
 

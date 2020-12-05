@@ -20,7 +20,7 @@ def mutator():
 def trees():
     trees = []
     for i in range(3):
-        trees.append(build(5, 1)[0][0])
+        trees.append(build(5, 1)[0])
     return trees
 
 
