@@ -43,6 +43,7 @@ cdef class Tree:
     cdef IntArray* removed_nodes
 
     cdef Observations observations      # Class with y array metadata
+    cdef public object probabilities # Probabilities of classes in nodes
 
     cdef public DTYPE_t[:, :] thresholds    # Array with possible thresholds for each feature
     cdef public object X                    # Array with observations features (TODO: possibility of sparse array)

@@ -42,6 +42,8 @@ import numpy as np
 cimport numpy as np
 np.import_array()
 
+from scipy.sparse import dok_matrix, csr_matrix
+
 from numpy import float64 as DOUBLE
 
 cdef extern from "numpy/arrayobject.h":
@@ -54,6 +56,7 @@ cdef extern from "numpy/arrayobject.h":
 # Types and constants
 # =============================================================================
 
+cdef DTYPE_t EPSILON = 0.00001
 TREE_LEAF = -1
 TREE_UNDEFINED = -2
 NODE_REMOVED = -3
@@ -449,22 +452,32 @@ cdef class Tree:
 # ===========================================================================================================
 
     cpdef prepare_tree_to_prediction(self):
-        cdef SIZE_t[:] observations_in_class
+        cdef DTYPE_t[:] observations_in_class
         cdef IntArray observations
         cdef SIZE_t node_id
         cdef SIZE_t i
+        self.probabilities = dok_matrix((self.nodes.count, self.n_classes), dtype=np.float32)
         # for each node (f the node is leaf) change class for the most occurring
         for node_id in range(self.nodes.count):
             # if it is leaf and has one or more observation
-            if self.nodes.elements[node_id].left_child == _TREE_LEAF and \
-                self.nodes.elements[node_id].right_child != _TREE_LEAF:
-                observations_in_class = np.zeros(self.n_classes, dtype=np.intp)
-                observations = self.observations.leaves.elements[self.nodes.elements[node_id].right_child]
-                for i in range(observations.count):
-                    observations_in_class[self.y[observations.elements[i]]] += 1
-                # change class if it is not the maximum value
-                if observations_in_class[self.nodes.elements[node_id].feature] != np.max(observations_in_class):
-                    self.nodes.elements[node_id].feature = np.argmax(observations_in_class)
+            if self.nodes.elements[node_id].left_child == _TREE_LEAF:
+                if self.nodes.elements[node_id].right_child != _TREE_LEAF:
+                    observations_in_class = np.zeros(self.n_classes, dtype=np.float32)
+                    observations = self.observations.leaves.elements[self.nodes.elements[node_id].right_child]
+                    for i in range(observations.count):
+                        observations_in_class[self.y[observations.elements[i]]] += 1
+                    # change class if it is not the maximum value
+                    if observations_in_class[self.nodes.elements[node_id].feature] != np.max(observations_in_class):
+                        self.nodes.elements[node_id].feature = np.argmax(observations_in_class)
+                else:
+                    observations_in_class = np.ones(self.n_classes, dtype=np.float32)
+
+                # add probabilities of leaf
+                observations_in_class[self.nodes.elements[node_id].feature] += EPSILON
+                self.probabilities[node_id, :] = observations_in_class / np.sum(observations_in_class)
+
+        self.probabilities = csr_matrix(self.probabilities)
+
 
     cpdef np.ndarray predict(self, object X):
         cdef DTYPE_t[:, :] X_ndarray = X

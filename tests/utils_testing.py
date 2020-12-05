@@ -45,7 +45,8 @@ from genetic.selector import get_selected_indices_by_stochastic_uniform_selectio
 # package interface
 from genetic_tree import GeneticTree
 
-TREE_UNDEFINED = -2
+# import constants
+from tree.tree import TREE_UNDEFINED
 
 # load iris dataset and randomly permute it (example from sklearn.tree.test.test_tree)
 iris = datasets.load_iris()
