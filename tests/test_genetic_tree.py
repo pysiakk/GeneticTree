@@ -114,8 +114,8 @@ def test_predict(genetic_tree_fitted, X_converted):
 
 
 def test_predict_proba(genetic_tree_fitted, X_converted):
-    assert_array_equal(genetic_tree_fitted.predict_proba(X),
-                       genetic_tree_fitted._best_tree_.predict_proba(X_converted))
+    assert_array_equal(genetic_tree_fitted.predict_proba(X).toarray(),
+                       genetic_tree_fitted._best_tree_.predict_proba(X_converted).toarray())
 
 
 def test_apply(genetic_tree_fitted, X_converted):

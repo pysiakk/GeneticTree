@@ -482,8 +482,8 @@ cdef class Tree:
     cpdef np.ndarray predict(self, object X):
         cdef DTYPE_t[:, :] X_ndarray = X
         cdef n_observations = X_ndarray.shape[0]
-        cdef np.ndarray y = np.empty(n_observations, dtype=DOUBLE)
-        cdef int observation_id
+        cdef np.ndarray y = np.empty(n_observations, dtype=np.intp)
+        cdef SIZE_t observation_id
 
         for observation_id in range(n_observations):
             node_id = self._find_leaf_for_observation(observation_id, X_ndarray, 0)
@@ -491,9 +491,17 @@ cdef class Tree:
 
         return y
 
-    cpdef np.ndarray predict_proba(self, object X):
-        # TODO when tree will be done with all genetic operators
-        return np.array([1, 2])
+    cpdef object predict_proba(self, object X):
+        cdef DTYPE_t[:, :] X_ndarray = X
+        cdef n_observations = X_ndarray.shape[0]
+        y_prob = dok_matrix((n_observations, self.n_classes), dtype=np.float32)
+        cdef SIZE_t observation_id
+
+        for observation_id in range(n_observations):
+            node_id = self._find_leaf_for_observation(observation_id, X_ndarray, 0)
+            y_prob[observation_id, :] = self.probabilities[node_id, :][0]
+
+        return csr_matrix(y_prob)
 
     cpdef np.ndarray apply(self, object X):
         # TODO when tree will be done with all genetic operators
