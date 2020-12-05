@@ -1,4 +1,4 @@
-from tests.set_up_variables_and_imports import *
+from tests.utils_testing import *
 
 
 def check_creating_trees_with_many_threads(X, n_trees: int = 10, n_jobs: int = 4, depth: int = 3):

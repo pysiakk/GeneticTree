@@ -1,4 +1,4 @@
-from tests.set_up_variables_and_imports import *
+from tests.utils_testing import *
 
 n_trees = 20
 

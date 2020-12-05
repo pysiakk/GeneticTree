@@ -60,3 +60,15 @@ X = GeneticTree._check_X_(GeneticTree(), X, True)
 # thresholds array have unique values
 # it is needed to proper test mutating thresholds
 thresholds = prepare_thresholds_array(n_thresholds, X)
+
+
+def build_trees(depth: int = 1, n_trees: int = 10):
+    builder: FullTreeBuilder = FullTreeBuilder()
+    trees = []
+    for i in range(n_trees):
+        tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds, np.random.randint(10**8))
+        tree.resize_by_initial_depth(depth)
+        builder.build(tree, depth)
+        tree.initialize_observations()
+        trees.append(tree)
+    return trees

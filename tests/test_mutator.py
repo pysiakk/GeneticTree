@@ -1,5 +1,4 @@
-from tests.set_up_variables_and_imports import *
-from tests.test_tree import build
+from tests.utils_testing import *
 
 # ==============================================================================
 # Mutation functions (if it will be standalone)
@@ -20,7 +19,7 @@ def mutator():
 def trees():
     trees = []
     for i in range(3):
-        trees.append(build(5, 1)[0])
+        trees.append(build_trees(5, 1)[0])
     return trees
 
 

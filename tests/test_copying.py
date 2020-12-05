@@ -1,11 +1,8 @@
-import time
-
-from tests.set_up_variables_and_imports import *
-from tests.test_tree import build
+from tests.utils_testing import *
 
 
 def test_copy_tree(n: int = 2, depth: int = 10):
-    tree: Tree = build(depth, 1)[0]
+    tree: Tree = build_trees(depth, 1)[0]
     start = time.time()
     for i in range(n):
         copy_tree(tree)
@@ -13,8 +10,8 @@ def test_copy_tree(n: int = 2, depth: int = 10):
 
 
 def test_crossing_tree(n: int = 2, depth: int = 10):
-    tree: Tree = build(depth, 1)[0]
-    tree2: Tree = build(depth, 1)[0]
+    tree: Tree = build_trees(depth, 1)[0]
+    tree2: Tree = build_trees(depth, 1)[0]
     start = time.time()
     node_id = tree.node_count - 1
     for i in range(n):

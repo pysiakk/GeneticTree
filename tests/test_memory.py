@@ -1,4 +1,4 @@
-from tests.set_up_variables_and_imports import *
+from tests.utils_testing import *
 
 
 def check_thresholds_memory_usage(X, X2, y2, n_trees: int = 10, n_thresholds: int = 10, depth: int = 3):
