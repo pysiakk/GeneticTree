@@ -24,7 +24,7 @@ from tree._utils import test_copy_int_array, test_copy_leaves
 from tree.tree import Tree, copy_tree, test_independence_of_copied_tree
 from tree.thresholds import prepare_thresholds_array
 from tree.observations import Observations, copy_observations
-from tree.builder import Builder, FullTreeBuilder
+from tree.builder import Builder, FullTreeBuilder, test_add_node, test_add_leaf
 from tree.mutator import mutate_random_node, mutate_random_class_or_threshold
 from tree.mutator import mutate_random_feature, mutate_random_threshold
 from tree.mutator import mutate_random_class
@@ -44,6 +44,8 @@ from genetic.selector import get_selected_indices_by_stochastic_uniform_selectio
 
 # package interface
 from genetic_tree import GeneticTree
+
+TREE_UNDEFINED = -2
 
 # load iris dataset and randomly permute it (example from sklearn.tree.test.test_tree)
 iris = datasets.load_iris()

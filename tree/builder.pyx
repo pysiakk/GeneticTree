@@ -179,3 +179,10 @@ cdef class SplitTreeBuilder(Builder):
             return current_depth
 
         return 0
+
+
+cpdef test_add_node(Tree tree, SIZE_t parent, bint is_left, SIZE_t feature, double threshold, SIZE_t depth):
+    tree._add_node(parent, is_left, 0, feature, threshold, depth, 0)
+
+cpdef test_add_leaf(Tree tree, SIZE_t parent, bint is_left, SIZE_t leaf_class, SIZE_t depth):
+    tree._add_node(parent, is_left, 1, 0, 0.0, depth, leaf_class)

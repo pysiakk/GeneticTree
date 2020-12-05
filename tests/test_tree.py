@@ -135,3 +135,42 @@ def test_independence_of_copied_tree_():
     tree: Tree = build_trees(10, 1)[0]
     test_independence_of_copied_tree(tree)
 
+
+# ==============================================================================
+# Tree functions
+# ==============================================================================
+
+# ++++++++++++++++++++++++++
+# Prediction
+# ++++++++++++++++++++++++++
+
+def build_simple_tree(threshold, class_in_leaf):
+    tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds, np.random.randint(10**8))
+    # tree, parent, is_left, feature, threshold, depth
+    test_add_node(tree, TREE_UNDEFINED, 0, 2, 3.0, 1)
+    # tree, parent, is_left, class, depth
+    test_add_leaf(tree, 0, 1, 1, 2)
+
+    test_add_node(tree, 0, 0, 2, threshold, 2)
+    test_add_leaf(tree, 2, 1, class_in_leaf, 3)
+    test_add_leaf(tree, 2, 0, 0, 3)
+    return tree
+
+
+@pytest.fixture
+def tree() -> Tree:
+    return build_simple_tree(5.0, 0)
+
+
+def test_changing_classes_to_class_most_often_occurring(tree):
+    tree.initialize_observations()
+    assert_array_equal(tree.feature, np.array([2, 1, 2, 0, 0]))
+    tree.prepare_tree_to_prediction()
+    assert_array_equal(tree.feature, np.array([2, 0, 2, 1, 2]))
+
+
+@pytest.mark.parametrize("tree", [build_simple_tree(6.7, 0), build_simple_tree(6.7, 1), build_simple_tree(6.7, 2)])
+def test_not_changing_class_when_two_classes_have_the_same_number_of_observations(tree):
+    tree.initialize_observations()
+    tree.prepare_tree_to_prediction()
+    assert tree.feature[3] == 1 or tree.feature[3] == 2
