@@ -16,7 +16,7 @@ def trees():
 def test_get_accuracy(trees):
     metrics = np.empty(20, float)
     for i in range(20):
-        metrics[i] = trees[i].get_proper_classified() / trees[i].n_observations
+        metrics[i] = trees[i].proper_classified / trees[i].n_observations
     assert_array_equal(metrics, get_accuracy(trees))
 
 
@@ -24,7 +24,7 @@ def test_get_accuracy(trees):
 def test_get_accuracy_and_n_leaves(trees, n_leaves_factor):
     metrics = np.empty(20, float)
     for i in range(20):
-        metrics[i] = trees[i].get_proper_classified() / trees[i].n_observations \
+        metrics[i] = trees[i].proper_classified / trees[i].n_observations \
                      - n_leaves_factor * (trees[i].node_count + 1) / 2
     assert_array_equal(metrics, get_accuracy_and_n_leaves(trees, n_leaves_factor))
 
@@ -33,7 +33,7 @@ def test_get_accuracy_and_n_leaves(trees, n_leaves_factor):
 def test_get_accuracy_and_depth(trees, depth_factor):
     metrics = np.empty(20, float)
     for i in range(20):
-        metrics[i] = trees[i].get_proper_classified() / trees[i].n_observations \
+        metrics[i] = trees[i].proper_classified / trees[i].n_observations \
                      - depth_factor * trees[i].depth
     assert_array_equal(metrics, get_accuracy_and_depth(trees, depth_factor))
 

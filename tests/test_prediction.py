@@ -15,11 +15,11 @@ def X(genetic_tree):
     return genetic_tree._trees_[0].X
 
 
-def print_observation(genetic_tree, X):
+def print_observation(genetic_tree):
     # TODO change into tests
     # for example test that node_id==-1 should have empty list
     tree: Tree = genetic_tree._trees_[5]
-    print(f'Score: {tree.get_proper_classified(X)/150}')
+    print(f'Score: {tree.proper_classified / 150}')
     for k, val in tree.observations.items():
         print(f'\n Node id: {k}')
         for v in val:
@@ -31,7 +31,7 @@ def test_score(genetic_tree, X):
     score_sum_by_prediction = 0
     for i in range(n_trees):
         tree: Tree = genetic_tree._trees_[i]
-        score_sum += tree.get_proper_classified()
+        score_sum += tree.proper_classified
         y_pred = genetic_tree._trees_[i].predict(X)
         score_sum_by_prediction += np.sum(y_pred == iris.target)
     # test if prediction works
@@ -47,4 +47,4 @@ if __name__ == "__main__":
     gt = GeneticTree(remove_other_trees=False, remove_variables=False, max_iterations=30)
     gt.fit(iris.data, iris.target)
     tree = gt._best_tree_
-    print(tree.get_proper_classified())
+    print(tree.proper_classified)

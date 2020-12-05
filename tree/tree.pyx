@@ -113,6 +113,10 @@ cdef class Tree:
         def __get__(self):
             return self.nodes.count
 
+    property proper_classified:
+        def __get__(self):
+            return self.observations.proper_classified
+
     def __cinit__(self, int n_classes,
                   object X,
                   SIZE_t[:] y,
@@ -439,13 +443,6 @@ cdef class Tree:
                 else:
                     current_node_id = self.nodes.elements[current_node_id].right_child
         return current_node_id
-
-# ===========================================================================================================
-# Evaluation functions
-# ===========================================================================================================
-
-    cpdef SIZE_t get_proper_classified(self):
-        return self.observations.proper_classified
 
 # ===========================================================================================================
 # Prediction functions

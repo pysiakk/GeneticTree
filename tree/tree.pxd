@@ -85,9 +85,6 @@ cdef class Tree:
     cdef SIZE_t _find_leaf_for_observation(self, SIZE_t observation_id, DTYPE_t[:, :] X_ndarray,
                                         SIZE_t node_id_to_start) nogil
 
-    # Evaluation functions
-    cpdef SIZE_t get_proper_classified(self)
-
     # Prediction functions
     cpdef prepare_tree_to_prediction(self)
     cpdef np.ndarray predict(self, object X)

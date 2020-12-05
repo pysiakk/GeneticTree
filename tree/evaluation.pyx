@@ -17,7 +17,7 @@ cpdef DOUBLE_t[:] get_accuracies(list trees):
     cdef Tree tree
     for i in range(len(trees)):
         tree = trees[i]
-        accuracies[i] = tree.get_proper_classified() / n_observations
+        accuracies[i] = tree.proper_classified / n_observations
     return accuracies
 
 
@@ -27,7 +27,7 @@ cpdef SIZE_t[:] get_proper_classified(list trees):
     cdef Tree tree
     for i in range(len(trees)):
         tree = trees[i]
-        proper_classified[i] = tree.get_proper_classified()
+        proper_classified[i] = tree.proper_classified
     return proper_classified
 
 
