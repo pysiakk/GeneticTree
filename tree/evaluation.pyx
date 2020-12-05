@@ -31,12 +31,21 @@ cpdef SIZE_t[:] get_proper_classified(list trees):
     return proper_classified
 
 
+cpdef SIZE_t[:] get_trees_n_leaves(list trees):
+    cdef SIZE_t[:] trees_sizes = np.empty(len(trees), int)
+    cdef int i
+    for i in range(len(trees)):
+        trees_sizes[i] = (trees[i].node_count + 1) / 2
+    return trees_sizes
+
+
 cpdef SIZE_t[:] get_trees_sizes(list trees):
     cdef SIZE_t[:] trees_sizes = np.empty(len(trees), int)
     cdef int i
     for i in range(len(trees)):
         trees_sizes[i] = trees[i].node_count
     return trees_sizes
+
 
 
 cpdef SIZE_t[:] get_trees_depths(list trees):

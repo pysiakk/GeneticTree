@@ -1,4 +1,4 @@
-from tree.evaluation import get_accuracies, get_trees_depths, get_trees_sizes
+from tree.evaluation import get_accuracies, get_trees_depths, get_trees_n_leaves
 import numpy as np
 
 from aenum import Enum, extend_enum
@@ -8,10 +8,10 @@ def get_accuracy(trees: np.array, **kwargs) -> np.array:
     return np.array(get_accuracies(trees))
 
 
-def get_accuracy_and_size(trees: np.array, size_factor: float = 0.0001, **kwargs) -> np.array:
+def get_accuracy_and_n_leaves(trees: np.array, n_leaves_factor: float = 0.0001, **kwargs) -> np.array:
     accuracy = np.array(get_accuracies(trees))
-    size = np.array(get_trees_sizes(trees))
-    return accuracy - size_factor * size
+    size = np.array(get_trees_n_leaves(trees))
+    return accuracy - n_leaves_factor * size
 
 
 def get_accuracy_and_depth(trees: np.array, depth_factor: float = 0.01, **kwargs) -> np.array:
@@ -25,7 +25,7 @@ class Metric(Enum):
     Metric is enumerator with possible metrics to use during evaluation:
         Accuracy -- number of proper classified observations divided by \
         number of all observations
-        AccuracyMinusSize -- accuracy + constant times number of nodes of tree
+        AccuracyMinusLeavesNumber -- accuracy + constant times number of nodes of tree
         AccuracyMinusDepth -- accuracy + constant times maximal depth of tree
 
     To add new Metric see genetic.selector.SelectionType
@@ -44,7 +44,7 @@ class Metric(Enum):
     # (also can be more arguments which will be ignored)
     # this is needed because value is callable type
     Accuracy = get_accuracy,
-    AccuracyMinusSize = get_accuracy_and_size,
+    AccuracyMinusLeavesNumber = get_accuracy_and_n_leaves,
     AccuracyMinusDepth = get_accuracy_and_depth,
 
 
