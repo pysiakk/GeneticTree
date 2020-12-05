@@ -504,8 +504,15 @@ cdef class Tree:
         return csr_matrix(y_prob)
 
     cpdef np.ndarray apply(self, object X):
-        # TODO when tree will be done with all genetic operators
-        return np.array([1, 2])
+        cdef DTYPE_t[:, :] X_ndarray = X
+        cdef n_observations = X_ndarray.shape[0]
+        cdef np.ndarray nodes = np.empty(n_observations, dtype=np.intp)
+        cdef SIZE_t observation_id
+
+        for observation_id in range(n_observations):
+            nodes[observation_id] = self._find_leaf_for_observation(observation_id, X_ndarray, 0)
+
+        return nodes
 
 
 cpdef Tree copy_tree(Tree tree):
