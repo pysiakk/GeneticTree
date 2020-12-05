@@ -1,14 +1,5 @@
-import os
-os.chdir("../")
-
-from genetic.mutator import Mutator, MutationType
-
+from tests.set_up_variables_and_imports import *
 from tests.test_tree import build
-from sklearn.utils._testing import assert_array_equal
-
-import numpy as np
-import pytest
-
 
 # ==============================================================================
 # Mutation functions (if it will be standalone)

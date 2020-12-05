@@ -1,22 +1,4 @@
-import os
-os.chdir("../")
-
 from tests.set_up_variables_and_imports import *
-from genetic_tree import GeneticTree
-from tree.thresholds import prepare_thresholds_array
-from tree.tree import copy_tree, _test_independence_of_copied_tree
-from tree.mutator import mutate_random_node, mutate_random_class_or_threshold
-from tree.mutator import mutate_random_feature, mutate_random_threshold
-from tree.mutator import mutate_random_class
-
-import pickle
-
-n_thresholds: int = 2
-X = GeneticTree._check_X_(GeneticTree(), X, True)
-
-# thresholds array have unique values
-# it is needed to proper test mutating thresholds
-thresholds = prepare_thresholds_array(n_thresholds, X)
 
 
 def test_builder_tree_size():
@@ -155,7 +137,7 @@ def test_tree_copying():
     # assert id(tree.thresholds) == id(tree_copied.thresholds)
 
 
-def test_independence_of_copied_tree():
+def test_independence_of_copied_tree_():
     tree: Tree = build(10, 1)[0][0]
-    _test_independence_of_copied_tree(tree)
+    test_independence_of_copied_tree(tree)
 

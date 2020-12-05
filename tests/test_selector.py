@@ -1,18 +1,5 @@
-import os
-os.chdir("../")
-
-from genetic.selector import SelectionType, Selector
-from genetic.selector import get_selected_indices_by_rank_selection
-from genetic.selector import get_selected_indices_by_tournament_selection
-from genetic.selector import get_selected_indices_by_roulette_selection
-from genetic.selector import get_selected_indices_by_stochastic_uniform_selection
-
+from tests.set_up_variables_and_imports import *
 from tests.test_tree import build
-from sklearn.utils._testing import assert_array_equal
-
-import numpy as np
-import pytest
-import copy
 
 
 # ==============================================================================

@@ -1,12 +1,4 @@
-import os
-os.chdir("../")
-
-from genetic_tree import GeneticTree
 from tests.set_up_variables_and_imports import *
-from tree.thresholds import prepare_thresholds_array
-
-X = GeneticTree._check_X_(GeneticTree(), X, True)
-thresholds = prepare_thresholds_array(10, X)
 
 
 def initialize_tree(thresholds) -> Tree:

@@ -495,7 +495,7 @@ cpdef Tree copy_tree(Tree tree):
 
     return tree_copied
 
-cpdef void _test_independence_of_copied_tree(Tree tree):
+cpdef void test_independence_of_copied_tree(Tree tree):
     cdef Tree tree_copied = copy_tree(tree)
 
     tree_copied.nodes.elements[0].parent += 1

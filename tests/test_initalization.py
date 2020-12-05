@@ -1,12 +1,4 @@
-import os
-os.chdir("../")
-
-from genetic.initializer import Initializer, InitializationType
 from tests.set_up_variables_and_imports import *
-from tree.thresholds import prepare_thresholds_array
-from genetic_tree import GeneticTree
-import numpy as np
-
 np.random.seed(121333322)
 
 

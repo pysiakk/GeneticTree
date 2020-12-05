@@ -1,12 +1,4 @@
-import os
-os.chdir("../")
-
-import time
-from threading import Thread
-
-from genetic_tree import GeneticTree
 from tests.set_up_variables_and_imports import *
-from tree.thresholds import prepare_thresholds_array
 
 
 def check_creating_trees_with_many_threads(X, n_trees: int = 10, n_jobs: int = 4, depth: int = 3):

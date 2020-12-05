@@ -1,9 +1,6 @@
 import time
 
 from tests.set_up_variables_and_imports import *
-from tree.tree import copy_tree
-from tree.crosser import cross_trees
-
 from tests.test_tree import build
 
 

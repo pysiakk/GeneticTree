@@ -1,12 +1,4 @@
-import os
-os.chdir("../")
-
-import psutil
-import time
-
-from genetic_tree import GeneticTree
 from tests.set_up_variables_and_imports import *
-from tree.thresholds import prepare_thresholds_array
 
 
 def check_thresholds_memory_usage(X, X2, y2, n_trees: int = 10, n_thresholds: int = 10, depth: int = 3):

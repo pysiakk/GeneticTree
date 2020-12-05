@@ -1,10 +1,4 @@
 from tests.set_up_variables_and_imports import *
-from tree.observations import Observations, copy_observations
-from genetic_tree import GeneticTree
-from tree.thresholds import prepare_thresholds_array
-from tree.builder import FullTreeBuilder
-from tree._utils import _test_copy_int_array, _test_copy_leaves
-import pickle
 
 
 @pytest.fixture
@@ -91,9 +85,9 @@ def test_copy_observations(obs, tree):
 # Utils
 # ==============================================================================
 
-def test_copy_int_array():
-    _test_copy_int_array()
+def test_copy_int_array_():
+    test_copy_int_array()
 
 
-def test_copy_leaves():
-    _test_copy_leaves()
+def test_copy_leaves_():
+    test_copy_leaves()

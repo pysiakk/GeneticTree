@@ -1,15 +1,5 @@
-import os
-os.chdir("../")
-
-from genetic.evaluator import Evaluator, Metric
-from genetic.evaluator import get_accuracy, get_accuracy_and_n_leaves, get_accuracy_and_depth
-
+from tests.set_up_variables_and_imports import *
 from tests.test_tree import build
-from sklearn.utils._testing import assert_array_equal
-
-import numpy as np
-import pytest
-
 
 # ==============================================================================
 # Metric functions
