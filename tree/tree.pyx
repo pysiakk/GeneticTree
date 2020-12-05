@@ -449,8 +449,20 @@ cdef class Tree:
 # ===========================================================================================================
 
     cpdef prepare_tree_to_prediction(self):
-        # TODO  consider if should change anything (maybe observations=NULL; thresholds=NULL)
-        pass
+        cdef SIZE_t[:] observations_in_class
+        cdef IntArray observations
+        cdef SIZE_t node_id
+        cdef SIZE_t i
+        # for each node (f the node is leaf) change class for the most occurring
+        for node_id in range(self.nodes.count):
+            # if it is leaf and has one or more observation
+            if self.nodes.elements[node_id].left_child == _TREE_LEAF & \
+                self.nodes.elements[node_id].right_child != _TREE_LEAF:
+                observations_in_class = np.zeros(self.n_observations, dtype=np.intp)
+                observations = self.observations.leaves.elements[self.nodes.elements[node_id].right_child]
+                for i in range(observations.count):
+                    observations_in_class[self.y[observations.elements[i]]] += 1
+                self.nodes.elements[node_id].feature = np.argmax(observations_in_class)
 
     cpdef np.ndarray predict(self, object X):
         cdef DTYPE_t[:, :] X_ndarray = X
