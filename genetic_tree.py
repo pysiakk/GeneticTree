@@ -151,8 +151,11 @@ class GeneticTree:
         self._prepare_best_tree_to_prediction_()
         if self.remove_other_trees:
             self._trees_ = None
-        if self.remove_variables:
-            pass
+            if self.remove_variables:
+                self._best_tree_.remove_variables()
+        elif self.remove_variables:
+            for tree in self._trees_:
+                tree.remove_variables()
         self._can_predict_ = True
 
     def _prepare_best_tree_to_prediction_(self):

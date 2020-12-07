@@ -43,7 +43,7 @@ cdef class Tree:
     cdef IntArray* removed_nodes
 
     cdef Observations observations      # Class with y array metadata
-    cdef public object probabilities # Probabilities of classes in nodes
+    cdef public object probabilities    # Probabilities of classes in nodes
 
     cdef public DTYPE_t[:, :] thresholds    # Array with possible thresholds for each feature
     cdef public object X                    # Array with observations features (TODO: possibility of sparse array)
@@ -87,6 +87,7 @@ cdef class Tree:
 
     # Prediction functions
     cpdef prepare_tree_to_prediction(self)
+    cpdef void remove_variables(self)
     cpdef np.ndarray predict(self, object X)
     cpdef object predict_proba(self, object X)
     cpdef np.ndarray apply(self, object X)

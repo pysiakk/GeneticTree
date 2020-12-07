@@ -475,6 +475,11 @@ cdef class Tree:
 
         self.probabilities = csr_matrix(self.probabilities)
 
+    cpdef void remove_variables(self):
+        self.observations = None
+        self.X = None
+        self.y = None
+        self.thresholds = None
 
     cpdef np.ndarray predict(self, object X):
         cdef DTYPE_t[:, :] X_ndarray = X
