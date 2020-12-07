@@ -41,6 +41,7 @@ class GeneticTree:
                  metric: Metric = Metric.AccuracyMinusDepth,
                  remove_other_trees: bool = True, remove_variables: bool = True,
                  seed: int = None,
+                 save_metrics: bool = True,
 
                  # TODO: params not used yet:
                  verbose: bool = True, n_jobs: int = -1,
@@ -63,6 +64,14 @@ class GeneticTree:
         self.selector = Selector(**kwargs)
         self.evaluator = Evaluator(**kwargs)
         self.stop_condition = StopCondition(**kwargs)
+
+        self._save_metrics = save_metrics
+        self.acc_mean = []
+        self.acc_best = []
+        self.n_leaves_mean = []
+        self.n_leaves_best = []
+        self.depth_mean = []
+        self.depth_best = []
 
         self.remove_other_trees = remove_other_trees
         self.remove_variables = remove_variables
@@ -117,6 +126,7 @@ class GeneticTree:
     def _growth_trees_(self):
         offspring = self._trees_
         trees_metrics = self.evaluator.evaluate(offspring)
+        self._append_metrics(offspring)
 
         while not self.stop_condition.stop(max(trees_metrics)):
             elite = self.selector.get_elite_population(offspring, trees_metrics)
@@ -131,7 +141,9 @@ class GeneticTree:
                 offspring += selected_parents
             else:
                 offspring += elite
+
             trees_metrics = self.evaluator.evaluate(offspring)
+            self._append_metrics(offspring)
 
         self._trees_ = offspring
 
@@ -147,6 +159,19 @@ class GeneticTree:
         best_tree_index: int = self.evaluator.get_best_tree_index(self._trees_)
         self._best_tree_ = self._trees_[best_tree_index]
         self._best_tree_.prepare_tree_to_prediction()
+    
+    def _append_metrics(self, trees):
+        # TODO should best metric be a best of all or a metric of best tree?
+        if self._save_metrics:
+            acc = self.evaluator.get_accuracies(trees)
+            self.acc_best.append(np.max(acc))
+            self.acc_mean.append(np.mean(acc))
+            depth = self.evaluator.get_depths(trees)
+            self.depth_best.append(np.min(depth))
+            self.depth_mean.append(np.mean(depth))
+            n_leaves = self.evaluator.get_n_leaves(trees)
+            self.n_leaves_best.append(np.min(n_leaves))
+            self.n_leaves_mean.append(np.mean(n_leaves))
 
     def predict(self, X, check_input=True):
         """

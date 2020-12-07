@@ -96,3 +96,19 @@ def test_get_best_tree(evaluator, metric, trees):
     metrics = evaluator.evaluate(trees)
     best_index = np.argmax(metrics)
     assert evaluator.get_best_tree_index(trees) == best_index
+
+
+# +++++++++++++++
+# Metric functions
+# +++++++++++++++
+
+def test_get_accuracies(evaluator, trees):
+    assert_array_equal(evaluator.get_accuracies(trees), get_accuracies(trees))
+
+
+def test_get_depths(evaluator, trees):
+    assert_array_equal(evaluator.get_depths(trees), get_trees_depths(trees))
+
+
+def test_get_n_leaves(evaluator, trees):
+    assert_array_equal(evaluator.get_n_leaves(trees), get_trees_n_leaves(trees))

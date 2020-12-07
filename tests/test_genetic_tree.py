@@ -122,3 +122,28 @@ def test_apply(genetic_tree_fitted, X_converted):
     assert_array_equal(genetic_tree_fitted.apply(X),
                        genetic_tree_fitted._best_tree_.apply(X_converted))
 
+
+# +++++++++++++++
+# Metric functions
+# +++++++++++++++
+
+def assert_last_metric(genetic_tree):
+    assert genetic_tree.acc_best[-1] == np.max(Evaluator.get_accuracies(genetic_tree._trees_))
+    assert genetic_tree.acc_mean[-1] == np.mean(Evaluator.get_accuracies(genetic_tree._trees_))
+    assert genetic_tree.depth_best[-1] == np.min(Evaluator.get_depths(genetic_tree._trees_))
+    assert genetic_tree.depth_mean[-1] == np.mean(Evaluator.get_depths(genetic_tree._trees_))
+    assert genetic_tree.n_leaves_best[-1] == np.min(Evaluator.get_n_leaves(genetic_tree._trees_))
+    assert genetic_tree.n_leaves_mean[-1] == np.mean(Evaluator.get_n_leaves(genetic_tree._trees_))
+
+
+def test_append_metrics(X_converted):
+    genetic_tree = GeneticTree(n_trees=10, max_iterations=0, remove_other_trees=False, remove_variables=False)
+    genetic_tree.fit(X_converted, y)
+    assert_last_metric(genetic_tree)
+
+
+def test_append_metrics_more_iterations(X_converted):
+    genetic_tree = GeneticTree(n_trees=10, max_iterations=1, remove_other_trees=False, remove_variables=False)
+    for i in range(10):
+        genetic_tree.fit(X_converted, y)
+        assert_last_metric(genetic_tree)

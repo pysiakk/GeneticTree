@@ -106,3 +106,34 @@ class Evaluator:
             trees: List with all trees to evaluate
         """
         return self.metric.evaluate(trees)
+
+    @staticmethod
+    def get_accuracies(trees) -> np.array:
+        """
+        Function calculates each tree's accuracy from trees array
+
+        Args:
+            trees: List with all trees to get accuracy
+        """
+        return get_accuracies(trees)
+
+    @staticmethod
+    def get_depths(trees) -> np.array:
+        """
+        Function calculates each tree's depth from trees array
+
+        Args:
+            trees: List with all trees to get depths
+        """
+        return get_trees_depths(trees)
+
+    @staticmethod
+    def get_n_leaves(trees) -> np.array:
+        """
+        Function calculates each tree's number of leaves from trees array
+
+        Args:
+            trees: List with all trees to get number of leaves
+        """
+        return get_trees_n_leaves(trees)
+

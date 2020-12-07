@@ -29,6 +29,7 @@ from tree.mutator import mutate_random_node, mutate_random_class_or_threshold
 from tree.mutator import mutate_random_feature, mutate_random_threshold
 from tree.mutator import mutate_random_class
 from tree.crosser import cross_trees
+from tree.evaluation import get_accuracies, get_trees_depths, get_trees_n_leaves
 
 
 # high level (Python) imports
