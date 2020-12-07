@@ -45,7 +45,7 @@ def test_none_argument():
 
 
 @pytest.fixture
-def genetic_tree():
+def genetic_tree() -> GeneticTree:
     genetic_tree = GeneticTree(n_trees=10, max_iterations=3, remove_other_trees=False, remove_variables=False)
     return genetic_tree
 
@@ -93,7 +93,7 @@ def test_X_with_less_features(genetic_tree, function):
 
 
 def test_set_n_features_after_check_input(genetic_tree):
-    genetic_tree._check_input_(X, y, False)
+    genetic_tree._check_input(X, y, None, check_input=False)
     assert X.shape[1] == genetic_tree._n_features_
 
 
@@ -147,3 +147,27 @@ def test_append_metrics_more_iterations(X_converted):
     for i in range(10):
         genetic_tree.fit(X_converted, y)
         assert_last_metric(genetic_tree)
+
+
+# +++++++++++++++
+# Check input
+# +++++++++++++++
+
+def test_ones_as_weights(genetic_tree, X_converted):
+    *_, weights = genetic_tree._check_input(X_converted, y, None, True)
+    assert_array_equal(weights, np.ones(150))
+
+
+def test_converting_weights(genetic_tree, X_converted):
+    weights = np.random.random(150)
+    *_, weights = genetic_tree._check_input(X_converted, y, weights, True)
+    assert weights.shape[0] == 150
+    assert weights.dtype == np.float32
+    assert weights.flags.contiguous
+
+
+def test_weights_exception(genetic_tree, X_converted):
+    weights = np.random.random(149)
+    with pytest.raises(ValueError):
+        genetic_tree._check_input(X_converted, y, weights, True)
+

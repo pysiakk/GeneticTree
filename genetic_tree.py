@@ -109,10 +109,10 @@ class GeneticTree:
         if remove_variables is not None:
             self.remove_variables = remove_variables
 
-    def fit(self, X, y, check_input: bool = True, **kwargs):
+    def fit(self, X, y, *args, weights: np.array = None, check_input: bool = True, **kwargs):
         self._can_predict_ = False
         self.set_params(**kwargs)
-        X, y = self._check_input_(X, y, check_input)
+        X, y, weights = self._check_input(X, y, weights, check_input)
         self._prepare_new_training_(X, y)
         self._growth_trees_()
         self._prepare_to_predict_()
@@ -232,7 +232,7 @@ class GeneticTree:
         if not self._can_predict_:
             raise Exception('Cannot predict. Model not prepared.')
 
-    def _check_input_(self, X, y, check_input: bool):
+    def _check_input(self, X, y, weights, check_input: bool):
         """
         Check if X and y have proper dtype and have the same number of observations
 
@@ -250,12 +250,23 @@ class GeneticTree:
             if y.dtype != SIZE or not y.flags.contiguous:
                 y = np.ascontiguousarray(y, dtype=SIZE)
 
+            if weights is None:
+                weights = np.ones(y.shape[0], dtype=np.float32)
+            else:
+                if weights.shape[0] != y.shape[0]:
+                    raise ValueError(f"y and weights should have the same "
+                                     f"number of observations. Weights "
+                                     f"have {weights.shape[0]} observations "
+                                     f"and y have {y.shape[0]} observations.")
+                if weights.dtype != np.float32 or not weights.flags.contiguous:
+                    weights = np.ascontiguousarray(weights, dtype=np.float32)
+
         if y.shape[0] != X.shape[0]:
             raise ValueError(f"X and y should have the same number of "
                              f"observations. X have {X.shape[0]} observations "
                              f"and y have {y.shape[0]} observations.")
 
-        return X, y
+        return X, y, weights
 
     def _check_X_(self, X, check_input: bool):
         """
