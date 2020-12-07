@@ -4,7 +4,7 @@ from tests.utils_testing import *
 def test_builder_tree_size():
     builder: FullTreeBuilder = FullTreeBuilder()
     for initial_depth in range(5, 0, -1):
-        tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds, np.random.randint(10**8))
+        tree: Tree = initialize_iris_tree()
         tree.resize_by_initial_depth(initial_depth)
         builder.build(tree, initial_depth)
         assert tree.node_count == tree.feature.shape[0] == tree.threshold.shape[0] == 2 ** (initial_depth+1) - 1
@@ -145,7 +145,7 @@ def test_independence_of_copied_tree_():
 # ++++++++++++++++++++++++++
 
 def build_simple_tree(threshold, class_in_leaf):
-    tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds, np.random.randint(10**8))
+    tree: Tree = initialize_iris_tree()
     # tree, parent, is_left, feature, threshold, depth
     test_add_node(tree, TREE_UNDEFINED, 0, 2, 3.0, 1)
     # tree, parent, is_left, class, depth

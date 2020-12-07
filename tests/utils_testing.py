@@ -66,11 +66,15 @@ X = GeneticTree._check_X_(GeneticTree(), X, True)
 thresholds = prepare_thresholds_array(n_thresholds, X)
 
 
+def initialize_iris_tree():
+    return Tree(np.unique(y).shape[0], X, y, thresholds, np.random.randint(10 ** 8))
+
+
 def build_trees(depth: int = 1, n_trees: int = 10):
     builder: FullTreeBuilder = FullTreeBuilder()
     trees = []
     for i in range(n_trees):
-        tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds, np.random.randint(10**8))
+        tree: Tree = initialize_iris_tree()
         tree.resize_by_initial_depth(depth)
         builder.build(tree, depth)
         tree.initialize_observations()
