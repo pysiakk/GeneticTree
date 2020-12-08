@@ -6,8 +6,8 @@ ctypedef np.npy_float64 DOUBLE_t        # Type of thresholds
 ctypedef np.npy_float32 DTYPE_t         # Type of X
 ctypedef np.npy_intp SIZE_t             # Type for indices and counters
 
-from tree._utils cimport IntArray, Leaves
-from tree.tree cimport Node, Tree
+from tree._utils cimport IntArray, Leaves, Node
+from tree.tree cimport Tree
 from tree.tree import Tree
 
 cdef class Observations:
@@ -15,12 +15,13 @@ cdef class Observations:
     cdef Leaves* leaves_to_reassign
     cdef IntArray* empty_leaves_ids
 
-    cdef public proper_classified
+    cdef public DTYPE_t proper_classified
     cdef public SIZE_t n_observations       # Number of observations in X and y
 
     cdef public object X                    # Array with observations features (TODO: possibility of sparse array)
     cdef DTYPE_t[:, :] X_ndarray
     cdef public SIZE_t[:] y                 # Array with classes of observations
+    cdef public DTYPE_t[:] weights          # Array with weights of observations
 
     cdef void initialize_observations(self, Tree tree)
 

@@ -10,4 +10,4 @@ There is planned to allow multithreading evolution.
 The created trees should have smaller sizes with comparable accuracy to the trees made by greedy algorithms.
 
 Project is currently in development (before first version).
-The first working official version should be developed around 15 December 2020 (with documentation and installation by pip).
+The first working official version should be developed in the January 2021 (with documentation and installation by pip).

@@ -1,10 +1,4 @@
-from tests.set_up_variables_and_imports import *
-from tree.observations import Observations, copy_observations
-from genetic_tree import GeneticTree
-from tree.thresholds import prepare_thresholds_array
-from tree.builder import FullTreeBuilder
-from tree._utils import _test_copy_int_array, _test_copy_leaves
-import pickle
+from tests.utils_testing import *
 
 
 @pytest.fixture
@@ -13,18 +7,17 @@ def X_converted():
 
 
 def test_observations_creation(X_converted):
-    obs = Observations(X_converted, y)
+    obs = Observations(X_converted, y, weights)
 
 
 @pytest.fixture
 def obs(X_converted):
-    return Observations(X_converted, y)
+    return Observations(X_converted, y, weights)
 
 
 @pytest.fixture
 def tree(X_converted):
-    thresholds = prepare_thresholds_array(10, X_converted)
-    tree = Tree(3, X_converted, y, thresholds)
+    tree = initialize_iris_tree()
     FullTreeBuilder.build(FullTreeBuilder(), tree, 10)
     return tree
 
@@ -91,9 +84,9 @@ def test_copy_observations(obs, tree):
 # Utils
 # ==============================================================================
 
-def test_copy_int_array():
-    _test_copy_int_array()
+def test_copy_int_array_():
+    test_copy_int_array()
 
 
-def test_copy_leaves():
-    _test_copy_leaves()
+def test_copy_leaves_():
+    test_copy_leaves()
