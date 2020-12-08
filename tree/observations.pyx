@@ -19,7 +19,8 @@ cdef SIZE_t _NOT_REGISTERED = NOT_REGISTERED
 cdef class Observations:
     def __cinit__(self,
                   object X,
-                  SIZE_t[:] y):
+                  SIZE_t[:] y,
+                  DTYPE_t[:] weights):
         self.n_observations = X.shape[0]
         self.proper_classified = 0
 
@@ -27,6 +28,7 @@ cdef class Observations:
         cdef DTYPE_t[:, :] X_ndarray = X
         self.X_ndarray = X_ndarray
         self.y = y
+        self.weights = weights
 
         self.leaves = NULL
         safe_realloc(&self.leaves, 1)
@@ -66,9 +68,10 @@ cdef class Observations:
         # never pickle observations during fit
         # after unpickling need to pass pointers to X and y arrays
         empty_2d_array = np.empty((1, 1), dtype=np.float32)
-        empty_1d_array = np.empty(1, dtype=np.intp)
+        empty_1d_array_int = np.empty(1, dtype=np.intp)
+        empty_1d_array = np.empty(1, dtype=np.float32)
         return (Observations,
-                (empty_2d_array, empty_1d_array),
+                (empty_2d_array, empty_1d_array_int, empty_1d_array),
                 self.__getstate__())
 
     def __getstate__(self):
@@ -121,7 +124,7 @@ cdef class Observations:
         cdef IntArray observations = self.leaves.elements[leaves_id]
         for i in range(observations.count):
             if self.y[observations.elements[i]] == leaf_class:
-                self.proper_classified -= 1
+                self.proper_classified -= self.weights[observations.elements[i]]
 
         self._copy_element_from_leaves_to_leaves_to_reassign(leaves_id)
 
@@ -146,7 +149,7 @@ cdef class Observations:
             nodes[node_id].right_child = self._append_leaves(y_id)
 
         if nodes[node_id].feature == self.y[y_id]:          # feature means class
-            self.proper_classified += 1
+            self.proper_classified += self.weights[y_id]
 
     cdef SIZE_t _find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil:
         cdef SIZE_t current_node_id = below_node_id
@@ -268,7 +271,7 @@ cdef class Observations:
 
     cpdef test_removing_and_reassigning(self, Tree tree):
         self.initialize_observations(tree)
-        cdef SIZE_t proper_classified = self.proper_classified
+        cdef DTYPE_t proper_classified = self.proper_classified
         cdef SIZE_t leaves_count = self.leaves.count
         assert self.leaves_to_reassign.count == 0
         self.remove_observations(tree.nodes.elements, 0)
@@ -403,7 +406,7 @@ cdef class Observations:
 
 
 cpdef Observations copy_observations(Observations observations):
-    cdef Observations observations_copied = Observations(observations.X, observations.y)
+    cdef Observations observations_copied = Observations(observations.X, observations.y, observations.weights)
     copy_leaves(observations.leaves, observations_copied.leaves)
     copy_int_array(observations.empty_leaves_ids, observations_copied.empty_leaves_ids)
     copy_leaves(observations.leaves_to_reassign, observations_copied.leaves_to_reassign)

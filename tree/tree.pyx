@@ -149,7 +149,7 @@ cdef class Tree:
         self.removed_nodes.capacity = 0
         self.removed_nodes.elements = NULL
 
-        self.observations = Observations(X, y)
+        self.observations = Observations(X, y, weights)
 
         self.seed1 = seed
         self.seed2 = 987654321

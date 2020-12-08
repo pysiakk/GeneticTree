@@ -12,12 +12,12 @@ ctypedef np.npy_intp SIZE_t              # Type for indices and counters
 
 cpdef DOUBLE_t[:] get_accuracies(list trees):
     cdef DOUBLE_t[:] accuracies = np.empty(len(trees), float)
-    cdef SIZE_t n_observations = trees[0].y.shape[0]
+    cdef DTYPE_t weights_sum = np.sum(trees[0].weights)
     cdef int i
     cdef Tree tree
     for i in range(len(trees)):
         tree = trees[i]
-        accuracies[i] = tree.proper_classified / n_observations
+        accuracies[i] = tree.proper_classified / weights_sum
     return accuracies
 
 
