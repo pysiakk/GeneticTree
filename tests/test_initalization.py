@@ -6,7 +6,7 @@ from tests.utils_testing import *
 
 def test_initialize_random():
     initializer = Initializer(n_trees=20, initial_depth=5, initialization_type=InitializationType.Random)
-    trees = initializer.initialize(X=X, y=y, threshold=thresholds)
+    trees = initializer.initialize(X=X, y=y, weights=weights, threshold=thresholds)
     assert isinstance(trees[0], Tree)
     assert len(trees) == 20
     assert max(trees[0].nodes_depth) == 5
@@ -15,7 +15,7 @@ def test_initialize_random():
 
 def test_initialize_random_depth_diff():
     initializer = Initializer(n_trees=20, initial_depth=8, initialization_type=InitializationType.Random)
-    trees = initializer.initialize(X=X, y=y, threshold=thresholds)
+    trees = initializer.initialize(X=X, y=y, weights=weights, threshold=thresholds)
     assert isinstance(trees[0], Tree)
     assert len(trees) == 20
     assert max(trees[0].nodes_depth) == 8
@@ -24,7 +24,7 @@ def test_initialize_random_depth_diff():
 
 def test_initialize_half():
     initializer = Initializer(n_trees=20, initial_depth=5, initialization_type=InitializationType.Half)
-    trees = initializer.initialize(X=X, y=y, threshold=thresholds)
+    trees = initializer.initialize(X=X, y=y, weights=weights, threshold=thresholds)
     assert isinstance(trees[0], Tree)
     assert len(trees) == 20
     assert 1 <= max(trees[0].nodes_depth) <= 5
@@ -33,7 +33,7 @@ def test_initialize_half():
 
 def test_initialize_split():
     initializer = Initializer(n_trees=20, initial_depth=5, initialization_type=InitializationType.Split, split_prob=0.7)
-    trees = initializer.initialize(X=X, y=y, threshold=thresholds)
+    trees = initializer.initialize(X=X, y=y, weights=weights, threshold=thresholds)
     assert isinstance(trees[0], Tree)
     assert len(trees) == 20
     assert 1 <= max(trees[0].nodes_depth) <= 5
