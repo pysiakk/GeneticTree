@@ -1,16 +1,7 @@
-
 import os
 os.chdir("../")
 
-from genetic.initializer import Initializer, InitializationType
-from tests.set_up_variables_and_imports import *
-from tree.thresholds import prepare_thresholds_array
-from genetic_tree import GeneticTree
-from tree.tree import Tree
 from tests.utils_testing import *
-
-X = GeneticTree._check_X_(GeneticTree(), X, True)
-thresholds = prepare_thresholds_array(10, X)
 
 
 def test_initialize_random():
