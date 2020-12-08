@@ -80,7 +80,7 @@ cdef Tree _cut_branch(Tree parent, int node_id):
     result[0].is_child_left = 0
     result[0].depth_addition = 0
 
-    cdef Tree child = Tree(parent.n_classes, parent.X, parent.y, parent.thresholds, np.random.randint(10**8))
+    cdef Tree child = Tree(parent.n_classes, parent.X, parent.y, parent.weights, parent.thresholds, np.random.randint(10**8))
     child.depth = 0
     _copy_nodes(parent.nodes.elements, node_id, child, result)
     child.initialize_observations()

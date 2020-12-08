@@ -120,6 +120,7 @@ cdef class Tree:
     def __cinit__(self, int n_classes,
                   object X,
                   SIZE_t[:] y,
+                  DTYPE_t[:] weights,
                   DTYPE_t[:, :] thresholds,
                   uint64_t seed):
         """Constructor."""
@@ -130,6 +131,7 @@ cdef class Tree:
 
         self.X = X
         self.y = y
+        self.weights = weights
         self.thresholds = thresholds
 
         # Inner structures
@@ -167,10 +169,12 @@ cdef class Tree:
         # never pickle trees during fit
         # after unpickling need to pass pointers to X, y and thresholds arrays
         empty_2d_array = np.empty((1, 1), dtype=np.float32)
-        empty_1d_array = np.empty(1, dtype=np.intp)
+        empty_1d_array_int = np.empty(1, dtype=np.intp)
+        empty_1d_array = np.empty(1, dtype=np.float32)
         return (Tree,
                (self.n_classes,
                empty_2d_array,
+               empty_1d_array_int,
                empty_1d_array,
                empty_2d_array,
                self.seed1,
@@ -479,6 +483,7 @@ cdef class Tree:
         self.observations = None
         self.X = None
         self.y = None
+        self.weights = None
         self.thresholds = None
 
     cpdef np.ndarray predict(self, object X):
@@ -518,7 +523,7 @@ cdef class Tree:
 
 
 cpdef Tree copy_tree(Tree tree):
-    cdef Tree tree_copied = Tree(tree.n_classes, tree.X, tree.y, tree.thresholds, np.random.randint(10**8))
+    cdef Tree tree_copied = Tree(tree.n_classes, tree.X, tree.y, tree.weights, tree.thresholds, np.random.randint(10**8))
     tree_copied.depth = tree.depth
     tree_copied.nodes.count = tree.nodes.count
 

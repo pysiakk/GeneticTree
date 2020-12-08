@@ -113,15 +113,15 @@ class GeneticTree:
         self._can_predict_ = False
         self.set_params(**kwargs)
         X, y, weights = self._check_input(X, y, weights, check_input)
-        self._prepare_new_training_(X, y)
+        self._prepare_new_training_(X, y, weights)
         self._growth_trees_()
         self._prepare_to_predict_()
 
-    def _prepare_new_training_(self, X, y):
+    def _prepare_new_training_(self, X, y, weights):
         self.stop_condition.reset_private_variables()
 
         thresholds = prepare_thresholds_array(self._n_thresholds_, X)
-        self._trees_ = self.initializer.initialize(X, y, thresholds)
+        self._trees_ = self.initializer.initialize(X, y, weights, thresholds)
 
     def _growth_trees_(self):
         offspring = self._trees_

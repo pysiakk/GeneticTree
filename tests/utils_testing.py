@@ -65,9 +65,11 @@ X = GeneticTree._check_X_(GeneticTree(), X, True)
 # it is needed to proper test mutating thresholds
 thresholds = prepare_thresholds_array(n_thresholds, X)
 
+weights = np.ascontiguousarray(np.ones(150), dtype=np.float32)
+
 
 def initialize_iris_tree():
-    return Tree(np.unique(y).shape[0], X, y, thresholds, np.random.randint(10 ** 8))
+    return Tree(np.unique(y).shape[0], X, y, weights, thresholds, np.random.randint(10 ** 8))
 
 
 def build_trees(depth: int = 1, n_trees: int = 10):
