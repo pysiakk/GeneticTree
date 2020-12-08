@@ -1,52 +1,27 @@
-import os
-os.chdir("../")
-
-from tests.set_up_variables_and_imports import *
-from genetic_tree import GeneticTree
-from tree.thresholds import prepare_thresholds_array
-from tree.tree import copy_tree, _test_independence_of_copied_tree
-
-import pickle
-
-n_thresholds: int = 2
-X = GeneticTree._check_X_(GeneticTree(), X, True)
-
-# thresholds array have unique values
-# it is needed to proper test mutating thresholds
-thresholds = prepare_thresholds_array(n_thresholds, X)
+from tests.utils_testing import *
 
 
 def test_builder_tree_size():
     builder: FullTreeBuilder = FullTreeBuilder()
     for initial_depth in range(5, 0, -1):
-        tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds)
+        tree: Tree = initialize_iris_tree()
         tree.resize_by_initial_depth(initial_depth)
         builder.build(tree, initial_depth)
         assert tree.node_count == tree.feature.shape[0] == tree.threshold.shape[0] == 2 ** (initial_depth+1) - 1
 
 
-def build(depth: int = 1, n_trees: int = 10):
-    builder: FullTreeBuilder = FullTreeBuilder()
-    trees = []
-    for i in range(n_trees):
-        tree: Tree = Tree(np.unique(y).shape[0], X, y, thresholds)
-        tree.resize_by_initial_depth(depth)
-        builder.build(tree, depth)
-        tree.initialize_observations()
-        trees.append((tree, np.array(tree.feature), np.array(tree.threshold)))
-    return trees
-
-
 @pytest.mark.parametrize("function,features_assertion,threshold_assertion",
-                         [(Tree.mutate_random_node,     10,  0),
-                          (Tree.mutate_random_feature,  10, 10),
-                          (Tree.mutate_random_threshold, 0, 10),
-                          (Tree.mutate_random_class,    10,  0)])
+                         [(mutate_random_node,     10,  0),
+                          (mutate_random_feature,  10, 10),
+                          (mutate_random_threshold, 0, 10),
+                          (mutate_random_class,    10,  0)])
 def test_mutator(function: callable, features_assertion: int, threshold_assertion: int):
-    trees = build(3, 10)
+    trees = build_trees(3, 10)
     not_same_features: int = 0
     not_same_thresholds: int = 0
-    for tree, feature, threshold in trees:
+    for tree in trees:
+        feature = np.array(tree.feature)
+        threshold = np.array(tree.threshold)
         function(tree)
         not_same_features += assert_array_not_the_same_in_at_most_one_index(feature, tree.feature)
         not_same_thresholds += assert_array_not_the_same_in_at_most_one_index(threshold, tree.threshold)
@@ -64,31 +39,33 @@ def assert_array_not_the_same_in_at_most_one_index(array, other) -> int:
 
 
 def test_crossing_one_leaf():
-    trees = build(2, 10)
-    trees[0][0].initialize_observations()
-    trees[1][0].initialize_observations()
-    cross_trees(trees[0][0], trees[1][0], 0, 6)
+    trees = build_trees(2, 2)
+    trees[0].initialize_observations()
+    trees[1].initialize_observations()
+    cross_trees(trees[0], trees[1], 0, 6)
 
 
 def test_crossing_only_from_second_parent():
-    trees = build(2, 10)
-    trees[0][0].initialize_observations()
-    trees[1][0].initialize_observations()
-    cross_trees(trees[0][0], trees[1][0], 0, 0)
+    trees = build_trees(2, 2)
+    trees[0].initialize_observations()
+    trees[1].initialize_observations()
+    cross_trees(trees[0], trees[1], 0, 0)
 
 
 @pytest.mark.parametrize("first, second",
                          [(6, 1), (6, 0), (0, 0), (0, 1), (1, 6), (1, 3),
                           (1, 0), (6, 3), (3, 0), (3, 1), (3, 2), (3, 3), (3, 6)])
 def test_crossing(first, second):
-    trees = build(2, 10)
-    trees[0][0].initialize_observations()
-    trees[1][0].initialize_observations()
-    cross_trees(trees[0][0], trees[1][0], first, second)
+    trees = build_trees(2, 2)
+    trees[0].initialize_observations()
+    trees[1].initialize_observations()
+    cross_trees(trees[0], trees[1], first, second)
 
 
 def test_crosser():
-    trees = build(2, 10)
+    trees = build_trees(2, 2)
+    trees[0] = trees[0], trees[0].feature, trees[0].threshold
+    trees[1] = trees[1], trees[1].feature, trees[1].threshold
     tree: Tree = cross_trees(trees[0][0], trees[1][0], 2, 0)
     new_features = np.append(np.append(np.append(trees[0][1][0:2], np.array([trees[1][1][6], trees[0][1][3], trees[0][1][4]])),
                                        np.array([trees[1][1][2], trees[1][1][0], trees[1][1][5]])),
@@ -99,7 +76,9 @@ def test_crosser():
 
 
 def test_independence_of_created_trees_by_crosser(crosses: int = 10, mutations: int = 10):
-    trees = build(1, 10)
+    trees = build_trees(1, 2)
+    trees[0] = trees[0], trees[0].feature, trees[0].threshold
+    trees[1] = trees[1], trees[1].feature, trees[1].threshold
 
     # cross tree many times with the same tree
     tree: Tree = cross_trees(trees[0][0], trees[1][0], 1, 0)
@@ -117,14 +96,14 @@ def test_independence_of_created_trees_by_crosser(crosses: int = 10, mutations: 
     # if there are no two pointers for exactly the same node it should not mutate more than one place in genom
     old_features = np.array(tree.feature)
     for i in range(mutations):
-        tree.mutate_random_node()
+        mutate_random_node(tree)
         new_features = np.array(tree.feature)
         assert_array_not_the_same_in_at_most_one_index(new_features, old_features)
         old_features = new_features
 
 
 def test_tree_pickling():
-    tree: Tree = build(10, 1)[0][0]
+    tree: Tree = build_trees(10, 1)[0]
     depth = tree.depth
     feature = tree.feature
     node_count = tree.node_count
@@ -138,7 +117,7 @@ def test_tree_pickling():
 
 
 def test_tree_copying():
-    tree: Tree = build(10, 1)[0][0]
+    tree: Tree = build_trees(10, 1)[0]
     tree_copied: Tree = copy_tree(tree)
     assert tree.node_count == tree_copied.node_count
     assert_array_equal(tree.X, tree_copied.X)
@@ -152,7 +131,117 @@ def test_tree_copying():
     # assert id(tree.thresholds) == id(tree_copied.thresholds)
 
 
-def test_independence_of_copied_tree():
-    tree: Tree = build(10, 1)[0][0]
-    _test_independence_of_copied_tree(tree)
+def test_independence_of_copied_tree_():
+    tree: Tree = build_trees(10, 1)[0]
+    test_independence_of_copied_tree(tree)
 
+
+# ==============================================================================
+# Tree functions
+# ==============================================================================
+
+# ++++++++++++++++++++++++++
+# Prediction
+# ++++++++++++++++++++++++++
+
+def build_simple_tree(threshold, class_in_leaf):
+    tree: Tree = initialize_iris_tree()
+    # tree, parent, is_left, feature, threshold, depth
+    test_add_node(tree, TREE_UNDEFINED, 0, 2, 3.0, 1)
+    # tree, parent, is_left, class, depth
+    test_add_leaf(tree, 0, 1, 1, 2)
+
+    test_add_node(tree, 0, 0, 2, threshold, 2)
+    test_add_leaf(tree, 2, 1, class_in_leaf, 3)
+    test_add_leaf(tree, 2, 0, 0, 3)
+    return tree
+
+
+@pytest.fixture
+def tree() -> Tree:
+    return build_simple_tree(4.8, 0)
+
+
+def test_changing_classes_to_class_most_often_occurring(tree):
+    tree.initialize_observations()
+    assert_array_equal(tree.feature, np.array([2, 1, 2, 0, 0]))
+    tree.prepare_tree_to_prediction()
+    assert_array_equal(tree.feature, np.array([2, 0, 2, 1, 2]))
+
+
+@pytest.mark.parametrize("tree", [build_simple_tree(6.7, 0), build_simple_tree(6.7, 1), build_simple_tree(6.7, 2)])
+def test_not_changing_class_when_two_classes_have_the_same_number_of_observations(tree):
+    tree.initialize_observations()
+    tree.prepare_tree_to_prediction()
+    assert tree.feature[3] == 1 or tree.feature[3] == 2
+    probabilities = tree.probabilities[3, :].toarray()[0]
+    if tree.feature[3] == 1:
+        assert probabilities[1] > probabilities[2]
+    if tree.feature[3] == 2:
+        assert probabilities[1] < probabilities[2]
+
+
+def test_tree_probabilities(tree):
+    tree.initialize_observations()
+    tree.prepare_tree_to_prediction()
+    assert_array_almost_equal(tree.probabilities[1, :].toarray()[0], np.array([50, 1, 0]) / 51)
+    assert_array_almost_equal(tree.probabilities[3, :].toarray()[0], np.array([0, 43, 1]) / 44)
+    assert_array_almost_equal(tree.probabilities[4, :].toarray()[0], np.array([0, 6, 49]) / 55)
+
+
+def test_predict(tree):
+    tree.initialize_observations()
+    tree.prepare_tree_to_prediction()
+    assert_array_equal(tree.predict(X[np.argsort(X[:, 1])][:5]), np.array([1, 1, 2, 1, 0]))
+
+
+def test_predict_proba(tree):
+    tree.initialize_observations()
+    tree.prepare_tree_to_prediction()
+    prob_1 = np.array([0, 43, 1]) / 44
+    assert_array_almost_equal(tree.predict_proba(X[np.argsort(X[:, 1])][:5]).toarray(),
+                              np.stack([prob_1, prob_1, np.array([0, 6, 49]) / 55, prob_1, np.array([50, 1, 0]) / 51]))
+
+
+def test_apply(tree):
+    tree.initialize_observations()
+    tree.prepare_tree_to_prediction()
+    assert_array_equal(tree.apply(X[np.argsort(X[:, 1])][:5]), np.array([3, 3, 4, 3, 1]))
+
+
+# ++++++++++++++++++++++++++
+# Weights
+# ++++++++++++++++++++++++++
+
+@pytest.fixture
+def tree_weighted():
+    weights = np.random.random(150)
+    # weights = np.ones(150)*3
+    weights = np.ascontiguousarray(weights, dtype=np.float32)
+    tree = Tree(np.unique(y).shape[0], X, y, weights, thresholds, np.random.randint(10 ** 8))
+    return tree, weights
+
+
+def test_tree_weights(tree_weighted):
+    tree, weights = tree_weighted
+    test_add_node(tree, TREE_UNDEFINED, 0, 2, 3.0, 1)
+    # tree, parent, is_left, class, depth
+    test_add_leaf(tree, 0, 1, 0, 2)
+    test_add_leaf(tree, 0, 0, 0, 2)
+
+    tree.initialize_observations()
+    assert_array_almost_equal(tree.proper_classified, np.sum(weights[y == 0]))
+
+
+def test_tree_weights_on_bigger_tree(tree_weighted):
+    tree, weights = tree_weighted
+    test_add_node(tree, TREE_UNDEFINED, 0, 2, 3.0, 1)
+    # tree, parent, is_left, class, depth
+    test_add_leaf(tree, 0, 1, 1, 2)
+
+    test_add_node(tree, 0, 0, 1, 5.7, 2)
+    test_add_leaf(tree, 2, 1, 1, 3)
+    test_add_leaf(tree, 2, 0, 1, 3)
+
+    tree.initialize_observations()
+    assert_almost_equal(tree.proper_classified, np.sum(weights[y == 1]), decimal=5)

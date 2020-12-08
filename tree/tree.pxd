@@ -19,23 +19,13 @@ import numpy as np
 cimport numpy as np
 
 from tree.observations cimport Observations
-from tree.observations import Observations, copy_observations
-from tree._utils cimport IntArray
+from tree.observations import Observations
+from tree._utils cimport Node, NodeArray, IntArray, resize, resize_c
 
 ctypedef np.npy_float64 DOUBLE_t        # Type of thresholds
 ctypedef np.npy_float32 DTYPE_t         # Type of X
 ctypedef np.npy_intp SIZE_t             # Type for indices and counters
-
-cdef struct Node:
-    # Base storage structure for the nodes in a Tree object
-    SIZE_t left_child                   # id of the left child of the node
-    SIZE_t right_child                  # id of the right child of the node
-    SIZE_t parent                       # id of the parent of the node
-    SIZE_t feature                      # Feature used for splitting the node
-                                        # or predicted class if the node is leaf
-    DOUBLE_t threshold                  # Threshold value at the node
-    SIZE_t depth                        # the size of path from root to node
-
+ctypedef np.npy_uint64 uint64_t             # Type for random generator JKISS
 
 cdef class Tree:
     # The Tree object is a binary tree structure.
@@ -49,21 +39,24 @@ cdef class Tree:
     # Inner structures: values are stored separately from node structure,
     # since size is determined at runtime.
     cdef public SIZE_t depth            # Max depth seen of the tree
-    cdef public SIZE_t node_count       # Counter for node IDs
-    cdef public SIZE_t capacity         # Capacity of tree, in terms of nodes
-    cdef Node* nodes                    # Array of nodes
+    cdef NodeArray* nodes               # Array of nodes
     cdef IntArray* removed_nodes
 
-    cdef Observations observations   # Class with y array metadata
+    cdef Observations observations      # Class with y array metadata
+    cdef public object probabilities    # Probabilities of classes in nodes
 
     cdef public DTYPE_t[:, :] thresholds    # Array with possible thresholds for each feature
     cdef public object X                    # Array with observations features (TODO: possibility of sparse array)
     cdef public SIZE_t[:] y                 # Array with classes of observations
+    cdef public DTYPE_t[:] weights          # Array with weights of observations
+
+    cdef uint64_t seed1
+    cdef uint64_t seed2
+    cdef uint64_t seed3
+    cdef uint64_t seed4
 
     # Methods
     cpdef resize_by_initial_depth(self, int initial_depth)
-    cdef int _resize(self, SIZE_t capacity) nogil except -1
-    cdef int _resize_c(self, SIZE_t capacity=*) nogil except -1
 
     cdef SIZE_t _add_node(self, SIZE_t parent, bint is_left, bint is_leaf,
                           SIZE_t feature, double threshold, SIZE_t depth,
@@ -75,28 +68,17 @@ cdef class Tree:
 
     cdef np.ndarray _get_node_ndarray(self)
 
-    # Mutation functions
-    cpdef mutate_random_node(self)
-    cpdef mutate_random_class_or_threshold(self)
-    cpdef mutate_random_feature(self)
-    cpdef mutate_random_threshold(self)
-    cpdef mutate_random_class(self)
+    cdef change_feature_or_class(self, SIZE_t node_id, SIZE_t new_feature)
+    cdef change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold)
 
-    cdef _mutate_feature(self, SIZE_t node_id)
-    cdef _mutate_threshold(self, SIZE_t node_id, bint feature_changed)
-    cdef _mutate_class(self, SIZE_t node_id)
-
+    # Random functions
+    cdef SIZE_t randint(self, SIZE_t lb, SIZE_t ub) nogil
     cpdef public SIZE_t get_random_node(self)
-    cdef SIZE_t _get_random_node(self)
-    cdef SIZE_t _get_random_decision_node(self)
-    cdef SIZE_t _get_random_leaf(self)
-
-    cdef SIZE_t _get_new_random_feature(self, SIZE_t last_feature)
-    cdef DOUBLE_t _get_new_random_threshold(self, DOUBLE_t last_threshold, SIZE_t feature, bint feature_changed)
-    cdef SIZE_t _get_new_random_class(self, SIZE_t last_class)
-
-    cdef _change_feature_or_class(self, SIZE_t node_id, SIZE_t new_feature)
-    cdef _change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold)
+    cdef SIZE_t get_random_decision_node(self)
+    cdef SIZE_t get_random_leaf(self)
+    cdef SIZE_t get_new_random_feature(self, SIZE_t last_feature)
+    cdef DOUBLE_t get_new_random_threshold(self, DOUBLE_t last_threshold, SIZE_t feature, bint feature_changed)
+    cdef SIZE_t get_new_random_class(self, SIZE_t last_class)
 
     # Observations functions
     cpdef initialize_observations(self)
@@ -104,24 +86,12 @@ cdef class Tree:
     cdef SIZE_t _find_leaf_for_observation(self, SIZE_t observation_id, DTYPE_t[:, :] X_ndarray,
                                         SIZE_t node_id_to_start) nogil
 
-    # Evaluation functions
-    cpdef SIZE_t get_proper_classified(self)
-
     # Prediction functions
     cpdef prepare_tree_to_prediction(self)
+    cpdef void remove_variables(self)
     cpdef np.ndarray predict(self, object X)
-    cpdef np.ndarray predict_proba(self, object X)
+    cpdef object predict_proba(self, object X)
     cpdef np.ndarray apply(self, object X)
-
-    # Multithreading test functions
-    cpdef test_function_with_args_core(self, char* name, long long size, int print_size)
-    cpdef test_function_with_args(self, char* name, long long size, int print_size)
-
-    cpdef time_test2(self, long long size)
-    cpdef time_test(self, long long size)
-
-    cpdef time_test_nogil(self, long long size)
-    cdef void _time_test_nogil_(self, long long size) nogil
 
 
 cpdef Tree copy_tree(Tree tree)

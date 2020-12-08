@@ -143,7 +143,7 @@ cdef Leaves _create_leaves():
     leaves.count = 10
     return leaves
 
-cpdef void _test_copy_int_array():
+cpdef void test_copy_int_array():
     cdef IntArray to_copy = _create_int_array(4)
     cdef IntArray* copied = NULL
     safe_realloc(&copied, 1)
@@ -158,7 +158,7 @@ cpdef void _test_copy_int_array():
     free(copied.elements)
     free(copied)
 
-cpdef void _test_copy_leaves():
+cpdef void test_copy_leaves():
     cdef Leaves to_copy = _create_leaves()
     cdef Leaves* copied = NULL
     safe_realloc(&copied, 1)
