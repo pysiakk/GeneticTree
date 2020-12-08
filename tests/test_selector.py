@@ -1,18 +1,4 @@
-import os
-os.chdir("../")
-
-from genetic.selector import SelectionType, Selector
-from genetic.selector import get_selected_indices_by_rank_selection
-from genetic.selector import get_selected_indices_by_tournament_selection
-from genetic.selector import get_selected_indices_by_roulette_selection
-from genetic.selector import get_selected_indices_by_stochastic_uniform_selection
-
-from tests.test_tree import build
-from sklearn.utils._testing import assert_array_equal
-
-import numpy as np
-import pytest
-import copy
+from tests.utils_testing import *
 
 
 # ==============================================================================
@@ -228,7 +214,7 @@ def test_elitism_above_trees_len(selector, metrics, trees, trees_len):
 def real_trees():
     trees = []
     for i in range(3):
-        trees.append(build(5, 1)[0][0])
+        trees.append(build_trees(5, 1)[0])
     return trees
 
 

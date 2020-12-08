@@ -27,6 +27,7 @@ class GeneticTree:
                  # TODO: change default initialization to splitting nodes with probability
                  initial_depth: int = 1,
                  initialization_type: InitializationType = InitializationType.Random,
+                 split_prob: float = 0.7,
                  mutation_prob: float = 0.4,
                  mutations_additional: list = None,
                  mutation_is_replace: bool = False,
@@ -40,6 +41,7 @@ class GeneticTree:
                  metric: Metric = Metric.AccuracyMinusDepth,
                  remove_other_trees: bool = True, remove_variables: bool = True,
                  seed: int = None,
+                 save_metrics: bool = True,
 
                  # TODO: params not used yet:
                  verbose: bool = True, n_jobs: int = -1,
@@ -50,9 +52,8 @@ class GeneticTree:
 
         kwargs = vars()
         kwargs.pop('self')
-        kwargs.pop('mutations_additional')
         kwargs.pop('seed')
-        none_arg = self.is_any_arg_none(**kwargs)
+        none_arg = self._is_any_arg_none(['mutations_additional'], **kwargs)
         if none_arg:
             raise ValueError(f"The argument {none_arg} is None. "
                              f"GeneticTree does not support None arguments.")
@@ -63,6 +64,14 @@ class GeneticTree:
         self.selector = Selector(**kwargs)
         self.evaluator = Evaluator(**kwargs)
         self.stop_condition = StopCondition(**kwargs)
+
+        self._save_metrics = save_metrics
+        self.acc_mean = []
+        self.acc_best = []
+        self.n_leaves_mean = []
+        self.n_leaves_best = []
+        self.depth_mean = []
+        self.depth_best = []
 
         self.remove_other_trees = remove_other_trees
         self.remove_variables = remove_variables
@@ -76,10 +85,11 @@ class GeneticTree:
         self._can_predict_ = False
 
     @staticmethod
-    def is_any_arg_none(**kwargs):
+    def _is_any_arg_none(possible_nones, **kwargs):
         for k, val in kwargs.items():
             if val is None:
-                return k
+                if k not in possible_nones:
+                    return k
         return False
 
     def set_params(self, remove_other_trees: bool = None, remove_variables: bool = None):
@@ -99,25 +109,26 @@ class GeneticTree:
         if remove_variables is not None:
             self.remove_variables = remove_variables
 
-    def fit(self, X, y, check_input: bool = True, **kwargs):
+    def fit(self, X, y, *args, weights: np.array = None, check_input: bool = True, **kwargs):
         self._can_predict_ = False
         self.set_params(**kwargs)
-        X, y = self._check_input_(X, y, check_input)
-        self._prepare_new_training_(X, y)
+        X, y, weights = self._check_input(X, y, weights, check_input)
+        self._prepare_new_training_(X, y, weights)
         self._growth_trees_()
         self._prepare_to_predict_()
 
-    def _prepare_new_training_(self, X, y):
+    def _prepare_new_training_(self, X, y, weights):
         self.stop_condition.reset_private_variables()
 
         thresholds = prepare_thresholds_array(self._n_thresholds_, X)
-        self._trees_ = self.initializer.initialize(X, y, thresholds)
+        self._trees_ = self.initializer.initialize(X, y, weights, thresholds)
 
     def _growth_trees_(self):
         offspring = self._trees_
         trees_metrics = self.evaluator.evaluate(offspring)
+        self._append_metrics(offspring)
 
-        while not self.stop_condition.stop():
+        while not self.stop_condition.stop(max(trees_metrics)):
             elite = self.selector.get_elite_population(offspring, trees_metrics)
             selected_parents = self.selector.select(offspring, trees_metrics)
             mutated_population = self.mutator.mutate(selected_parents)
@@ -130,7 +141,9 @@ class GeneticTree:
                 offspring += selected_parents
             else:
                 offspring += elite
+
             trees_metrics = self.evaluator.evaluate(offspring)
+            self._append_metrics(offspring)
 
         self._trees_ = offspring
 
@@ -138,14 +151,30 @@ class GeneticTree:
         self._prepare_best_tree_to_prediction_()
         if self.remove_other_trees:
             self._trees_ = None
-        if self.remove_variables:
-            pass
+            if self.remove_variables:
+                self._best_tree_.remove_variables()
+        elif self.remove_variables:
+            for tree in self._trees_:
+                tree.remove_variables()
         self._can_predict_ = True
 
     def _prepare_best_tree_to_prediction_(self):
         best_tree_index: int = self.evaluator.get_best_tree_index(self._trees_)
         self._best_tree_ = self._trees_[best_tree_index]
         self._best_tree_.prepare_tree_to_prediction()
+    
+    def _append_metrics(self, trees):
+        # TODO should best metric be a best of all or a metric of best tree?
+        if self._save_metrics:
+            acc = self.evaluator.get_accuracies(trees)
+            self.acc_best.append(np.max(acc))
+            self.acc_mean.append(np.mean(acc))
+            depth = self.evaluator.get_depths(trees)
+            self.depth_best.append(np.min(depth))
+            self.depth_mean.append(np.mean(depth))
+            n_leaves = self.evaluator.get_n_leaves(trees)
+            self.n_leaves_best.append(np.min(n_leaves))
+            self.n_leaves_mean.append(np.mean(n_leaves))
 
     def predict(self, X, check_input=True):
         """
@@ -203,7 +232,7 @@ class GeneticTree:
         if not self._can_predict_:
             raise Exception('Cannot predict. Model not prepared.')
 
-    def _check_input_(self, X, y, check_input: bool):
+    def _check_input(self, X, y, weights, check_input: bool):
         """
         Check if X and y have proper dtype and have the same number of observations
 
@@ -221,12 +250,23 @@ class GeneticTree:
             if y.dtype != SIZE or not y.flags.contiguous:
                 y = np.ascontiguousarray(y, dtype=SIZE)
 
+            if weights is None:
+                weights = np.ones(y.shape[0], dtype=np.float32)
+            else:
+                if weights.shape[0] != y.shape[0]:
+                    raise ValueError(f"y and weights should have the same "
+                                     f"number of observations. Weights "
+                                     f"have {weights.shape[0]} observations "
+                                     f"and y have {y.shape[0]} observations.")
+                if weights.dtype != np.float32 or not weights.flags.contiguous:
+                    weights = np.ascontiguousarray(weights, dtype=np.float32)
+
         if y.shape[0] != X.shape[0]:
             raise ValueError(f"X and y should have the same number of "
                              f"observations. X have {X.shape[0]} observations "
                              f"and y have {y.shape[0]} observations.")
 
-        return X, y
+        return X, y, weights
 
     def _check_X_(self, X, check_input: bool):
         """

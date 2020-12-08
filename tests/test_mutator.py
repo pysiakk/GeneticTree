@@ -1,14 +1,4 @@
-import os
-os.chdir("../")
-
-from genetic.mutator import Mutator, MutationType
-
-from tests.test_tree import build
-from sklearn.utils._testing import assert_array_equal
-
-import numpy as np
-import pytest
-
+from tests.utils_testing import *
 
 # ==============================================================================
 # Mutation functions (if it will be standalone)
@@ -29,7 +19,7 @@ def mutator():
 def trees():
     trees = []
     for i in range(3):
-        trees.append(build(5, 1)[0][0])
+        trees.append(build_trees(5, 1)[0])
     return trees
 
 

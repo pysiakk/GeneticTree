@@ -12,12 +12,12 @@ ctypedef np.npy_intp SIZE_t              # Type for indices and counters
 
 cpdef DOUBLE_t[:] get_accuracies(list trees):
     cdef DOUBLE_t[:] accuracies = np.empty(len(trees), float)
-    cdef SIZE_t n_observations = trees[0].y.shape[0]
+    cdef DTYPE_t weights_sum = np.sum(trees[0].weights)
     cdef int i
     cdef Tree tree
     for i in range(len(trees)):
         tree = trees[i]
-        accuracies[i] = tree.get_proper_classified() / n_observations
+        accuracies[i] = tree.proper_classified / weights_sum
     return accuracies
 
 
@@ -27,8 +27,16 @@ cpdef SIZE_t[:] get_proper_classified(list trees):
     cdef Tree tree
     for i in range(len(trees)):
         tree = trees[i]
-        proper_classified[i] = tree.get_proper_classified()
+        proper_classified[i] = tree.proper_classified
     return proper_classified
+
+
+cpdef SIZE_t[:] get_trees_n_leaves(list trees):
+    cdef SIZE_t[:] trees_sizes = np.empty(len(trees), int)
+    cdef int i
+    for i in range(len(trees)):
+        trees_sizes[i] = (trees[i].node_count + 1) / 2
+    return trees_sizes
 
 
 cpdef SIZE_t[:] get_trees_sizes(list trees):
@@ -37,6 +45,7 @@ cpdef SIZE_t[:] get_trees_sizes(list trees):
     for i in range(len(trees)):
         trees_sizes[i] = trees[i].node_count
     return trees_sizes
+
 
 
 cpdef SIZE_t[:] get_trees_depths(list trees):

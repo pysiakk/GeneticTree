@@ -1,25 +1,17 @@
-import os
-os.chdir("../")
-
-from genetic_tree import GeneticTree
-from tests.set_up_variables_and_imports import *
-from tree.thresholds import prepare_thresholds_array
-
-X = GeneticTree._check_X_(GeneticTree(), X, True)
-thresholds = prepare_thresholds_array(10, X)
+from tests.utils_testing import *
 
 
-def initialize_tree(thresholds) -> Tree:
-    tree: Tree = Tree(3, X, y, thresholds)
+def initialize_tree() -> Tree:
+    tree: Tree = initialize_iris_tree()
     tree.resize_by_initial_depth(3)
     builder: FullTreeBuilder = FullTreeBuilder()
     builder.build(tree, 3)
-    tree.initialize_observations(X, y)
+    tree.initialize_observations()
     return tree
 
 
 def initialization():
-    tree: Tree = initialize_tree(thresholds)
+    tree: Tree = initialize_tree()
     print(f'Features of tree: {tree.feature}\n')
 
 
