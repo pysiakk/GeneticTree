@@ -1,4 +1,4 @@
-# GeneticTree
+# Genetic Tree
 
 The main objective of the package is to allow creating decision trees that are better in some aspects than trees made by greedy algorithms.
 
