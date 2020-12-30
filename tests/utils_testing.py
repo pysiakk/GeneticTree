@@ -60,7 +60,7 @@ y = iris.target[perm]
 y = np.ascontiguousarray(y, dtype=np.intp)
 
 n_thresholds: int = 2
-X = GeneticTree._check_X_(GeneticTree(), X, True)
+X = GeneticTree._check_X(GeneticTree(), X, True)
 
 # thresholds array have unique values
 # it is needed to proper test mutating thresholds
