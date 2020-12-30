@@ -1,7 +1,42 @@
-from tree.forest import Forest
-from tree.tree import Tree
+from tree.tree import Tree, copy_tree
 import math
 import numpy as np
+
+from aenum import Enum, extend_enum
+from tree.mutator import mutate_random_node, mutate_random_class_or_threshold
+from tree.mutator import mutate_random_feature, mutate_random_threshold
+from tree.mutator import mutate_random_class
+
+
+class MutationType(Enum):
+    """
+    MutationType is enumerator with possible mutations to use:
+        Class: mutate class in random leaf
+        Threshold: mutate threshold in random decision node
+        Feature: mutate both feature and threshold in random decision node
+        ClassOrThreshold: mutate random node \
+                          if decision node then mutate threshold \
+                          if leaf then mutate class
+
+    Look at SelectionType to see how to add new MutationType
+    """
+    def __new__(cls, function, *args):
+        obj = object.__new__(cls)
+        obj._value_ = len(cls.__members__)
+        obj.mutate = function
+        return obj
+
+    @staticmethod
+    def add_new(name, function):
+        extend_enum(MutationType, name, function)
+
+    # after each entry should be at least delimiter
+    # (also can be more arguments which will be ignored)
+    # this is needed because value is callable type
+    Class = mutate_random_class,
+    Threshold = mutate_random_threshold,
+    Feature = mutate_random_feature,
+    ClassOrThreshold = mutate_random_class_or_threshold,
 
 
 class Mutator:
@@ -14,128 +49,139 @@ class Mutator:
     The probability means the proportion of all trees that be affected by mutation
 
     Args:
-        is_feature: is feature mutation used
-        feature_prob: probability of feature mutation
-        is_threshold: is threshold mutation used
-        threshold_prob: probability of threshold mutation
-        is_class: is class mutation used
-        class_prob: probability of class mutation
-        is_node: is node mutation used \
-        (if node is leaf mutate class, otherwise mutate feature)
-        node_prob: probability of node mutation
-        is_class_or_threshold: is class_or_threshold mutation used \
-        (if node is leaf mutate class, otherwise mutate threshold)
-        class_or_threshold_prob: probability of class_or_threshold mutation
+        mutation_prob: probability to mutate random node \
+                       if decision node then mutate both feature and threshold \
+                       if leaf then mutate class
+        mutations_additional: list of tuples \
+                              each tuple contains MutationType \
+                              and probability of this MutationType
+        mutation_is_replace: if new trees should replace previous or should \
+                             previous trees be modified directly
     """
 
     def __init__(self,
-                 is_feature: bool = False, feature_prob: float = 0.005,
-                 is_threshold: bool = False, threshold_prob: float = 0.005,
-                 is_class: bool = False, class_prob: float = 0.005,
-                 is_node: bool = False, node_prob: float = 0.005,
-                 is_class_or_threshold: bool = True, class_or_threshold_prob: float = 0.005,
+                 mutation_prob: float = 0.4,
+                 mutations_additional: list = None,
+                 mutation_is_replace: bool = False,
                  **kwargs):
-        self.is_feature: bool = is_feature
-        self.feature_prob: float = feature_prob
-        self.is_threshold: bool = is_threshold
-        self.threshold_prob: float = threshold_prob
-        self.is_class: bool = is_class
-        self.class_prob: float = class_prob
-        self.is_node: bool = is_node
-        self.node_prob: float = node_prob
-        self.is_class_or_threshold: bool = is_class_or_threshold
-        self.class_or_threshold_prob: float = class_or_threshold_prob
+        self.mutation_prob = self._check_mutation_prob_(mutation_prob)
+        self.mutation_is_replace = self._check_mutation_is_replace_(mutation_is_replace)
+        if mutations_additional is not None:
+            self.mutations_additional = self._check_mutations_additional_(mutations_additional)
+        else:
+            self.mutations_additional = []
 
     def set_params(self,
-                   is_feature: bool = None, feature_prob: float = None,
-                   is_threshold: bool = None, threshold_prob: float = None,
-                   is_class: bool = None, class_prob: float = None,
-                   is_node: bool = None, node_prob: float = None,
-                   is_class_or_threshold: bool = None, class_or_threshold_prob: float = None,
+                   mutation_prob: float = None,
+                   mutations_additional: list = None,
+                   mutation_is_replace: bool = None,
                    **kwargs):
         """
         Function to set new parameters for Mutator
 
         Arguments are the same as in __init__
         """
-        if is_feature is not None:
-            self.is_feature = is_feature
-        if feature_prob is not None:
-            self.feature_prob = feature_prob
-        if is_threshold is not None:
-            self.is_threshold = is_threshold
-        if threshold_prob is not None:
-            self.threshold_prob = threshold_prob
-        if is_class is not None:
-            self.is_class = is_class
-        if class_prob is not None:
-            self.class_prob = class_prob
-        if is_node is not None:
-            self.is_node = is_node
-        if node_prob is not None:
-            self.node_prob = node_prob
-        if is_class_or_threshold is not None:
-            self.is_class_or_threshold = is_class_or_threshold
-        if class_or_threshold_prob is not None:
-            self.class_or_threshold_prob = class_or_threshold_prob
+        if mutation_prob is not None:
+            self.mutation_prob = self._check_mutation_prob_(mutation_prob)
+        if mutation_is_replace is not None:
+            self.mutation_is_replace = self._check_mutation_is_replace_(mutation_is_replace)
+        if mutations_additional is not None:
+            self.mutations_additional = self._check_mutations_additional_(mutations_additional)
 
-    def mutate(self, forest: Forest):
+    @staticmethod
+    def _check_mutation_prob_(mutation_prob, error_name: str = "mutation_prob"):
+        if type(mutation_prob) is not float and type(mutation_prob) is not int:
+            raise TypeError(f"{error_name}: {mutation_prob} should be "
+                            f"float or int. Instead it is {type(mutation_prob)}")
+        if mutation_prob <= 0:
+            mutation_prob = 0
+        if mutation_prob >= 1:
+            mutation_prob = 1
+        return mutation_prob
+    
+    @staticmethod
+    def _check_mutation_is_replace_(mutation_is_replace):
+        if type(mutation_is_replace) is not bool:
+            raise TypeError(f"mutation_is_replace: {mutation_is_replace} should be "
+                            f"bool. Instead it is {type(mutation_is_replace)}")
+        return mutation_is_replace
+
+    @staticmethod
+    def _check_mutations_additional_(mutations_additional):
+        if not isinstance(mutations_additional, list):
+            raise TypeError(f"mutations_additional: {mutations_additional} is "
+                            f"not type list")
+        for i in range(len(mutations_additional)):
+            element = mutations_additional[i]
+            # comparison of strings because after using MutationType.add_new() MutationType is reference to other class
+            if str(type(element[0])) != str(MutationType):
+                raise TypeError(f"MutationType inside mutations additional: "
+                                f"{element[0]} is not a MutationType")
+            error_name = f"Mutation probability inside mutations additional for {element[0]}"
+            element = element[0], Mutator._check_mutation_prob_(element[1], error_name)
+            mutations_additional[i] = element
+        return mutations_additional
+
+    def mutate(self, trees):
         """
         It mutates all trees based on params
 
-        Mutation of feature means changing feature in random decision node and
-        mutate threshold in that node
-
-        Mutation of threshold means changing threshold in random decision node
-
-        Mutation of class means changing class in random leaf
-
-        Mutation of node means mutating feature for decision node or class for
-        leaf
-
-        Mutation of class_or_threshold means mutating threshold for decision
-        node or class for leaf
+        First it mutate random node with probability mutation_prob
+        Then for each pair (MutationType, prob) inside
+        additional_mutation list it mutates MutationType with prob probability
 
         Args:
-            forest: Container with all trees
+            trees: List with all trees to mutate
 
         Returns:
-            forest: Container with mutated trees
+            mutated_trees:
         """
-        if self.is_feature:
-            forest = self.mutate_one(forest, Tree.mutate_random_feature, self.feature_prob)
-        if self.is_threshold:
-            forest = self.mutate_one(forest, Tree.mutate_random_threshold, self.threshold_prob)
-        if self.is_class:
-            forest = self.mutate_one(forest, Tree.mutate_random_class, self.class_prob)
-        if self.is_node:
-            forest = self.mutate_one(forest, Tree.mutate_random_node, self.node_prob)
-        if self.is_class_or_threshold:
-            forest = self.mutate_one(forest, Tree.mutate_random_class_or_threshold, self.class_or_threshold_prob)
-        return forest
+        mutated_population = self._mutate_by_mutation_type_(trees, None, self.mutation_prob)
+        for elem in self.mutations_additional:
+            mutated_population += self._mutate_by_mutation_type_(trees, elem[0], elem[1])
+        return mutated_population
 
-    @staticmethod
-    def mutate_one(forest: Forest, function: callable, prob: float):
+    def _mutate_by_mutation_type_(self, trees, mutation_type: MutationType, prob: float):
         """
         It mutate all trees by function with prob probability
 
         Args:
-            forest: Container with all trees
-            function: A tree function which perform mutation on tree
+            trees: List with all trees to mutate
+            mutation_type: MutationType
             prob: The probability that each tree will be mutated
 
         Returns:
-            forest: Container with mutated trees
+            trees: New created trees that was mutated
         """
-        trees_number: int = forest.current_trees
-        tree_ids: np.array = Mutator.get_random_trees(trees_number, prob)
+        new_created_trees = []
+        trees_number: int = len(trees)
+        tree_ids: np.array = self._get_random_trees_(trees_number, prob)
         for tree_id in tree_ids:
-            tree: Tree = forest.trees[tree_id]
-            function(tree)
-        return forest
+            tree: Tree = trees[tree_id]
+            if self.mutation_is_replace:
+                self._run_mutation_function_(tree, mutation_type)
+            else:
+                tree = copy_tree(tree)
+                self._run_mutation_function_(tree, mutation_type)
+                new_created_trees.append(tree)
+        return new_created_trees
 
     @staticmethod
-    def get_random_trees(n_trees: int, probability: float) -> np.array:
+    def _run_mutation_function_(tree: Tree, mutation_type: MutationType):
+        """
+        Run proper mutation based on mutation_type argument.
+
+        Args:
+            tree: Tree
+            mutation_type: MutationType
+        """
+        if mutation_type is None:
+            mutate_random_node(tree)
+        else:
+            mutation_type.mutate(tree)
+
+    @staticmethod
+    def _get_random_trees_(n_trees: int, probability: float) -> np.array:
         """
         Warning:
             It don't use normal probability of choosing each tree

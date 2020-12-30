@@ -1,13 +1,13 @@
 from enum import Enum, auto
-from tree.forest import Forest
-from tree.builder import Builder, FullTreeBuilder
+from tree.builder import Builder, FullTreeBuilder, SplitTreeBuilder
 from tree.tree import Tree
-from numpy.random import randint
+import numpy as np
 
 
 class InitializationType(Enum):
     Random = auto()
     Half = auto()
+    Split = auto()
 
 
 class Initializer:
@@ -27,10 +27,12 @@ class Initializer:
     def __init__(self,
                  n_trees: int = 200, initial_depth: int = 1,
                  initialization_type: InitializationType = InitializationType.Random,
+                 split_prob: float = 0.7,
                  **kwargs):
         self.n_trees: int = n_trees
         self.initial_depth: int = initial_depth
         self.initialization_type: InitializationType = initialization_type
+        self.split_prob: float = split_prob
         self.builder: Builder = self.initialize_builder()
 
     def initialize_builder(self):
@@ -38,8 +40,11 @@ class Initializer:
         Returns:
             Builder: cython builder to initialize new trees
         """
-        if self.initialization_type == InitializationType.Random:
+        if self.initialization_type == InitializationType.Random\
+                or self.initialization_type == InitializationType.Half:
             return FullTreeBuilder()
+        elif self.initialization_type == InitializationType.Split:
+            return SplitTreeBuilder()
 
     def set_params(self, initial_depth: int = None,
                    initialization_type: InitializationType = None,
@@ -54,7 +59,7 @@ class Initializer:
         if initialization_type is not None:
             self.initialization_type = initialization_type
 
-    def initialize(self, forest: Forest):
+    def initialize(self, X, y, weights, threshold):
         """
         Function to initialize forest
 
@@ -62,46 +67,77 @@ class Initializer:
             forest: Container with all trees
         """
         if self.initialization_type == InitializationType.Random:
-            self.initialize_random(forest)
+            trees = self.initialize_random(X, y, weights, threshold)
         elif self.initialization_type == InitializationType.Half:
-            self.initialize_half(forest)
+            trees = self.initialize_half(X, y, weights, threshold)
+        elif self.initialization_type == InitializationType.Split:
+            trees = self.initialize_split(X, y, weights, threshold)
+        return trees
 
-    def initialize_random(self, forest: Forest):
+    def initialize_random(self, X, y, weights, thresholds):
         """
         Function to initialize forest
 
         Args:
             forest: Container with all trees
         """
+        trees = []
         tree: Tree
+        n_classes: int = np.unique(y).shape[0]
+
         for tree_index in range(self.n_trees):
-            tree = forest.create_new_tree(self.initial_depth)
-            self.initialize_tree(tree, self.initial_depth)
-            forest.add_new_tree_and_initialize_observations(tree)
+            tree: Tree = Tree(n_classes, X, y, weights, thresholds, np.random.randint(10**8))
+            tree.resize_by_initial_depth(self.initial_depth)
+            self.builder.build(tree, self.initial_depth)
+            tree.initialize_observations()
+            trees.append(tree)
+        return trees
 
-    def initialize_half(self, forest: Forest):
+    def initialize_half(self, X, y, weights, thresholds):
         """
         Function to initialize forest
 
         Args:
             forest: Container with all trees
         """
+        trees = []
         tree: Tree
+        n_classes: int = np.unique(y).shape[0]
+
         for tree_index in range(self.n_trees):
             if tree_index % 2 == 0:
-                tree = forest.create_new_tree(self.initial_depth)
-                self.initialize_tree(tree, self.initial_depth)
-                forest.add_new_tree_and_initialize_observations(tree)
+                tree: Tree = Tree(n_classes, X, y, weights, thresholds, np.random.randint(10**8))
+                tree.resize_by_initial_depth(self.initial_depth)
+                self.builder.build(tree, self.initial_depth)
+                tree.initialize_observations()
+                trees.append(tree)
             else:
-                depth = randint(1, self.initial_depth)
-                tree = forest.create_new_tree(depth)
-                self.initialize_tree(tree, depth)
-                forest.add_new_tree_and_initialize_observations(tree)
+                if self.initial_depth > 1:
+                    depth = np.random.randint(low=1, high=self.initial_depth)
+                else:
+                    depth = self.initial_depth
+                tree: Tree = Tree(n_classes, X, y, weights, thresholds, np.random.randint(10**8))
+                tree.resize_by_initial_depth(depth)
+                self.builder.build(tree, depth)
+                tree.initialize_observations()
+                trees.append(tree)
+        return trees
 
-    def initialize_tree(self, tree: Tree, initial_depth: int):
+    def initialize_split(self, X, y, weights, thresholds):
         """
+        Function to initialize forest
+
         Args:
-            tree: Tree to initialize nodes
-            initial_depth: Depth to which tree will be initialized
+            forest: Container with all trees
         """
-        self.builder.build(tree, self.initial_depth)
+        trees = []
+        tree: Tree
+        n_classes: int = np.unique(y).shape[0]
+
+        for tree_index in range(self.n_trees):
+            tree: Tree = Tree(n_classes, X, y, weights, thresholds, np.random.randint(10**8))
+            tree.resize_by_initial_depth(self.initial_depth)
+            self.builder.build(tree, self.initial_depth, self.split_prob)
+            tree.initialize_observations()
+            trees.append(tree)
+        return trees

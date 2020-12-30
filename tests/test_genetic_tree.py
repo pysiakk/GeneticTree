@@ -1,8 +1,4 @@
-from genetic_tree import GeneticTree
-from tests.set_up_variables_and_imports import *
-
-import os
-os.chdir("../")
+from tests.utils_testing import *
 
 n_trees = 20
 const_seed = np.random.randint(0, 10**8)
@@ -17,13 +13,13 @@ def test_seed():
     Assert that algorithm will create the same best trees with set seed
     """
     seed = np.random.randint(0, 10**8)
-    gt = GeneticTree(seed=seed, n_trees=n_trees, max_iterations=3)
+    gt = GeneticTree(random_state=seed, n_trees=n_trees, max_iterations=3)
     gt.fit(X, y)
-    tree: Tree = gt.forest.best_tree
+    tree: Tree = gt._best_tree
 
-    gt2 = GeneticTree(seed=seed, n_trees=n_trees, max_iterations=3)
+    gt2 = GeneticTree(random_state=seed, n_trees=n_trees, max_iterations=3)
     gt2.fit(X, y)
-    tree2: Tree = gt2.forest.best_tree
+    tree2: Tree = gt2._best_tree
 
     assert_array_equal(tree.feature, tree2.feature)
     assert_array_equal(tree.threshold, tree2.threshold)
@@ -37,7 +33,7 @@ def test_none_seed():
     """
     test if seed can be None -> and then np won't set seed
     """
-    GeneticTree(seed=None)
+    GeneticTree(random_state=None)
 
 
 def test_none_argument():
@@ -49,8 +45,8 @@ def test_none_argument():
 
 
 @pytest.fixture
-def genetic_tree():
-    genetic_tree = GeneticTree(n_trees=10, max_trees=30, max_iterations=3, remove_other_trees=False, remove_variables=False)
+def genetic_tree() -> GeneticTree:
+    genetic_tree = GeneticTree(n_trees=10, max_iterations=3, is_keep_last_population=True, is_remove_variables=False)
     return genetic_tree
 
 
@@ -62,7 +58,7 @@ def genetic_tree_fitted(genetic_tree):
 
 @pytest.fixture
 def X_converted(genetic_tree):
-    return genetic_tree._check_X_(X, True)
+    return genetic_tree._check_X(X, True)
 
 
 def test_predict_exception_when_not_fit(genetic_tree):
@@ -85,7 +81,7 @@ def test_X_y_different_sizes(genetic_tree):
                          [GeneticTree.predict,
                           GeneticTree.predict_proba,
                           GeneticTree.apply,
-                          GeneticTree._check_X_])
+                          GeneticTree._check_X])
 def test_X_with_less_features(genetic_tree, function):
     """
     X added as predicted should have the same number of features as
@@ -97,8 +93,8 @@ def test_X_with_less_features(genetic_tree, function):
 
 
 def test_set_n_features_after_check_input(genetic_tree):
-    genetic_tree._check_input_(X, y, False)
-    assert X.shape[1] == genetic_tree._n_features_
+    genetic_tree._check_input(X, y, None, check_input=False)
+    assert X.shape[1] == genetic_tree._n_features
 
 
 @pytest.fixture
@@ -108,24 +104,73 @@ def np_randint():
 
 
 def test_set_seed(np_randint):
-    GeneticTree(seed=const_seed)
+    GeneticTree(random_state=const_seed)
     assert np_randint == np.random.randint(0, 10**8)
 
 
 def test_predict(genetic_tree_fitted, X_converted):
     assert_array_equal(genetic_tree_fitted.predict(X),
-                       genetic_tree_fitted.forest.best_tree.predict(X_converted))
+                       genetic_tree_fitted._best_tree.predict(X_converted))
 
 
 def test_predict_proba(genetic_tree_fitted, X_converted):
-    assert_array_equal(genetic_tree_fitted.predict_proba(X),
-                       genetic_tree_fitted.forest.best_tree.predict_proba(X_converted))
+    assert_array_equal(genetic_tree_fitted.predict_proba(X).toarray(),
+                       genetic_tree_fitted._best_tree.predict_proba(X_converted).toarray())
 
 
 def test_apply(genetic_tree_fitted, X_converted):
     assert_array_equal(genetic_tree_fitted.apply(X),
-                       genetic_tree_fitted.forest.best_tree.apply(X_converted))
+                       genetic_tree_fitted._best_tree.apply(X_converted))
 
-# ====================================================================================================
-# Genetic Processor
-# ====================================================================================================
+
+# +++++++++++++++
+# Metric functions
+# +++++++++++++++
+
+def assert_last_metric(genetic_tree):
+    best_tree_index = genetic_tree.evaluator.get_best_tree_index(genetic_tree._trees)
+    assert genetic_tree.acc_best[-1] == Evaluator.get_accuracies(genetic_tree._trees)[best_tree_index]
+    assert genetic_tree.acc_mean[-1] == np.mean(Evaluator.get_accuracies(genetic_tree._trees))
+    assert genetic_tree.depth_best[-1] == Evaluator.get_depths(genetic_tree._trees)[best_tree_index]
+    assert genetic_tree.depth_mean[-1] == np.mean(Evaluator.get_depths(genetic_tree._trees))
+    assert genetic_tree.n_leaves_best[-1] == Evaluator.get_n_leaves(genetic_tree._trees)[best_tree_index]
+    assert genetic_tree.n_leaves_mean[-1] == np.mean(Evaluator.get_n_leaves(genetic_tree._trees))
+    assert genetic_tree.metric_best[-1] == genetic_tree.evaluator.evaluate(genetic_tree._trees)[best_tree_index]
+    assert genetic_tree.metric_mean[-1] == np.mean(genetic_tree.evaluator.evaluate(genetic_tree._trees))
+
+
+def test_append_metrics(X_converted):
+    genetic_tree = GeneticTree(n_trees=10, max_iterations=0, is_keep_last_population=True, is_remove_variables=False)
+    genetic_tree.fit(X_converted, y)
+    assert_last_metric(genetic_tree)
+
+
+def test_append_metrics_more_iterations(X_converted):
+    genetic_tree = GeneticTree(n_trees=10, max_iterations=1, is_keep_last_population=True, is_remove_variables=False)
+    for i in range(10):
+        genetic_tree.fit(X_converted, y)
+        assert_last_metric(genetic_tree)
+
+
+# +++++++++++++++
+# Check input
+# +++++++++++++++
+
+def test_ones_as_weights(genetic_tree, X_converted):
+    *_, weights = genetic_tree._check_input(X_converted, y, None, True)
+    assert_array_equal(weights, np.ones(150))
+
+
+def test_converting_weights(genetic_tree, X_converted):
+    weights = np.random.random(150)
+    *_, weights = genetic_tree._check_input(X_converted, y, weights, True)
+    assert weights.shape[0] == 150
+    assert weights.dtype == np.float32
+    assert weights.flags.contiguous
+
+
+def test_weights_exception(genetic_tree, X_converted):
+    weights = np.random.random(149)
+    with pytest.raises(ValueError):
+        genetic_tree._check_input(X_converted, y, weights, True)
+

@@ -1,4 +1,6 @@
 import math
+import statistics
+
 
 class StopCondition:
     """
@@ -32,17 +34,24 @@ class StopCondition:
             self.use_without_improvement = use_without_improvement
 
     def reset_private_variables(self):
-        self.actual_iteration: int = 1
+        self.current_iteration: int = 1
         self.best_result: float = -math.inf
         self.best_result_iteration: int = 1
+        self.best_metric_hist: list = []
 
-    def stop(self) -> bool:
-        if self.actual_iteration > self.max_iterations:
+    def stop(self, score: float = None) -> bool:
+        if self.current_iteration > self.max_iterations:
             return True
 
         if self.use_without_improvement:
-            #TODO
-            pass
+            if len(self.best_metric_hist) < self.max_iterations_without_improvement:
+                self.best_metric_hist.append(score)
+            else:
+                self.best_metric_hist.append(score)
+                self.best_metric_hist.pop(0)
+                if self.best_metric_hist[self.max_iterations_without_improvement - 1] \
+                        <= statistics.median(self.best_metric_hist[:self.max_iterations_without_improvement - 1]):
+                    return True
 
-        self.actual_iteration += 1
+        self.current_iteration += 1
         return False

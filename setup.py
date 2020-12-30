@@ -10,7 +10,13 @@ ext_modules = cythonize([
     Extension("tree.tree", ["tree/tree.pyx"],      # probably it has to have first name (tree)
                                                    # the same as second (tree(.pyx))
               extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),
-    Extension("tree.forest", ["tree/forest.pyx"],
+    Extension("tree.observations", ["tree/observations.pyx"],
+              extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),
+    Extension("tree.evaluation", ["tree/evaluation.pyx"],
+              extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),
+    Extension("tree.thresholds", ["tree/thresholds.pyx"],
+              extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),
+    Extension("tree.mutator", ["tree/mutator.pyx"],
               extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp']),
     Extension("tree.crosser", ["tree/crosser.pyx"],
               define_macros=defs,
