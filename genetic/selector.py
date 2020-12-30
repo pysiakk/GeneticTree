@@ -224,9 +224,9 @@ class Selector:
                  selection_type: SelectionType = SelectionType.StochasticUniform,
                  n_elitism: int = 3,
                  **kwargs):
-        self.n_trees: int = self._check_n_trees_(n_trees)
-        self.selection_type: SelectionType = self._check_selection_type_(selection_type)
-        self.n_elitism: int = self._check_n_elitism_(n_elitism)
+        self.n_trees: int = self._check_n_trees(n_trees)
+        self.selection_type: SelectionType = self._check_selection_type(selection_type)
+        self.n_elitism: int = self._check_n_elitism(n_elitism)
 
     def set_params(self,
                    n_trees: int = None,
@@ -239,14 +239,14 @@ class Selector:
         Arguments are the same as in __init__
         """
         if n_trees is not None:
-            self.n_trees = self._check_n_trees_(n_trees)
+            self.n_trees = self._check_n_trees(n_trees)
         if selection_type is not None:
-            self.selection_type = self._check_selection_type_(selection_type)
+            self.selection_type = self._check_selection_type(selection_type)
         if n_elitism is not None:
-            self.n_elitism = self._check_n_elitism_(n_elitism)
+            self.n_elitism = self._check_n_elitism(n_elitism)
 
     @staticmethod
-    def _check_n_trees_(n_trees):
+    def _check_n_trees(n_trees):
         if n_trees <= 0:
             warnings.warn(f"Try to set n_trees={n_trees}. Changed to n_trees=1, "
                           f"but try to set n_trees manually for value at least 20")
@@ -254,7 +254,7 @@ class Selector:
         return n_trees
 
     @staticmethod
-    def _check_selection_type_(selection_type):
+    def _check_selection_type(selection_type):
         # comparison of strings because after using SelectionType.add_new() SelectionType is reference to other class
         if str(type(selection_type)) == str(SelectionType):
             return selection_type
@@ -262,7 +262,7 @@ class Selector:
             raise TypeError(f"Passed selection_type={selection_type} with type {type(selection_type)}, "
                             f"Needed argument with type SelectionType")
 
-    def _check_n_elitism_(self, n_elitism):
+    def _check_n_elitism(self, n_elitism):
         if n_elitism >= self.n_trees:
             n_elitism = self.n_trees
         if n_elitism <= 0:
@@ -289,11 +289,11 @@ class Selector:
                           f"probability with do not replacing parents.",
                           UserWarning)
         indices = self.selection_type.select(trees_metrics, self.n_trees)
-        new_trees = self._get_new_trees_by_indices_(trees, indices)
+        new_trees = self._get_new_trees_by_indices(trees, indices)
         return new_trees
 
     @staticmethod
-    def _get_new_trees_by_indices_(trees, indices):
+    def _get_new_trees_by_indices(trees, indices):
         sorted_indices = np.sort(indices)
 
         # first get all unique indices
