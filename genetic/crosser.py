@@ -17,11 +17,11 @@ class Crosser:
     """
 
     def __init__(self,
-                 cross_prob: float = 0.93,
+                 cross_prob: float = 0.6,
                  cross_is_both: bool = True,
                  **kwargs):
-        self.cross_prob: float = cross_prob
-        self.cross_is_both: bool = cross_is_both
+        self.cross_prob: float = self._check_cross_prob(cross_prob)
+        self.cross_is_both: bool = self._check_cross_is_both(cross_is_both)
 
     def set_params(self,
                    cross_prob: float = None,
@@ -33,9 +33,27 @@ class Crosser:
         Arguments are the same as in __init__
         """
         if cross_prob is not None:
-            self.cross_prob = cross_prob
+            self.cross_prob = self._check_cross_prob(cross_prob)
         if cross_is_both is not None:
-            self.cross_is_both = cross_is_both
+            self.cross_is_both = self._check_cross_is_both(cross_is_both)
+
+    @staticmethod
+    def _check_cross_prob(cross_prob):
+        if type(cross_prob) is not float and type(cross_prob) is not int:
+            raise TypeError(f"cross_prob: {cross_prob} should be "
+                            f"float or int. Instead it is {type(cross_prob)}")
+        if cross_prob <= 0:
+            cross_prob = 0
+        if cross_prob >= 1:
+            cross_prob = 1
+        return cross_prob
+
+    @staticmethod
+    def _check_cross_is_both(cross_is_both):
+        if type(cross_is_both) is not bool:
+            raise TypeError(f"cross_is_both: {cross_is_both} should be "
+                            f"bool. Instead it is {type(cross_is_both)}")
+        return cross_is_both
 
     def cross_population(self, trees):
         """
@@ -49,8 +67,8 @@ class Crosser:
 
         trees_number: int = len(trees)
 
-        first_parents_indices: np.array = self._get_random_trees_(trees_number, self.cross_prob)
-        second_parents_indices: np.array = self._get_second_parents_(trees_number, first_parents_indices)
+        first_parents_indices: np.array = self._get_random_trees(trees_number, self.cross_prob)
+        second_parents_indices: np.array = self._get_second_parents(trees_number, first_parents_indices)
 
         for i in range(first_parents_indices.shape[0]):
             first_parent: Tree = trees[first_parents_indices[i]]
@@ -67,7 +85,7 @@ class Crosser:
         return new_created_trees
 
     @staticmethod
-    def _get_random_trees_(n_trees: int, probability: float) -> np.array:
+    def _get_random_trees(n_trees: int, probability: float) -> np.array:
         """
         Args:
             n_trees: Number of trees
@@ -81,7 +99,7 @@ class Crosser:
         return indices[random_values < probability]
 
     @staticmethod
-    def _get_second_parents_(n_trees: int, first_parents: np.array) -> np.array:
+    def _get_second_parents(n_trees: int, first_parents: np.array) -> np.array:
         """
         Function to choose another individual (to cross with) from uniform
         distribution of other individuals
