@@ -64,10 +64,10 @@ class Mutator:
                  mutations_additional: list = None,
                  mutation_is_replace: bool = False,
                  **kwargs):
-        self.mutation_prob = self._check_mutation_prob_(mutation_prob)
-        self.mutation_is_replace = self._check_mutation_is_replace_(mutation_is_replace)
+        self.mutation_prob = self._check_mutation_prob(mutation_prob)
+        self.mutation_is_replace = self._check_mutation_is_replace(mutation_is_replace)
         if mutations_additional is not None:
-            self.mutations_additional = self._check_mutations_additional_(mutations_additional)
+            self.mutations_additional = self._check_mutations_additional(mutations_additional)
         else:
             self.mutations_additional = []
 
@@ -82,14 +82,14 @@ class Mutator:
         Arguments are the same as in __init__
         """
         if mutation_prob is not None:
-            self.mutation_prob = self._check_mutation_prob_(mutation_prob)
+            self.mutation_prob = self._check_mutation_prob(mutation_prob)
         if mutation_is_replace is not None:
-            self.mutation_is_replace = self._check_mutation_is_replace_(mutation_is_replace)
+            self.mutation_is_replace = self._check_mutation_is_replace(mutation_is_replace)
         if mutations_additional is not None:
-            self.mutations_additional = self._check_mutations_additional_(mutations_additional)
+            self.mutations_additional = self._check_mutations_additional(mutations_additional)
 
     @staticmethod
-    def _check_mutation_prob_(mutation_prob, error_name: str = "mutation_prob"):
+    def _check_mutation_prob(mutation_prob, error_name: str = "mutation_prob"):
         if type(mutation_prob) is not float and type(mutation_prob) is not int:
             raise TypeError(f"{error_name}: {mutation_prob} should be "
                             f"float or int. Instead it is {type(mutation_prob)}")
@@ -100,14 +100,14 @@ class Mutator:
         return mutation_prob
     
     @staticmethod
-    def _check_mutation_is_replace_(mutation_is_replace):
+    def _check_mutation_is_replace(mutation_is_replace):
         if type(mutation_is_replace) is not bool:
             raise TypeError(f"mutation_is_replace: {mutation_is_replace} should be "
                             f"bool. Instead it is {type(mutation_is_replace)}")
         return mutation_is_replace
 
     @staticmethod
-    def _check_mutations_additional_(mutations_additional):
+    def _check_mutations_additional(mutations_additional):
         if not isinstance(mutations_additional, list):
             raise TypeError(f"mutations_additional: {mutations_additional} is "
                             f"not type list")
@@ -118,7 +118,7 @@ class Mutator:
                 raise TypeError(f"MutationType inside mutations additional: "
                                 f"{element[0]} is not a MutationType")
             error_name = f"Mutation probability inside mutations additional for {element[0]}"
-            element = element[0], Mutator._check_mutation_prob_(element[1], error_name)
+            element = element[0], Mutator._check_mutation_prob(element[1], error_name)
             mutations_additional[i] = element
         return mutations_additional
 
@@ -136,12 +136,12 @@ class Mutator:
         Returns:
             mutated_trees:
         """
-        mutated_population = self._mutate_by_mutation_type_(trees, None, self.mutation_prob)
+        mutated_population = self._mutate_by_mutation_type(trees, None, self.mutation_prob)
         for elem in self.mutations_additional:
-            mutated_population += self._mutate_by_mutation_type_(trees, elem[0], elem[1])
+            mutated_population += self._mutate_by_mutation_type(trees, elem[0], elem[1])
         return mutated_population
 
-    def _mutate_by_mutation_type_(self, trees, mutation_type: MutationType, prob: float):
+    def _mutate_by_mutation_type(self, trees, mutation_type: MutationType, prob: float):
         """
         It mutate all trees by function with prob probability
 
@@ -155,19 +155,19 @@ class Mutator:
         """
         new_created_trees = []
         trees_number: int = len(trees)
-        tree_ids: np.array = self._get_random_trees_(trees_number, prob)
+        tree_ids: np.array = self._get_random_trees(trees_number, prob)
         for tree_id in tree_ids:
             tree: Tree = trees[tree_id]
             if self.mutation_is_replace:
-                self._run_mutation_function_(tree, mutation_type)
+                self._run_mutation_function(tree, mutation_type)
             else:
                 tree = copy_tree(tree)
-                self._run_mutation_function_(tree, mutation_type)
+                self._run_mutation_function(tree, mutation_type)
                 new_created_trees.append(tree)
         return new_created_trees
 
     @staticmethod
-    def _run_mutation_function_(tree: Tree, mutation_type: MutationType):
+    def _run_mutation_function(tree: Tree, mutation_type: MutationType):
         """
         Run proper mutation based on mutation_type argument.
 
@@ -181,7 +181,7 @@ class Mutator:
             mutation_type.mutate(tree)
 
     @staticmethod
-    def _get_random_trees_(n_trees: int, probability: float) -> np.array:
+    def _get_random_trees(n_trees: int, probability: float) -> np.array:
         """
         Warning:
             It don't use normal probability of choosing each tree
