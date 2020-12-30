@@ -13,23 +13,23 @@ class StopCondition:
     maximum number of iterations without improvement of best individual
     """
 
-    def __init__(self, max_iterations: int = 1000,
-                 max_iterations_without_improvement: int = 100, use_without_improvement: bool = False,
+    def __init__(self, n_iters: int = 500,
+                 n_iters_without_improvement: int = 100, use_without_improvement: bool = False,
                  **kwargs):
-        self.max_iterations: int = max_iterations
-        self.max_iterations_without_improvement: int = max_iterations_without_improvement
+        self.n_iters: int = n_iters
+        self.n_iters_without_improvement: int = n_iters_without_improvement
         self.use_without_improvement: bool = use_without_improvement
 
         #private variables
         self.reset_private_variables()
 
-    def set_params(self, max_iterations: int = None,
-                   max_iterations_without_improvement: int = None, use_without_improvement: bool = None,
+    def set_params(self, n_iters: int = None,
+                   n_iters_without_improvement: int = None, use_without_improvement: bool = None,
                    **kwargs):
-        if max_iterations is not None:
-            self.max_iterations = max_iterations
-        if max_iterations_without_improvement is not None:
-            self.max_iterations_without_improvement = max_iterations_without_improvement
+        if n_iters is not None:
+            self.n_iters = n_iters
+        if n_iters_without_improvement is not None:
+            self.n_iters_without_improvement = n_iters_without_improvement
         if use_without_improvement is not None:
             self.use_without_improvement = use_without_improvement
 
@@ -41,17 +41,17 @@ class StopCondition:
 
     def stop(self, metrics: list = None) -> bool:
         score = max(metrics)
-        if self.current_iteration > self.max_iterations:
+        if self.current_iteration > self.n_iters:
             return True
 
         if self.use_without_improvement:
-            if len(self.best_metric_hist) < self.max_iterations_without_improvement:
+            if len(self.best_metric_hist) < self.n_iters_without_improvement:
                 self.best_metric_hist.append(score)
             else:
                 self.best_metric_hist.append(score)
                 self.best_metric_hist.pop(0)
-                if self.best_metric_hist[self.max_iterations_without_improvement - 1] \
-                        <= statistics.median(self.best_metric_hist[:self.max_iterations_without_improvement - 1]):
+                if self.best_metric_hist[self.n_iters_without_improvement - 1] \
+                        <= statistics.median(self.best_metric_hist[:self.n_iters_without_improvement - 1]):
                     return True
 
         self.current_iteration += 1

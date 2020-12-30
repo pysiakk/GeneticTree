@@ -13,11 +13,11 @@ def test_seed():
     Assert that algorithm will create the same best trees with set seed
     """
     seed = np.random.randint(0, 10**8)
-    gt = GeneticTree(random_state=seed, n_trees=n_trees, max_iterations=3)
+    gt = GeneticTree(random_state=seed, n_trees=n_trees, n_iters=3)
     gt.fit(X, y)
     tree: Tree = gt._best_tree
 
-    gt2 = GeneticTree(random_state=seed, n_trees=n_trees, max_iterations=3)
+    gt2 = GeneticTree(random_state=seed, n_trees=n_trees, n_iters=3)
     gt2.fit(X, y)
     tree2: Tree = gt2._best_tree
 
@@ -46,7 +46,7 @@ def test_none_argument():
 
 @pytest.fixture
 def genetic_tree() -> GeneticTree:
-    genetic_tree = GeneticTree(n_trees=10, max_iterations=3, is_keep_last_population=True, is_remove_variables=False)
+    genetic_tree = GeneticTree(n_trees=10, n_iters=3, is_keep_last_population=True, is_remove_variables=False)
     return genetic_tree
 
 
@@ -140,13 +140,13 @@ def assert_last_metric(genetic_tree):
 
 
 def test_append_metrics(X_converted):
-    genetic_tree = GeneticTree(n_trees=10, max_iterations=0, is_keep_last_population=True, is_remove_variables=False)
+    genetic_tree = GeneticTree(n_trees=10, n_iters=0, is_keep_last_population=True, is_remove_variables=False)
     genetic_tree.fit(X_converted, y)
     assert_last_metric(genetic_tree)
 
 
 def test_append_metrics_more_iterations(X_converted):
-    genetic_tree = GeneticTree(n_trees=10, max_iterations=1, is_keep_last_population=True, is_remove_variables=False)
+    genetic_tree = GeneticTree(n_trees=10, n_iters=1, is_keep_last_population=True, is_remove_variables=False)
     for i in range(10):
         genetic_tree.fit(X_converted, y)
         assert_last_metric(genetic_tree)

@@ -46,7 +46,7 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
             "cross_prob": float(cross_prob),
             "cross_is_both": cross_is_both,
             "is_left_selected_parents": is_left_selected_parents,
-            "max_iterations": int(max_iterations),
+            "n_iters": int(max_iterations),
             "selection_type": selection_type.name,
             "n_elitism": int(n_elitism),
             "metric": metric.name,
@@ -64,7 +64,7 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
                   "mutation_prob": float(mutation_prob), "mutations_additional": mutations_additional,
                   "mutation_is_replace": mutation_is_replace, "cross_prob": float(cross_prob),
                   "cross_is_both": cross_is_both, "is_left_selected_parents": is_left_selected_parents,
-                  "max_iterations": int(max_iterations), "selection_type": selection_type, "n_elitism": int(n_elitism),
+                  "n_iters": int(max_iterations), "selection_type": selection_type, "n_elitism": int(n_elitism),
                   "metric": metric, "remove_other_trees": remove_other_trees, "remove_variables": remove_variables,
                   "seed": seed, "save_metrics": save_metrics, "verbose": verbose, "n_jobs": int(n_jobs),
                   iterate_over_1: iter_1}
@@ -83,7 +83,7 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
                 # cross_prob=cross_prob,
                 # cross_is_both=cross_is_both,
                 # is_left_selected_parents=is_left_selected_parents,
-                # max_iterations=max_iterations,
+                # n_iters=n_iters,
                 # selection_type=selection_type,
                 # n_elitism=n_elitism,
                 # metric=metric,
@@ -130,7 +130,7 @@ if __name__ == "__main__":
     X_train = np.array(data.iloc[:700, :8])
     y_test = np.array(data.Outcome)[700:]
     X_test = np.array(data.iloc[700:, :8])
-    data = test_over_params([X_train], [y_train], [X_test], [y_test], ["diabetes"], "max_iterations", [1, 2, 3], "quality_tests/test_json_1.json")
+    data = test_over_params([X_train], [y_train], [X_test], [y_test], ["diabetes"], "n_iters", [1, 2, 3], "quality_tests/test_json_1.json")
     print(data)
     data = test_over_params([X_train], [y_train], [X_test], [y_test], ["diabetes"], "cross_prob", [0.5, 0.8], "quality_tests/test_json_2.json",
                             max_iterations=5)

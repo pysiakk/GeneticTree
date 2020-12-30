@@ -24,7 +24,7 @@ class GeneticTree:
     def __init__(self,
                  # most important params
                  n_trees: int = 400,
-                 max_iterations: int = 500,
+                 n_iters: int = 500,
                  cross_prob: float = 0.6,
                  mutation_prob: float = 0.4,
                  initialization_type: InitializationType = InitializationType.Split,
@@ -43,6 +43,8 @@ class GeneticTree:
                  depth_factor: float = 0.01,
                  tournament_size: int = 3,
                  is_leave_selected_parents: bool = False,
+                 n_iters_without_improvement: int = 100,
+                 use_without_improvement: bool = False,
 
                  # technical params
                  random_state: int = None,
