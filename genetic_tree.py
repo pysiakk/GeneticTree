@@ -121,7 +121,8 @@ class GeneticTree:
         self.stop_condition.reset_private_variables()
 
         thresholds = prepare_thresholds_array(self._n_thresholds_, X)
-        self._trees_ = self.initializer.initialize(X, y, weights, thresholds)
+        if self._trees_ is None:  # when previously trees was removed
+            self._trees_ = self.initializer.initialize(X, y, weights, thresholds)
 
     def _growth_trees_(self):
         offspring = self._trees_
