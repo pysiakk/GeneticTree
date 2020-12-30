@@ -13,11 +13,11 @@ def test_seed():
     Assert that algorithm will create the same best trees with set seed
     """
     seed = np.random.randint(0, 10**8)
-    gt = GeneticTree(seed=seed, n_trees=n_trees, max_iterations=3)
+    gt = GeneticTree(random_state=seed, n_trees=n_trees, max_iterations=3)
     gt.fit(X, y)
     tree: Tree = gt._best_tree
 
-    gt2 = GeneticTree(seed=seed, n_trees=n_trees, max_iterations=3)
+    gt2 = GeneticTree(random_state=seed, n_trees=n_trees, max_iterations=3)
     gt2.fit(X, y)
     tree2: Tree = gt2._best_tree
 
@@ -33,7 +33,7 @@ def test_none_seed():
     """
     test if seed can be None -> and then np won't set seed
     """
-    GeneticTree(seed=None)
+    GeneticTree(random_state=None)
 
 
 def test_none_argument():
@@ -46,7 +46,7 @@ def test_none_argument():
 
 @pytest.fixture
 def genetic_tree() -> GeneticTree:
-    genetic_tree = GeneticTree(n_trees=10, max_iterations=3, remove_other_trees=False, remove_variables=False)
+    genetic_tree = GeneticTree(n_trees=10, max_iterations=3, is_keep_last_population=True, is_remove_variables=False)
     return genetic_tree
 
 
@@ -104,7 +104,7 @@ def np_randint():
 
 
 def test_set_seed(np_randint):
-    GeneticTree(seed=const_seed)
+    GeneticTree(random_state=const_seed)
     assert np_randint == np.random.randint(0, 10**8)
 
 
@@ -140,13 +140,13 @@ def assert_last_metric(genetic_tree):
 
 
 def test_append_metrics(X_converted):
-    genetic_tree = GeneticTree(n_trees=10, max_iterations=0, remove_other_trees=False, remove_variables=False)
+    genetic_tree = GeneticTree(n_trees=10, max_iterations=0, is_keep_last_population=True, is_remove_variables=False)
     genetic_tree.fit(X_converted, y)
     assert_last_metric(genetic_tree)
 
 
 def test_append_metrics_more_iterations(X_converted):
-    genetic_tree = GeneticTree(n_trees=10, max_iterations=1, remove_other_trees=False, remove_variables=False)
+    genetic_tree = GeneticTree(n_trees=10, max_iterations=1, is_keep_last_population=True, is_remove_variables=False)
     for i in range(10):
         genetic_tree.fit(X_converted, y)
         assert_last_metric(genetic_tree)
