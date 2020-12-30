@@ -33,26 +33,26 @@ class GeneticTree:
                  mutation_is_replace: bool = False,
                  cross_prob: float = 0.6,
                  cross_is_both: bool = True,
-                 is_left_selected_parents: bool = False,
                  max_iterations: int = 500,
                  # TODO: params about stopping algorithm when it coverages
                  selection_type: SelectionType = SelectionType.StochasticUniform,
                  n_elitism: int = 3,
+                 is_leave_selected_parents: bool = False,
                  metric: Metric = Metric.AccuracyMinusDepth,
-                 remove_other_trees: bool = True, remove_variables: bool = True,
-                 seed: int = None,
-                 save_metrics: bool = True,
+                 is_keep_last_population: bool = False, is_remove_variables: bool = True,
+                 random_state: int = None,
+                 is_save_metrics: bool = True,
 
                  # TODO: params not used yet:
                  verbose: bool = True, n_jobs: int = -1,
                  ):
 
-        if seed is not None:
-            np.random.seed(seed)
+        if random_state is not None:
+            np.random.seed(random_state)
 
         kwargs = vars()
         kwargs.pop('self')
-        kwargs.pop('seed')
+        kwargs.pop('random_state')
         none_arg = self._is_any_arg_none(['mutations_additional'], **kwargs)
         if none_arg:
             raise ValueError(f"The argument {none_arg} is None. "
@@ -65,24 +65,26 @@ class GeneticTree:
         self.evaluator = Evaluator(**kwargs)
         self.stop_condition = StopCondition(**kwargs)
 
-        self._save_metrics = save_metrics
+        self._is_save_metrics = is_save_metrics
         self.acc_mean = []
         self.acc_best = []
         self.n_leaves_mean = []
         self.n_leaves_best = []
         self.depth_mean = []
         self.depth_best = []
+        self.metric_best = []
+        self.metric_mean = []
 
-        self.remove_other_trees = remove_other_trees
-        self.remove_variables = remove_variables
-        self._is_left_selected_parents_ = is_left_selected_parents
+        self._is_keep_last_population = is_keep_last_population
+        self._is_remove_variables = is_remove_variables
+        self._is_leave_selected_parents = is_leave_selected_parents
 
-        self._trees_ = None
-        self._best_tree_ = None
+        self._trees = None
+        self._best_tree = None
 
-        self._n_thresholds_ = n_thresholds
-        self._n_features_ = None
-        self._can_predict_ = False
+        self._n_thresholds = n_thresholds
+        self._n_features = None
+        self._can_predict = False
 
     @staticmethod
     def _is_any_arg_none(possible_nones, **kwargs):
@@ -92,7 +94,7 @@ class GeneticTree:
                     return k
         return False
 
-    def set_params(self, remove_other_trees: bool = None, remove_variables: bool = None):
+    def set_params(self, is_keep_last_population: bool = None, is_remove_variables: bool = None):
         # TODO add all params
 
         kwargs = vars()
@@ -104,27 +106,28 @@ class GeneticTree:
         self.selector.set_params(**kwargs)
         self.evaluator.set_params(**kwargs)
         self.stop_condition.set_params(**kwargs)
-        if remove_other_trees is not None:
-            self.remove_other_trees = remove_other_trees
-        if remove_variables is not None:
-            self.remove_variables = remove_variables
+        if is_keep_last_population is not None:
+            self._is_keep_last_population = is_keep_last_population
+        if is_remove_variables is not None:
+            self._is_remove_variables = is_remove_variables
 
     def fit(self, X, y, *args, weights: np.array = None, check_input: bool = True, **kwargs):
-        self._can_predict_ = False
+        self._can_predict = False
         self.set_params(**kwargs)
         X, y, weights = self._check_input(X, y, weights, check_input)
-        self._prepare_new_training_(X, y, weights)
-        self._growth_trees_()
-        self._prepare_to_predict_()
+        self._prepare_new_training(X, y, weights)
+        self._growth_trees()
+        self._prepare_to_predict()
 
-    def _prepare_new_training_(self, X, y, weights):
+    def _prepare_new_training(self, X, y, weights):
         self.stop_condition.reset_private_variables()
 
-        thresholds = prepare_thresholds_array(self._n_thresholds_, X)
-        self._trees_ = self.initializer.initialize(X, y, weights, thresholds)
+        thresholds = prepare_thresholds_array(self._n_thresholds, X)
+        if self._trees is None:  # when previously trees was removed
+            self._trees = self.initializer.initialize(X, y, weights, thresholds)
 
-    def _growth_trees_(self):
-        offspring = self._trees_
+    def _growth_trees(self):
+        offspring = self._trees
         trees_metrics = self.evaluator.evaluate(offspring)
         self._append_metrics(offspring)
 
@@ -137,7 +140,7 @@ class GeneticTree:
             # offspring based on elite parents from previous
             # population, and trees made by mutation and crossing
             offspring = mutated_population + crossed_population
-            if self._is_left_selected_parents_:
+            if self._is_leave_selected_parents:
                 offspring += selected_parents
             else:
                 offspring += elite
@@ -145,36 +148,39 @@ class GeneticTree:
             trees_metrics = self.evaluator.evaluate(offspring)
             self._append_metrics(offspring)
 
-        self._trees_ = offspring
+        self._trees = offspring
 
-    def _prepare_to_predict_(self):
-        self._prepare_best_tree_to_prediction_()
-        if self.remove_other_trees:
-            self._trees_ = None
-            if self.remove_variables:
-                self._best_tree_.remove_variables()
-        elif self.remove_variables:
-            for tree in self._trees_:
+    def _prepare_to_predict(self):
+        self._prepare_best_tree_to_prediction()
+        if not self._is_keep_last_population:
+            self._trees = None
+            if self._is_remove_variables:
+                self._best_tree.remove_variables()
+        elif self._is_remove_variables:
+            for tree in self._trees:
                 tree.remove_variables()
-        self._can_predict_ = True
+        self._can_predict = True
 
-    def _prepare_best_tree_to_prediction_(self):
-        best_tree_index: int = self.evaluator.get_best_tree_index(self._trees_)
-        self._best_tree_ = self._trees_[best_tree_index]
-        self._best_tree_.prepare_tree_to_prediction()
+    def _prepare_best_tree_to_prediction(self):
+        best_tree_index: int = self.evaluator.get_best_tree_index(self._trees)
+        self._best_tree = self._trees[best_tree_index]
+        self._best_tree.prepare_tree_to_prediction()
     
     def _append_metrics(self, trees):
-        # TODO should best metric be a best of all or a metric of best tree?
-        if self._save_metrics:
-            acc = self.evaluator.get_accuracies(trees)
-            self.acc_best.append(np.max(acc))
-            self.acc_mean.append(np.mean(acc))
-            depth = self.evaluator.get_depths(trees)
-            self.depth_best.append(np.min(depth))
-            self.depth_mean.append(np.mean(depth))
+        if self._is_save_metrics:
+            best_tree_index = self.evaluator.get_best_tree_index(trees)
+            accuracies = self.evaluator.get_accuracies(trees)
+            self.acc_best.append(accuracies[best_tree_index])
+            self.acc_mean.append(np.mean(accuracies))
+            depths = self.evaluator.get_depths(trees)
+            self.depth_best.append(depths[best_tree_index])
+            self.depth_mean.append(np.mean(depths))
             n_leaves = self.evaluator.get_n_leaves(trees)
-            self.n_leaves_best.append(np.min(n_leaves))
+            self.n_leaves_best.append(n_leaves[best_tree_index])
             self.n_leaves_mean.append(np.mean(n_leaves))
+            metrics = self.evaluator.evaluate(trees)
+            self.metric_best.append(metrics[best_tree_index])
+            self.metric_mean.append(np.mean(metrics))
 
     def predict(self, X, check_input=True):
         """
@@ -189,9 +195,9 @@ class GeneticTree:
             For each row x (observation) it classify the observation to one
             class and return this class.
         """
-        self._check_is_fitted_()
-        X = self._check_X_(X, check_input)
-        return self._best_tree_.predict(X)
+        self._check_is_fitted()
+        X = self._check_X(X, check_input)
+        return self._best_tree.predict(X)
 
     def predict_proba(self, X, check_input=True):
         """
@@ -207,9 +213,9 @@ class GeneticTree:
             For each row x in X (observation) it finds the proper leaf. Then it
             returns the probability of each class based on leaf.
         """
-        self._check_is_fitted_()
-        X = self._check_X_(X, check_input)
-        return self._best_tree_.predict_proba(X)
+        self._check_is_fitted()
+        X = self._check_X(X, check_input)
+        return self._best_tree.predict_proba(X)
 
     def apply(self, X, check_input=True):
         """
@@ -224,12 +230,12 @@ class GeneticTree:
             For each observation x in X, return the index of the leaf x
             ends up in. Leaves are numbered within [0, node_count).
         """
-        self._check_is_fitted_()
-        X = self._check_X_(X, check_input)
-        return self._best_tree_.apply(X)
+        self._check_is_fitted()
+        X = self._check_X(X, check_input)
+        return self._best_tree.apply(X)
 
-    def _check_is_fitted_(self):
-        if not self._can_predict_:
+    def _check_is_fitted(self):
+        if not self._can_predict:
             raise Exception('Cannot predict. Model not prepared.')
 
     def _check_input(self, X, y, weights, check_input: bool):
@@ -244,7 +250,7 @@ class GeneticTree:
         Returns:
             X and y in proper format
         """
-        X = self._check_X_(X, check_input)
+        X = self._check_X(X, check_input)
 
         if check_input:
             if y.dtype != SIZE or not y.flags.contiguous:
@@ -268,7 +274,7 @@ class GeneticTree:
 
         return X, y, weights
 
-    def _check_X_(self, X, check_input: bool):
+    def _check_X(self, X, check_input: bool):
         """
         Checks if X has proper dtype
         If not it return proper X
@@ -297,11 +303,11 @@ class GeneticTree:
 
         # even if check_input is false it should check n_features of X
         n_features = X.shape[1]
-        if self._n_features_ is None:
-            self._n_features_ = n_features
-        elif self._n_features_ != n_features:
+        if self._n_features is None:
+            self._n_features = n_features
+        elif self._n_features != n_features:
             raise ValueError(f"Number of features of the model must match the "
-                             f"input. Model n_features is {self._n_features_} "
+                             f"input. Model n_features is {self._n_features} "
                              f"and input n_features is {n_features}.")
 
         return X

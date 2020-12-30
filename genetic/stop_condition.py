@@ -1,6 +1,7 @@
 import math
 import statistics
 
+
 class StopCondition:
     """
     Class responsible for checking stop condition in genetic algorithm
@@ -36,7 +37,7 @@ class StopCondition:
         self.current_iteration: int = 1
         self.best_result: float = -math.inf
         self.best_result_iteration: int = 1
-        self.best_metric_hist = []
+        self.best_metric_hist: list = []
 
     def stop(self, score: float = None) -> bool:
         if self.current_iteration > self.max_iterations:

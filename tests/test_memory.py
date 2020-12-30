@@ -6,7 +6,7 @@ def check_thresholds_memory_usage(X, X2, y2, weights2, n_trees: int = 10, n_thre
     Check if tree really only gets the memory view (reference for object inside memory)
     And that tree does not copy all thresholds array
     """
-    X = GeneticTree._check_X_(GeneticTree(), X, True)
+    X = GeneticTree._check_X(GeneticTree(), X, True)
     thresholds = prepare_thresholds_array(n_thresholds, X)
 
     memory = memory_used()

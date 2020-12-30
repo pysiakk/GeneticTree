@@ -3,7 +3,7 @@ from tests.utils_testing import *
 
 @pytest.fixture
 def X_converted():
-    return GeneticTree._check_X_(GeneticTree(), X, True)
+    return GeneticTree._check_X(GeneticTree(), X, True)
 
 
 def test_observations_creation(X_converted):

@@ -67,7 +67,7 @@ cdef _mutate_feature(Tree tree, SIZE_t node_id):
     tree.change_feature_or_class(node_id, feature)
     _mutate_threshold(tree, node_id, 1)
 
-cdef _mutate_threshold(Tree tree, SIZE_t node_id, bint feature_changed):
+cdef _mutate_threshold(Tree tree, SIZE_t node_id, bint feature_changed=0):
     tree.observations.remove_observations(tree.nodes.elements, node_id)
     cdef DOUBLE_t threshold = tree.get_new_random_threshold(tree.nodes.elements[node_id].threshold, tree.nodes.elements[node_id].feature, feature_changed)
     tree.change_threshold(node_id, threshold)

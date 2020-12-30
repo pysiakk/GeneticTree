@@ -113,7 +113,8 @@ class Mutator:
                             f"not type list")
         for i in range(len(mutations_additional)):
             element = mutations_additional[i]
-            if not isinstance(element[0], MutationType):
+            # comparison of strings because after using MutationType.add_new() MutationType is reference to other class
+            if str(type(element[0])) != str(MutationType):
                 raise TypeError(f"MutationType inside mutations additional: "
                                 f"{element[0]} is not a MutationType")
             error_name = f"Mutation probability inside mutations additional for {element[0]}"

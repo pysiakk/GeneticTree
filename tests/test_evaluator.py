@@ -76,6 +76,18 @@ def test_set_metric_wrong_type(evaluator, metric):
         evaluator.set_params(metric=metric)
 
 
+def test_set_new_metric(evaluator):
+    Metric.add_new("NewMetric", lambda x: x)
+    evaluator.set_params(metric=Metric.NewMetric)
+    assert str(type(evaluator.metric)) == str(Metric)
+
+
+def test_set_params_kwargs(evaluator):
+    evaluator.set_params(a=2)
+    assert evaluator._kwargs['a'] == 2
+    evaluator.set_params(a=3)
+    assert evaluator._kwargs['a'] == 3
+
 # +++++++++++++++
 # Evaluate
 # +++++++++++++++

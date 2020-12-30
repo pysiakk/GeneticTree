@@ -4,17 +4,17 @@ import numpy as np
 from aenum import Enum, extend_enum
 
 
-def get_accuracy(trees: np.array, **kwargs) -> np.array:
+def get_accuracy(trees: list, **kwargs) -> np.array:
     return np.array(get_accuracies(trees))
 
 
-def get_accuracy_and_n_leaves(trees: np.array, n_leaves_factor: float = 0.0001, **kwargs) -> np.array:
+def get_accuracy_and_n_leaves(trees: list, n_leaves_factor: float = 0.0001, **kwargs) -> np.array:
     accuracy = np.array(get_accuracies(trees))
-    size = np.array(get_trees_n_leaves(trees))
-    return accuracy - n_leaves_factor * size
+    n_leaves = np.array(get_trees_n_leaves(trees))
+    return accuracy - n_leaves_factor * n_leaves
 
 
-def get_accuracy_and_depth(trees: np.array, depth_factor: float = 0.01, **kwargs) -> np.array:
+def get_accuracy_and_depth(trees: list, depth_factor: float = 0.01, **kwargs) -> np.array:
     accuracy = np.array(get_accuracies(trees))
     depth = np.array(get_trees_depths(trees))
     return accuracy - depth_factor * depth
@@ -65,7 +65,8 @@ class Evaluator:
     def __init__(self,
                  metric: Metric = Metric.AccuracyMinusDepth,
                  **kwargs):
-        self.metric: Metric = self._check_metric_(metric)
+        self.metric: Metric = self._check_metric(metric)
+        self._kwargs = kwargs
 
     def set_params(self,
                    metric: Metric = None,
@@ -76,11 +77,13 @@ class Evaluator:
         Arguments are the same as in __init__
         """
         if metric is not None:
-            self.metric = self._check_metric_(metric)
+            self.metric = self._check_metric(metric)
+        self._kwargs = dict(self._kwargs, **kwargs)
 
     @staticmethod
-    def _check_metric_(metric):
-        if isinstance(metric, Metric):
+    def _check_metric(metric):
+        # comparison of strings because after using Metric.add_new() Metric is reference to other class
+        if str(type(metric)) == str(Metric):
             return metric
         else:
             raise TypeError(f"Passed metric={metric} with type {type(metric)}, "
@@ -105,7 +108,7 @@ class Evaluator:
         Args:
             trees: List with all trees to evaluate
         """
-        return self.metric.evaluate(trees)
+        return self.metric.evaluate(trees, **self._kwargs)
 
     @staticmethod
     def get_accuracies(trees) -> np.array:

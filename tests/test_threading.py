@@ -5,7 +5,7 @@ def check_creating_trees_with_many_threads(X, n_trees: int = 10, n_jobs: int = 4
     """
     Check if using many threads to initializing trees save time
     """
-    X = GeneticTree._check_X_(GeneticTree(), X, True)
+    X = GeneticTree._check_X(GeneticTree(), X, True)
     thresholds = prepare_thresholds_array(10, X)
 
     trees = []
