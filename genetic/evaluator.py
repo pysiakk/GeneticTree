@@ -80,7 +80,8 @@ class Evaluator:
 
     @staticmethod
     def _check_metric_(metric):
-        if isinstance(metric, Metric):
+        # comparison of strings because after using Metric.add_new() Metric is reference to other class
+        if str(type(metric)) == str(Metric):
             return metric
         else:
             raise TypeError(f"Passed metric={metric} with type {type(metric)}, "
