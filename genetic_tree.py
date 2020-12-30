@@ -22,25 +22,33 @@ class GeneticTree:
     """
 
     def __init__(self,
+                 # most important params
                  n_trees: int = 400,
-                 n_thresholds: int = 10,
-                 initial_depth: int = 1,
-                 initialization_type: InitializationType = InitializationType.Split,
-                 split_prob: float = 0.7,
-                 mutation_prob: float = 0.4,
-                 mutations_additional: list = None,
-                 mutation_is_replace: bool = False,
-                 cross_prob: float = 0.6,
-                 cross_is_both: bool = True,
                  max_iterations: int = 500,
-                 # TODO: params about stopping algorithm when it coverages
+                 cross_prob: float = 0.6,
+                 mutation_prob: float = 0.4,
+                 initialization_type: InitializationType = InitializationType.Split,
+                 metric: Metric = Metric.AccuracyMinusDepth,
                  selection_type: SelectionType = SelectionType.StochasticUniform,
                  n_elitism: int = 3,
+
+                 # additional genetic algorithm params
+                 n_thresholds: int = 10,
+                 cross_is_both: bool = True,
+                 mutations_additional: list = None,
+                 mutation_is_replace: bool = False,
+                 initial_depth: int = 1,
+                 split_prob: float = 0.7,
+                 n_leaves_factor: float = 0.0001,
+                 depth_factor: float = 0.01,
+                 tournament_size: int = 3,
                  is_leave_selected_parents: bool = False,
-                 metric: Metric = Metric.AccuracyMinusDepth,
-                 is_keep_last_population: bool = False, is_remove_variables: bool = True,
+
+                 # technical params
                  random_state: int = None,
                  is_save_metrics: bool = True,
+                 is_keep_last_population: bool = False,
+                 is_remove_variables: bool = True,
 
                  # TODO: params not used yet:
                  verbose: bool = True, n_jobs: int = -1
