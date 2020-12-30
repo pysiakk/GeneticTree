@@ -66,6 +66,7 @@ class Evaluator:
                  metric: Metric = Metric.AccuracyMinusDepth,
                  **kwargs):
         self.metric: Metric = self._check_metric_(metric)
+        self._kwargs = kwargs
 
     def set_params(self,
                    metric: Metric = None,
@@ -77,6 +78,7 @@ class Evaluator:
         """
         if metric is not None:
             self.metric = self._check_metric_(metric)
+        self._kwargs = dict(self._kwargs, **kwargs)
 
     @staticmethod
     def _check_metric_(metric):
@@ -106,7 +108,7 @@ class Evaluator:
         Args:
             trees: List with all trees to evaluate
         """
-        return self.metric.evaluate(trees)
+        return self.metric.evaluate(trees, **self._kwargs)
 
     @staticmethod
     def get_accuracies(trees) -> np.array:

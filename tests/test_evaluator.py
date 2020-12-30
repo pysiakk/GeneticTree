@@ -82,6 +82,12 @@ def test_set_new_metric(evaluator):
     assert str(type(evaluator.metric)) == str(Metric)
 
 
+def test_set_params_kwargs(evaluator):
+    evaluator.set_params(a=2)
+    assert evaluator._kwargs['a'] == 2
+    evaluator.set_params(a=3)
+    assert evaluator._kwargs['a'] == 3
+
 # +++++++++++++++
 # Evaluate
 # +++++++++++++++
