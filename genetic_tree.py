@@ -72,6 +72,8 @@ class GeneticTree:
         self.n_leaves_best = []
         self.depth_mean = []
         self.depth_best = []
+        self.metric_best = []
+        self.metric_mean = []
 
         self.remove_other_trees = remove_other_trees
         self._remove_variables = remove_variables
@@ -165,17 +167,20 @@ class GeneticTree:
         self._best_tree.prepare_tree_to_prediction()
     
     def _append_metrics(self, trees):
-        # TODO should best metric be a best of all or a metric of best tree?
         if self._save_metrics:
-            acc = self.evaluator.get_accuracies(trees)
-            self.acc_best.append(np.max(acc))
-            self.acc_mean.append(np.mean(acc))
-            depth = self.evaluator.get_depths(trees)
-            self.depth_best.append(np.min(depth))
-            self.depth_mean.append(np.mean(depth))
+            best_tree_index = self.evaluator.get_best_tree_index(trees)
+            accuracies = self.evaluator.get_accuracies(trees)
+            self.acc_best.append(accuracies[best_tree_index])
+            self.acc_mean.append(np.mean(accuracies))
+            depths = self.evaluator.get_depths(trees)
+            self.depth_best.append(depths[best_tree_index])
+            self.depth_mean.append(np.mean(depths))
             n_leaves = self.evaluator.get_n_leaves(trees)
-            self.n_leaves_best.append(np.min(n_leaves))
+            self.n_leaves_best.append(n_leaves[best_tree_index])
             self.n_leaves_mean.append(np.mean(n_leaves))
+            metrics = self.evaluator.evaluate(trees)
+            self.metric_best.append(metrics[best_tree_index])
+            self.metric_mean.append(np.mean(metrics))
 
     def predict(self, X, check_input=True):
         """

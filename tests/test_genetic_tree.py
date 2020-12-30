@@ -128,12 +128,15 @@ def test_apply(genetic_tree_fitted, X_converted):
 # +++++++++++++++
 
 def assert_last_metric(genetic_tree):
-    assert genetic_tree.acc_best[-1] == np.max(Evaluator.get_accuracies(genetic_tree._trees))
+    best_tree_index = genetic_tree.evaluator.get_best_tree_index(genetic_tree._trees)
+    assert genetic_tree.acc_best[-1] == Evaluator.get_accuracies(genetic_tree._trees)[best_tree_index]
     assert genetic_tree.acc_mean[-1] == np.mean(Evaluator.get_accuracies(genetic_tree._trees))
-    assert genetic_tree.depth_best[-1] == np.min(Evaluator.get_depths(genetic_tree._trees))
+    assert genetic_tree.depth_best[-1] == Evaluator.get_depths(genetic_tree._trees)[best_tree_index]
     assert genetic_tree.depth_mean[-1] == np.mean(Evaluator.get_depths(genetic_tree._trees))
-    assert genetic_tree.n_leaves_best[-1] == np.min(Evaluator.get_n_leaves(genetic_tree._trees))
+    assert genetic_tree.n_leaves_best[-1] == Evaluator.get_n_leaves(genetic_tree._trees)[best_tree_index]
     assert genetic_tree.n_leaves_mean[-1] == np.mean(Evaluator.get_n_leaves(genetic_tree._trees))
+    assert genetic_tree.metric_best[-1] == genetic_tree.evaluator.evaluate(genetic_tree._trees)[best_tree_index]
+    assert genetic_tree.metric_mean[-1] == np.mean(genetic_tree.evaluator.evaluate(genetic_tree._trees))
 
 
 def test_append_metrics(X_converted):
