@@ -4,17 +4,17 @@ import numpy as np
 from aenum import Enum, extend_enum
 
 
-def get_accuracy(trees: np.array, **kwargs) -> np.array:
+def get_accuracy(trees: list, **kwargs) -> np.array:
     return np.array(get_accuracies(trees))
 
 
-def get_accuracy_and_n_leaves(trees: np.array, n_leaves_factor: float = 0.0001, **kwargs) -> np.array:
+def get_accuracy_and_n_leaves(trees: list, n_leaves_factor: float = 0.0001, **kwargs) -> np.array:
     accuracy = np.array(get_accuracies(trees))
     size = np.array(get_trees_n_leaves(trees))
     return accuracy - n_leaves_factor * size
 
 
-def get_accuracy_and_depth(trees: np.array, depth_factor: float = 0.01, **kwargs) -> np.array:
+def get_accuracy_and_depth(trees: list, depth_factor: float = 0.01, **kwargs) -> np.array:
     accuracy = np.array(get_accuracies(trees))
     depth = np.array(get_trees_depths(trees))
     return accuracy - depth_factor * depth
