@@ -92,3 +92,9 @@ def test_set_additional_mutations(mutator, mutations_additional):
 def test_set_additional_mutations_wrong_type(mutator, mutations_additional):
     with pytest.raises(TypeError):
         mutator.set_params(mutations_additional=mutations_additional)
+
+
+def test_set_new_mutation(mutator):
+    MutationType.add_new("NewMutation", lambda x: x)
+    mutator.set_params(mutations_additional=[(MutationType.NewMutation, 0.2)])
+    assert str(type(mutator.mutations_additional[0][0])) == str(MutationType)
