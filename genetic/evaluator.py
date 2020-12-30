@@ -10,8 +10,8 @@ def get_accuracy(trees: list, **kwargs) -> np.array:
 
 def get_accuracy_and_n_leaves(trees: list, n_leaves_factor: float = 0.0001, **kwargs) -> np.array:
     accuracy = np.array(get_accuracies(trees))
-    size = np.array(get_trees_n_leaves(trees))
-    return accuracy - n_leaves_factor * size
+    n_leaves = np.array(get_trees_n_leaves(trees))
+    return accuracy - n_leaves_factor * n_leaves
 
 
 def get_accuracy_and_depth(trees: list, depth_factor: float = 0.01, **kwargs) -> np.array:
