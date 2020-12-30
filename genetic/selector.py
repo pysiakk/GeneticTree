@@ -23,7 +23,7 @@ def metrics_greater_than_zero(metrics: np.array) -> np.array:
     return np.maximum(metrics, minimum_value)
 
 
-def get_selected_indices_by_rank_selection(metrics: np.array, n_individuals: int) -> np.array:
+def get_selected_indices_by_rank_selection(metrics: np.array, n_individuals: int, **kwargs) -> np.array:
     """
     Selects best (with the highest metric) n_individuals individuals
 
@@ -42,7 +42,7 @@ def get_selected_indices_by_rank_selection(metrics: np.array, n_individuals: int
 
 
 def get_selected_indices_by_tournament_selection(metrics: np.array, n_individuals: int,
-                                                 tournament_size: int = 3) -> np.array:
+                                                 tournament_size: int = 3, **kwargs) -> np.array:
     """
     It simulates n_individuals tournaments
     At each tournament there are chosen random tournament_size individuals
@@ -67,7 +67,7 @@ def get_selected_indices_by_tournament_selection(metrics: np.array, n_individual
     return np.apply_along_axis(tournament_selection, 1, random_indices)
 
 
-def get_selected_indices_by_roulette_selection(metrics: np.array, n_individuals: int) -> np.array:
+def get_selected_indices_by_roulette_selection(metrics: np.array, n_individuals: int, **kwargs) -> np.array:
     """
     First it creates a circle on which every individual gets angle proportional
     to its metric (such that sum of all angles is all circle)
@@ -109,7 +109,7 @@ def get_selected_indices_by_roulette_selection(metrics: np.array, n_individuals:
     return selected_indices
 
 
-def get_selected_indices_by_stochastic_uniform_selection(metrics: np.array, n_individuals: int) -> np.array:
+def get_selected_indices_by_stochastic_uniform_selection(metrics: np.array, n_individuals: int, **kwargs) -> np.array:
     """
     First it creates a section on which every individual gets distance proportional
     to its metric, the individuals are positioned without intervals between.
@@ -227,6 +227,7 @@ class Selector:
         self.n_trees: int = self._check_n_trees(n_trees)
         self.selection_type: SelectionType = self._check_selection_type(selection_type)
         self.n_elitism: int = self._check_n_elitism(n_elitism)
+        self._kwargs = kwargs
 
     def set_params(self,
                    n_trees: int = None,
@@ -244,6 +245,7 @@ class Selector:
             self.selection_type = self._check_selection_type(selection_type)
         if n_elitism is not None:
             self.n_elitism = self._check_n_elitism(n_elitism)
+        self._kwargs = dict(self._kwargs, **kwargs)
 
     @staticmethod
     def _check_n_trees(n_trees):
@@ -288,7 +290,7 @@ class Selector:
                           f"by offspring or set bigger mutation or crossing "
                           f"probability with do not replacing parents.",
                           UserWarning)
-        indices = self.selection_type.select(trees_metrics, self.n_trees)
+        indices = self.selection_type.select(trees_metrics, self.n_trees, **self._kwargs)
         new_trees = self._get_new_trees_by_indices(trees, indices)
         return new_trees
 

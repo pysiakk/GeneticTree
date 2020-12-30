@@ -190,6 +190,13 @@ def test_set_new_selection_type(selector):
     assert str(type(selector.selection_type)) == str(SelectionType)
 
 
+def test_set_params_kwargs(selector):
+    selector.set_params(a=2)
+    assert selector._kwargs['a'] == 2
+    selector.set_params(a=3)
+    assert selector._kwargs['a'] == 3
+
+
 @pytest.mark.parametrize("n_elitism", [1, 5])
 def test_set_n_elitism(selector, n_elitism):
     selector.set_params(n_elitism=n_elitism)
