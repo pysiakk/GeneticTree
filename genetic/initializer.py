@@ -25,8 +25,8 @@ class Initializer:
     """
 
     def __init__(self,
-                 n_trees: int = 200, initial_depth: int = 1,
-                 initialization_type: InitializationType = InitializationType.Random,
+                 n_trees: int = 400, initial_depth: int = 1,
+                 initialization_type: InitializationType = InitializationType.Split,
                  split_prob: float = 0.7,
                  **kwargs):
         self.n_trees: int = n_trees

@@ -24,9 +24,8 @@ class GeneticTree:
     def __init__(self,
                  n_trees: int = 400,
                  n_thresholds: int = 10,
-                 # TODO: change default initialization to splitting nodes with probability
                  initial_depth: int = 1,
-                 initialization_type: InitializationType = InitializationType.Random,
+                 initialization_type: InitializationType = InitializationType.Split,
                  split_prob: float = 0.7,
                  mutation_prob: float = 0.4,
                  mutations_additional: list = None,
