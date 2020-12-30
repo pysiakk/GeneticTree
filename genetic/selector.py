@@ -255,7 +255,8 @@ class Selector:
 
     @staticmethod
     def _check_selection_type_(selection_type):
-        if isinstance(selection_type, SelectionType):
+        # comparison of strings because after using SelectionType.add_new() SelectionType is reference to other class
+        if str(type(selection_type)) == str(SelectionType):
             return selection_type
         else:
             raise TypeError(f"Passed selection_type={selection_type} with type {type(selection_type)}, "

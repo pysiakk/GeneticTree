@@ -184,6 +184,12 @@ def test_set_selection_type_with_wrong_type(selector, selection_type):
         selector.set_params(selection_type=selection_type)
 
 
+def test_set_new_selection_type(selector):
+    SelectionType.add_new("NewSelector", lambda x: x)
+    selector.set_params(selection_type=SelectionType.NewSelector)
+    assert str(type(selector.selection_type)) == str(SelectionType)
+
+
 @pytest.mark.parametrize("n_elitism", [1, 5])
 def test_set_n_elitism(selector, n_elitism):
     selector.set_params(n_elitism=n_elitism)
