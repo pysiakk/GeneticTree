@@ -5,6 +5,24 @@ from aenum import Enum, extend_enum
 from tree.tree import copy_tree
 
 
+def metrics_greater_than_zero(metrics: np.array) -> np.array:
+    """
+    Changes metric array to be sure that each metric is greater than zero.
+    Firstly it finds the minimum_value which is the value to replace metrics
+    less than minimum_value. This value is try to be as small as possible but
+    positive.
+
+    Args:
+         metrics: array with value of metric of each individual
+    Returns:
+         np.array: array with value of metric of each individual
+    """
+    minimum_value = np.min(np.abs(metrics))
+    if minimum_value == 0:
+        minimum_value = 10**-7
+    return np.maximum(metrics, minimum_value)
+
+
 def get_selected_indices_by_rank_selection(metrics: np.array, n_individuals: int) -> np.array:
     """
     Selects best (with the highest metric) n_individuals individuals
@@ -65,6 +83,8 @@ def get_selected_indices_by_roulette_selection(metrics: np.array, n_individuals:
     Returns:
          np.array: array with indices of selected individuals (individuals are in random order)
     """
+    metrics = metrics_greater_than_zero(metrics)
+
     metrics_summed = np.cumsum(metrics)
     metrics_summed = metrics_summed / metrics_summed[metrics.shape[0] - 1]
 
@@ -107,6 +127,8 @@ def get_selected_indices_by_stochastic_uniform_selection(metrics: np.array, n_in
     Returns:
          np.array: array with indices of selected individuals (individuals are in random order)
     """
+    metrics = metrics_greater_than_zero(metrics)
+
     metrics_summed = np.cumsum(metrics)
     metrics_summed = metrics_summed / metrics_summed[metrics.shape[0] - 1]
 

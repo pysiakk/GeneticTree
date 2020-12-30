@@ -9,6 +9,21 @@ def metrics():
     return np.array([18,  5, 12, 11,  20, 17,  8, 10,  6,  5,  3,  2, 14,  1,  4])
 
 
+@pytest.mark.parametrize("metrics",
+                         [[0, 0], [0, 1], [-1, 1], [-2, -5], [2, 3, 4]])
+def test_metrics_greater_than_zero(metrics):
+    metrics = metrics_greater_than_zero(metrics)
+    for i in range(len(metrics)):
+        assert metrics[i] > 0
+
+
+@pytest.mark.parametrize("metrics",
+                         [[2, 3, 4], [1, 7, 2, 4, 8]])
+def test_metrics_greater_than_zero_dont_change_positive_metrics(metrics):
+    metrics_changed = metrics_greater_than_zero(metrics)
+    assert_array_equal(metrics, metrics_changed)
+
+
 # +++++++++++++++
 # Rank selection
 # +++++++++++++++
