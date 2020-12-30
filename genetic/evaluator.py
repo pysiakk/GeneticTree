@@ -65,7 +65,7 @@ class Evaluator:
     def __init__(self,
                  metric: Metric = Metric.AccuracyMinusDepth,
                  **kwargs):
-        self.metric: Metric = self._check_metric_(metric)
+        self.metric: Metric = self._check_metric(metric)
         self._kwargs = kwargs
 
     def set_params(self,
@@ -77,11 +77,11 @@ class Evaluator:
         Arguments are the same as in __init__
         """
         if metric is not None:
-            self.metric = self._check_metric_(metric)
+            self.metric = self._check_metric(metric)
         self._kwargs = dict(self._kwargs, **kwargs)
 
     @staticmethod
-    def _check_metric_(metric):
+    def _check_metric(metric):
         # comparison of strings because after using Metric.add_new() Metric is reference to other class
         if str(type(metric)) == str(Metric):
             return metric
