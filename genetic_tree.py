@@ -44,7 +44,7 @@ class GeneticTree:
                  is_save_metrics: bool = True,
 
                  # TODO: params not used yet:
-                 verbose: bool = True, n_jobs: int = -1,
+                 verbose: bool = True, n_jobs: int = -1
                  ):
 
         if random_state is not None:
@@ -131,7 +131,7 @@ class GeneticTree:
         trees_metrics = self.evaluator.evaluate(offspring)
         self._append_metrics(offspring)
 
-        while not self.stop_condition.stop(max(trees_metrics)):
+        while not self.stop_condition.stop(trees_metrics):
             elite = self.selector.get_elite_population(offspring, trees_metrics)
             selected_parents = self.selector.select(offspring, trees_metrics)
             mutated_population = self.mutator.mutate(selected_parents)

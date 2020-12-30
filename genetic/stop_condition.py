@@ -39,7 +39,8 @@ class StopCondition:
         self.best_result_iteration: int = 1
         self.best_metric_hist: list = []
 
-    def stop(self, score: float = None) -> bool:
+    def stop(self, metrics: list = None) -> bool:
+        score = max(metrics)
         if self.current_iteration > self.max_iterations:
             return True
 
