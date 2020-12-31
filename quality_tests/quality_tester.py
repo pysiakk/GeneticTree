@@ -8,13 +8,13 @@ from genetic.evaluator import Metric
 import json
 
 
-def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, dataset: str,
+def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, dataset: list,
                      iterate_over_1: str, iterate_params_1: list, json_path,
                      n_trees: int = 400,
                      n_iters: int = 500,
                      cross_prob: float = 0.6,
                      mutation_prob: float = 0.4,
-                     initialization_type: InitializationType = InitializationType.Random,
+                     initialization_type: InitializationType = InitializationType.Full,
                      metric: Metric = Metric.AccuracyMinusDepth,
                      selection_type: SelectionType = SelectionType.StochasticUniform,
                      n_elitism: int = 3,
@@ -144,27 +144,29 @@ if __name__ == "__main__":
     # data = test_over_params([X_train], [y_train], [X_test], [y_test], ["diabetes"], "cross_prob", [0.5, 0.8], "quality_tests/test_json_2.json",
     #                         max_iterations=5)
 
-    ozone = pd.read_csv("~/Desktop/diabetes.csv")
-    ozone_y_train = np.array(ozone.Outcome)[0:2000] - 1
-    ozone_X_train = np.array(ozone.iloc[:2000, :8])
-    ozone_y_test = np.array(ozone.Outcome)[2000:] - 1
-    ozone_X_test = np.array(ozone.iloc[2000:, :8])
-
-
-    data = test_over_params([diabetes_X_train, ozone_X_train],
-                            [diabetes_y_train, ozone_y_train],
-                            [diabetes_X_test, ozone_X_test],
-                            [diabetes_y_test, ozone_y_test],
-                            ["diabetes", "ozone"],
-                            "selection_type", [SelectionType.StochasticUniform, SelectionType.Rank, SelectionType.Roulette, SelectionType.Tournament],
-                            "quality_tests/test_json_1.json")
+    ozone = pd.read_csv("~/Desktop/ozone-level-8hr.csv")
+    ozone_y_train = np.array(ozone.Class)[0:2000] - 1
+    ozone_X_train = np.array(ozone.iloc[:2000, :72])
+    ozone_y_test = np.array(ozone.Class)[2000:] - 1
+    ozone_X_test = np.array(ozone.iloc[2000:, :72])
 
     data = test_over_params([diabetes_X_train, ozone_X_train],
                             [diabetes_y_train, ozone_y_train],
                             [diabetes_X_test, ozone_X_test],
                             [diabetes_y_test, ozone_y_test],
                             ["diabetes", "ozone"],
-                            "initialization_type", [InitializationType.Random, InitializationType.Half, InitializationType.Split],
-                            "quality_tests/test_json_2.json",
-                            max_iterations=5)
+                            "selection_type", [SelectionType.StochasticUniform, SelectionType.Rank,
+                                               SelectionType.Roulette, SelectionType.Tournament],
+                            "quality_tests/selection_test_1.json",
+                            initial_depth=4)
+
+    data = test_over_params([diabetes_X_train, ozone_X_train],
+                            [diabetes_y_train, ozone_y_train],
+                            [diabetes_X_test, ozone_X_test],
+                            [diabetes_y_test, ozone_y_test],
+                            ["diabetes", "ozone"],
+                            "initialization_type", [InitializationType.Full, InitializationType.Half,
+                                                    InitializationType.Split],
+                            "quality_tests/initialization_test_1.json",
+                            initial_depth=4)
 
