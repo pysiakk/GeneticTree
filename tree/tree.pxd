@@ -72,7 +72,7 @@ cdef class Tree:
     cdef change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold)
 
     # Random functions
-    cdef SIZE_t randint(self, SIZE_t lb, SIZE_t ub) nogil
+    cdef SIZE_t randint_c(self, SIZE_t lb, SIZE_t ub) nogil
     cpdef public SIZE_t get_random_node(self)
     cdef SIZE_t get_random_decision_node(self)
     cdef SIZE_t get_random_leaf(self)

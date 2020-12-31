@@ -382,7 +382,7 @@ cdef class Tree:
 
     # it is one of JKISS generators - found in lecture notes
     # KISS in JKISS means keep it simple stupid
-    cdef SIZE_t randint(self, SIZE_t lb, SIZE_t ub) nogil:
+    cdef SIZE_t randint_c(self, SIZE_t lb, SIZE_t ub) nogil:
         cdef uint64_t temp
         cdef SIZE_t result
         self.seed1 = 314527869 * self.seed1 + 1234567
@@ -395,24 +395,27 @@ cdef class Tree:
         result = lb + (self.seed1 + self.seed2 + self.seed3) % (ub - lb)
         return result
 
+    def randint(self, SIZE_t lb, SIZE_t ub):
+        return self.randint_c(lb, ub)
+
     cpdef public SIZE_t get_random_node(self):
-        cdef SIZE_t random_id = self.randint(0, self.nodes.count)
+        cdef SIZE_t random_id = self.randint_c(0, self.nodes.count)
         return random_id
 
     cdef SIZE_t get_random_decision_node(self):
-        cdef SIZE_t random_id = self.randint(0, self.nodes.count)
+        cdef SIZE_t random_id = self.randint_c(0, self.nodes.count)
         while self.nodes.elements[random_id].left_child == _TREE_LEAF:
-            random_id = self.randint(0, self.nodes.count)
+            random_id = self.randint_c(0, self.nodes.count)
         return random_id
 
     cdef SIZE_t get_random_leaf(self):
-        cdef SIZE_t random_id = self.randint(0, self.nodes.count)
+        cdef SIZE_t random_id = self.randint_c(0, self.nodes.count)
         while self.nodes.elements[random_id].left_child != _TREE_LEAF:
-            random_id = self.randint(0, self.nodes.count)
+            random_id = self.randint_c(0, self.nodes.count)
         return random_id
 
     cdef SIZE_t get_new_random_feature(self, SIZE_t last_feature):
-        cdef SIZE_t new_feature = self.randint(0, self.n_features - 1)
+        cdef SIZE_t new_feature = self.randint_c(0, self.n_features - 1)
         if new_feature >= last_feature:
             new_feature += 1
         return new_feature
@@ -420,15 +423,15 @@ cdef class Tree:
     cdef DOUBLE_t get_new_random_threshold(self, DOUBLE_t last_threshold, SIZE_t feature, bint feature_changed):
         cdef SIZE_t new_threshold_index
         if feature_changed == 1:
-            new_threshold_index = self.randint(0, self.n_thresholds)
+            new_threshold_index = self.randint_c(0, self.n_thresholds)
         else:
-            new_threshold_index = self.randint(0, self.n_thresholds - 1)
+            new_threshold_index = self.randint_c(0, self.n_thresholds - 1)
             if self.thresholds[new_threshold_index, feature] >= last_threshold:
                 new_threshold_index += 1
         return self.thresholds[new_threshold_index, feature]
 
     cdef SIZE_t get_new_random_class(self, SIZE_t last_class):
-        cdef SIZE_t new_class = self.randint(0, self.n_classes - 1)
+        cdef SIZE_t new_class = self.randint_c(0, self.n_classes - 1)
         if new_class >= last_class:
             new_class += 1
         return new_class
@@ -534,7 +537,7 @@ cdef class Tree:
 cpdef Tree copy_tree(Tree tree, bint same_seed=0):
     seed = tree.seed1
     if same_seed == 0:
-        seed = np.random.randint(10**8)
+        seed = tree.randint(0, 10**8)
     cdef Tree tree_copied = Tree(tree.n_classes, tree.X, tree.y, tree.weights, tree.thresholds, seed)
     if same_seed == 1:
         tree_copied.seeds = tree.seeds

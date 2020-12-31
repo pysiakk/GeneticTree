@@ -230,7 +230,7 @@ def test_tree_weights(tree_weighted):
     test_add_leaf(tree, 0, 0, 0, 2)
 
     tree.initialize_observations()
-    assert_array_almost_equal(tree.proper_classified, np.sum(weights[y == 0]))
+    assert_array_almost_equal(tree.proper_classified, np.sum(weights[y == 0]), decimal=5)
 
 
 def test_tree_weights_on_bigger_tree(tree_weighted):
