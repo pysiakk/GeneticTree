@@ -117,6 +117,15 @@ cdef class Tree:
         def __get__(self):
             return self.observations.proper_classified
 
+    property seeds:
+        def __get__(self):
+            return [self.seed1, self.seed2, self.seed3, self.seed4]
+        def __set__(self, seeds):
+            self.seed1 = seeds[0]
+            self.seed2 = seeds[1]
+            self.seed3 = seeds[2]
+            self.seed4 = seeds[3]
+
     def __cinit__(self, int n_classes,
                   object X,
                   SIZE_t[:] y,
@@ -522,8 +531,13 @@ cdef class Tree:
         return nodes
 
 
-cpdef Tree copy_tree(Tree tree):
-    cdef Tree tree_copied = Tree(tree.n_classes, tree.X, tree.y, tree.weights, tree.thresholds, np.random.randint(10**8))
+cpdef Tree copy_tree(Tree tree, bint same_seed=0):
+    seed = tree.seed1
+    if same_seed == 0:
+        seed = np.random.randint(10**8)
+    cdef Tree tree_copied = Tree(tree.n_classes, tree.X, tree.y, tree.weights, tree.thresholds, seed)
+    if same_seed == 1:
+        tree_copied.seeds = tree.seeds
     tree_copied.depth = tree.depth
     tree_copied.nodes.count = tree.nodes.count
 

@@ -114,3 +114,16 @@ def test_get_random_trees(n_trees, prob):
     trees = Mutator._get_random_trees(n_trees, prob)
     assert len(trees) == math.ceil(n_trees * prob)
     assert len(trees) == len(np.unique(trees))
+
+
+@pytest.mark.parametrize("mutation_type, mutation_function",
+                         [(MutationType.Feature, mutate_random_feature),
+                          (None, mutate_random_node)])
+def test_run_mutation_function(trees, mutation_type, mutation_function):
+    tree = trees[0]
+    tree_mutated = copy_tree(tree, same_seed=1)
+    Mutator._run_mutation_function(tree_mutated, mutation_type)
+    mutation_function(tree)
+    assert_array_equal(tree.feature, tree_mutated.feature)
+    assert_array_equal(tree.threshold, tree_mutated.threshold)
+

@@ -245,3 +245,18 @@ def test_tree_weights_on_bigger_tree(tree_weighted):
 
     tree.initialize_observations()
     assert_almost_equal(tree.proper_classified, np.sum(weights[y == 1]), decimal=5)
+
+
+# ++++++++++++++++++++++++++
+# Seed
+# ++++++++++++++++++++++++++
+
+def test_tree_copied_same_seed(tree):
+    tree_copied = copy_tree(tree, same_seed=1)
+    assert_array_equal(tree_copied.seeds, tree.seeds)
+
+
+def test_tree_copied_not_same_seed(tree):
+    tree_copied = copy_tree(tree, same_seed=0)
+    assert tree_copied.seeds[0] != tree.seeds[0]
+

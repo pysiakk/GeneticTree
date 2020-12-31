@@ -94,4 +94,4 @@ cdef class Tree:
     cpdef np.ndarray apply(self, object X)
 
 
-cpdef Tree copy_tree(Tree tree)
+cpdef Tree copy_tree(Tree tree, bint same_seed=*)
