@@ -88,7 +88,9 @@ def test_set_additional_mutations(mutator, mutations_additional):
     assert mutator.mutations_additional == mutations_additional
 
 
-@pytest.mark.parametrize("mutations_additional", [True, "string"])
+@pytest.mark.parametrize("mutations_additional", [True, "string",
+                                                  [("string", 0.4)],
+                                                  [(MutationType.Feature, "string")]])
 def test_set_additional_mutations_wrong_type(mutator, mutations_additional):
     with pytest.raises(TypeError):
         mutator.set_params(mutations_additional=mutations_additional)
