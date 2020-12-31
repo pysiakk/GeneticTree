@@ -127,3 +127,40 @@ def test_run_mutation_function(trees, mutation_type, mutation_function):
     assert_array_equal(tree.feature, tree_mutated.feature)
     assert_array_equal(tree.threshold, tree_mutated.threshold)
 
+
+@pytest.mark.parametrize("mutation_type, mutation_function",
+                         [(MutationType.Feature, mutate_random_feature),
+                          (None, mutate_random_node)])
+def test_mutate_by_mutation_type_prob_one_replace(trees, mutation_type, mutation_function):
+    trees = trees[:1]
+    trees_copied = [copy_tree(tree, same_seed=1) for tree in trees]
+    Mutator._mutate_by_mutation_type(Mutator(mutation_is_replace=True), trees_copied, mutation_type, 1)
+    for tree, tree_mutated in zip(trees, trees_copied):
+        mutation_function(tree)
+        assert_array_equal(tree.feature, tree_mutated.feature)
+        assert_array_equal(tree.threshold, tree_mutated.threshold)
+
+
+@pytest.mark.parametrize("mutation_type, mutation_function",
+                         [(MutationType.Feature, mutate_random_feature),
+                          (None, mutate_random_node)])
+def test_mutate_by_mutation_type_prob_one_not_replace(trees, mutation_type, mutation_function):
+    trees = trees[:1]
+    trees_copied = [copy_tree(tree, same_seed=1) for tree in trees]
+    trees_copied_random_seed = [copy_tree(tree, same_seed=0) for tree in trees]
+    trees_mutated = Mutator._mutate_by_mutation_type(Mutator(mutation_is_replace=False), trees_copied, mutation_type, 1)
+    for tree, tree_mutated in zip(trees_copied_random_seed, trees_mutated):
+        mutation_function(tree)
+        assert_array_equal(tree.feature, tree_mutated.feature)
+        assert_array_equal(tree.threshold, tree_mutated.threshold)
+
+
+@pytest.mark.parametrize("mutation_type, mutation_function",
+                         [(MutationType.Feature, mutate_random_feature),
+                          (None, mutate_random_node)])
+def test_mutate_by_mutation_type_prob_zero(trees, mutation_type, mutation_function):
+    trees_copied = [copy_tree(tree, same_seed=1) for tree in trees]
+    Mutator._mutate_by_mutation_type(Mutator(), trees_copied, mutation_type, 0)
+    for tree, tree_mutated in zip(trees, trees_copied):
+        assert_array_equal(tree.feature, tree_mutated.feature)
+        assert_array_equal(tree.threshold, tree_mutated.threshold)
