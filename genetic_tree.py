@@ -53,7 +53,8 @@ class GeneticTree:
                  is_remove_variables: bool = True,
 
                  # TODO: params not used yet:
-                 verbose: bool = True, n_jobs: int = -1
+                 verbose: bool = True,
+                 n_jobs: int = -1
                  ):
 
         if random_state is not None:

@@ -11,24 +11,29 @@ import json
 def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, dataset: str,
                      iterate_over_1: str, iterate_params_1: list, json_path,
                      n_trees: int = 400,
-                     n_thresholds: int = 10,
-                     initial_depth: int = 1,
-                     initialization_type: InitializationType = InitializationType.Random,
-                     split_prob: float = 0.7,
-                     mutation_prob: float = 0.4,
-                     mutations_additional: list = None,
-                     mutation_is_replace: bool = False,
+                     n_iters: int = 500,
                      cross_prob: float = 0.6,
-                     cross_is_both: bool = True,
-                     is_left_selected_parents: bool = False,
-                     max_iterations: int = 500,
+                     mutation_prob: float = 0.4,
+                     initialization_type: InitializationType = InitializationType.Random,
+                     metric: Metric = Metric.AccuracyMinusDepth,
                      selection_type: SelectionType = SelectionType.StochasticUniform,
                      n_elitism: int = 3,
-                     metric: Metric = Metric.AccuracyMinusDepth,
-                     remove_other_trees: bool = True,
-                     remove_variables: bool = True,
-                     seed: int = None,
-                     save_metrics: bool = True,
+                     n_thresholds: int = 10,
+                     cross_is_both: bool = True,
+                     mutations_additional: list = None,
+                     mutation_is_replace: bool = False,
+                     initial_depth: int = 1,
+                     split_prob: float = 0.7,
+                     n_leaves_factor: float = 0.0001,
+                     depth_factor: float = 0.01,
+                     tournament_size: int = 3,
+                     is_leave_selected_parents: bool = False,
+                     n_iters_without_improvement: int = 100,
+                     use_without_improvement: bool = False,
+                     random_state: int = None,
+                     is_save_metrics: bool = True,
+                     is_keep_last_population: bool = False,
+                     is_remove_variables: bool = True,
                      verbose: bool = True,
                      n_jobs: int = -1):
 
@@ -36,64 +41,68 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
     for iter_1 in iterate_params_1:
         parms = {
             "n_trees": int(n_trees),
-            "n_thresholds": int(n_thresholds),
-            "initial_depth": int(initial_depth),
-            "initialization_type": initialization_type.name,
-            "split_prob": float(split_prob),
-            "mutation_prob": float(mutation_prob),
-            "mutations_additional": mutations_additional,
-            "mutation_is_replace": mutation_is_replace,
+            "n_iters": int(n_iters),
             "cross_prob": float(cross_prob),
-            "cross_is_both": cross_is_both,
-            "is_left_selected_parents": is_left_selected_parents,
-            "n_iters": int(max_iterations),
+            "mutation_prob": float(mutation_prob),
+            "initialization_type": initialization_type.name,
+            "metric": metric.name,
             "selection_type": selection_type.name,
             "n_elitism": int(n_elitism),
-            "metric": metric.name,
-            "remove_other_trees": remove_other_trees,
-            "remove_variables": remove_variables,
-            "seed": seed,
-            "save_metrics": save_metrics,
+            "n_thresholds": int(n_thresholds),
+            "cross_is_both": cross_is_both,
+            "mutations_additional": mutations_additional,
+            "mutation_is_replace": mutation_is_replace,
+            "initial_depth": int(initial_depth),
+            "split_prob": float(split_prob),
+            "n_leaves_factor": float(n_leaves_factor),
+            "depth_factor": float(depth_factor),
+            "tournament_size": int(tournament_size),
+            "is_leave_selected_parents": is_leave_selected_parents,
+            "n_iters_without_improvement": int(n_iters_without_improvement),
+            "use_without_improvement": use_without_improvement,
+            "random_state": random_state,
+            "is_save_metrics": is_save_metrics,
+            "is_keep_last_population": is_keep_last_population,
+            "is_remove_variables": is_remove_variables,
             "verbose": verbose,
-            "n_jobs": int(n_jobs),
-            iterate_over_1: iter_1
+            "n_jobs": int(n_jobs)
         }
+        if iterate_over_1 in ["initialization_type", "selection_type", "metric"]:
+            parms[iterate_over_1] = iter_1.name
+        else:
+            parms[iterate_over_1] = iter_1
 
-        kwargs = {"n_trees": int(n_trees), "n_thresholds": int(n_thresholds), "initial_depth": int(initial_depth),
-                  "initialization_type": initialization_type, "split_prob": float(split_prob),
-                  "mutation_prob": float(mutation_prob), "mutations_additional": mutations_additional,
-                  "mutation_is_replace": mutation_is_replace, "cross_prob": float(cross_prob),
-                  "cross_is_both": cross_is_both, "is_left_selected_parents": is_left_selected_parents,
-                  "n_iters": int(max_iterations), "selection_type": selection_type, "n_elitism": int(n_elitism),
-                  "metric": metric, "remove_other_trees": remove_other_trees, "remove_variables": remove_variables,
-                  "seed": seed, "save_metrics": save_metrics, "verbose": verbose, "n_jobs": int(n_jobs),
+        kwargs = {"n_trees": int(n_trees),
+                  "n_iters": int(n_iters),
+                  "cross_prob": float(cross_prob),
+                  "mutation_prob": float(mutation_prob),
+                  "initialization_type": initialization_type,
+                  "metric": metric,
+                  "selection_type": selection_type,
+                  "n_elitism": int(n_elitism),
+                  "n_thresholds": int(n_thresholds),
+                  "cross_is_both": cross_is_both,
+                  "mutations_additional": mutations_additional,
+                  "mutation_is_replace": mutation_is_replace,
+                  "initial_depth": int(initial_depth),
+                  "split_prob": float(split_prob),
+                  "n_leaves_factor": float(n_leaves_factor),
+                  "depth_factor": float(depth_factor),
+                  "tournament_size": int(tournament_size),
+                  "is_leave_selected_parents": is_leave_selected_parents,
+                  "n_iters_without_improvement": int(n_iters_without_improvement),
+                  "use_without_improvement": use_without_improvement,
+                  "random_state": random_state,
+                  "is_save_metrics": is_save_metrics,
+                  "is_keep_last_population": is_keep_last_population,
+                  "is_remove_variables": is_remove_variables,
+                  "verbose": verbose,
+                  "n_jobs": int(n_jobs),
                   iterate_over_1: iter_1}
 
         dataset_records = []
         for X_train_i, y_train_i, X_test_i, y_test_i, dataset_i in zip(X_train, y_train, X_test, y_test, dataset):
-            gt = GeneticTree(
-                # n_trees=n_trees,
-                # n_thresholds=n_thresholds,
-                # initial_depth=initial_depth,
-                # initialization_type=initialization_type,
-                # split_prob=split_prob,
-                # mutation_prob=mutation_prob,
-                # mutations_additional=mutations_additional,
-                # mutation_is_replace=mutation_is_replace,
-                # cross_prob=cross_prob,
-                # cross_is_both=cross_is_both,
-                # is_left_selected_parents=is_left_selected_parents,
-                # n_iters=n_iters,
-                # selection_type=selection_type,
-                # n_elitism=n_elitism,
-                # metric=metric,
-                # remove_other_trees=remove_other_trees,
-                # remove_variables=remove_variables,
-                # seed=seed,
-                # save_metrics=save_metrics,
-                # verbose=verbose,
-                # n_jobs=n_jobs)
-                **kwargs)
+            gt = GeneticTree(**kwargs)
             gt.fit(X=X_train_i, y=y_train_i)
             print(sum(gt.predict(X_test_i) == y_test_i) / len(y_test_i))
 
@@ -125,13 +134,37 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
 
 
 if __name__ == "__main__":
-    data = pd.read_csv("~/Desktop/diabetes.csv")
-    y_train = np.array(data.Outcome)[0:700]
-    X_train = np.array(data.iloc[:700, :8])
-    y_test = np.array(data.Outcome)[700:]
-    X_test = np.array(data.iloc[700:, :8])
-    data = test_over_params([X_train], [y_train], [X_test], [y_test], ["diabetes"], "n_iters", [1, 2, 3], "quality_tests/test_json_1.json")
-    print(data)
-    data = test_over_params([X_train], [y_train], [X_test], [y_test], ["diabetes"], "cross_prob", [0.5, 0.8], "quality_tests/test_json_2.json",
+    diabetes = pd.read_csv("~/Desktop/diabetes.csv")
+    diabetes_y_train = np.array(diabetes.Outcome)[0:700]
+    diabetes_X_train = np.array(diabetes.iloc[:700, :8])
+    diabetes_y_test = np.array(diabetes.Outcome)[700:]
+    diabetes_X_test = np.array(diabetes.iloc[700:, :8])
+    # data = test_over_params([X_train], [y_train], [X_test], [y_test], ["diabetes"], "max_iterations", [1, 2, 3], "quality_tests/test_json_1.json")
+    #
+    # data = test_over_params([X_train], [y_train], [X_test], [y_test], ["diabetes"], "cross_prob", [0.5, 0.8], "quality_tests/test_json_2.json",
+    #                         max_iterations=5)
+
+    ozone = pd.read_csv("~/Desktop/diabetes.csv")
+    ozone_y_train = np.array(ozone.Outcome)[0:2000] - 1
+    ozone_X_train = np.array(ozone.iloc[:2000, :8])
+    ozone_y_test = np.array(ozone.Outcome)[2000:] - 1
+    ozone_X_test = np.array(ozone.iloc[2000:, :8])
+
+
+    data = test_over_params([diabetes_X_train, ozone_X_train],
+                            [diabetes_y_train, ozone_y_train],
+                            [diabetes_X_test, ozone_X_test],
+                            [diabetes_y_test, ozone_y_test],
+                            ["diabetes", "ozone"],
+                            "selection_type", [SelectionType.StochasticUniform, SelectionType.Rank, SelectionType.Roulette, SelectionType.Tournament],
+                            "quality_tests/test_json_1.json")
+
+    data = test_over_params([diabetes_X_train, ozone_X_train],
+                            [diabetes_y_train, ozone_y_train],
+                            [diabetes_X_test, ozone_X_test],
+                            [diabetes_y_test, ozone_y_test],
+                            ["diabetes", "ozone"],
+                            "initialization_type", [InitializationType.Random, InitializationType.Half, InitializationType.Split],
+                            "quality_tests/test_json_2.json",
                             max_iterations=5)
-    print(data)
+

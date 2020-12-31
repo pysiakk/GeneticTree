@@ -4,8 +4,8 @@ os.chdir("../")
 from tests.utils_testing import *
 
 
-def test_initialize_random():
-    initializer = Initializer(n_trees=20, initial_depth=5, initialization_type=InitializationType.Random)
+def test_initialize_full():
+    initializer = Initializer(n_trees=20, initial_depth=5, initialization_type=InitializationType.Full)
     trees = initializer.initialize(X=X, y=y, weights=weights, threshold=thresholds)
     assert isinstance(trees[0], Tree)
     assert len(trees) == 20
@@ -13,8 +13,8 @@ def test_initialize_random():
     return trees
 
 
-def test_initialize_random_depth_diff():
-    initializer = Initializer(n_trees=20, initial_depth=8, initialization_type=InitializationType.Random)
+def test_initialize_full_depth_diff():
+    initializer = Initializer(n_trees=20, initial_depth=8, initialization_type=InitializationType.Full)
     trees = initializer.initialize(X=X, y=y, weights=weights, threshold=thresholds)
     assert isinstance(trees[0], Tree)
     assert len(trees) == 20
@@ -41,7 +41,7 @@ def test_initialize_split():
 
 
 if __name__ == '__main__':
-    trees1 = test_initialize_random()
+    trees1 = test_initialize_full()
     trees2 = test_initialize_half()
     trees3 = test_initialize_split()
 

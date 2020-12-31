@@ -5,7 +5,7 @@ import numpy as np
 
 
 class InitializationType(Enum):
-    Random = auto()
+    Full = auto()
     Half = auto()
     Split = auto()
 
@@ -40,7 +40,7 @@ class Initializer:
         Returns:
             Builder: cython builder to initialize new trees
         """
-        if self.initialization_type == InitializationType.Random\
+        if self.initialization_type == InitializationType.Full\
                 or self.initialization_type == InitializationType.Half:
             return FullTreeBuilder()
         elif self.initialization_type == InitializationType.Split:
@@ -66,15 +66,15 @@ class Initializer:
         Args:
             forest: Container with all trees
         """
-        if self.initialization_type == InitializationType.Random:
-            trees = self.initialize_random(X, y, weights, threshold)
+        if self.initialization_type == InitializationType.Full:
+            trees = self.initialize_full(X, y, weights, threshold)
         elif self.initialization_type == InitializationType.Half:
             trees = self.initialize_half(X, y, weights, threshold)
         elif self.initialization_type == InitializationType.Split:
             trees = self.initialize_split(X, y, weights, threshold)
         return trees
 
-    def initialize_random(self, X, y, weights, thresholds):
+    def initialize_full(self, X, y, weights, thresholds):
         """
         Function to initialize forest
 
