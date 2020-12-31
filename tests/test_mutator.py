@@ -164,3 +164,11 @@ def test_mutate_by_mutation_type_prob_zero(trees, mutation_type, mutation_functi
     for tree, tree_mutated in zip(trees, trees_copied):
         assert_array_equal(tree.feature, tree_mutated.feature)
         assert_array_equal(tree.threshold, tree_mutated.threshold)
+
+
+def test_mutate(trees, mutator):
+    mutations_additional = [(MutationType.Feature, 1), (MutationType.Threshold, 1)]
+    mutator.set_params(mutation_prob=1, mutations_additional=mutations_additional, mutation_is_replace=False)
+    trees_mutated = mutator.mutate(trees)
+    assert len(trees) * 3 == len(trees_mutated)
+
