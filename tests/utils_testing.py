@@ -7,6 +7,7 @@ import psutil
 import pytest
 from threading import Thread
 import time
+import math
 
 # sklearn imports (mainly assertions)
 from sklearn import datasets

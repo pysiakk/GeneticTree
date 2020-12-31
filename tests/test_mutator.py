@@ -98,3 +98,17 @@ def test_set_new_mutation(mutator):
     MutationType.add_new("NewMutation", lambda x: x)
     mutator.set_params(mutations_additional=[(MutationType.NewMutation, 0.2)])
     assert str(type(mutator.mutations_additional[0][0])) == str(MutationType)
+
+
+# +++++++++++++++
+# Set params
+# +++++++++++++++
+
+@pytest.mark.parametrize("n_trees, prob",
+                         [(10, 0.3),
+                          (12, 0.4),
+                          (1234, 0.1)])
+def test_get_random_trees(n_trees, prob):
+    trees = Mutator._get_random_trees(n_trees, prob)
+    assert len(trees) == math.ceil(n_trees * prob)
+    assert len(trees) == len(np.unique(trees))
