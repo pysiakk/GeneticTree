@@ -79,3 +79,11 @@ cdef _mutate_class(Tree tree, SIZE_t node_id):
     tree.change_feature_or_class(node_id, new_class)
     tree.observations.reassign_observations(tree, node_id)
 
+def test_mutate_feature(Tree tree, SIZE_t node_id):
+    _mutate_feature(tree, node_id)
+
+def test_mutate_threshold(Tree tree, SIZE_t node_id, bint feature_changed=0):
+    _mutate_threshold(tree, node_id, feature_changed)
+
+def test_mutate_class(Tree tree, SIZE_t node_id):
+    _mutate_class(tree, node_id)

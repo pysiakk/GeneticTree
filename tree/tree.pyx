@@ -373,8 +373,14 @@ cdef class Tree:
     cdef change_feature_or_class(self, SIZE_t node_id, SIZE_t new_feature):
         self.nodes.elements[node_id].feature = new_feature
 
+    def change_feature_or_class_test(self, SIZE_t node_id, SIZE_t new_feature):
+        self.change_feature_or_class(node_id, new_feature)
+
     cdef change_threshold(self, SIZE_t node_id, DOUBLE_t new_threshold):
         self.nodes.elements[node_id].threshold = new_threshold
+
+    def change_threshold_test(self, SIZE_t node_id, DOUBLE_t new_threshold):
+        self.change_threshold(node_id, new_threshold)
 
 # ===========================================================================================================
 # Random functions
@@ -408,11 +414,17 @@ cdef class Tree:
             random_id = self.randint_c(0, self.nodes.count)
         return random_id
 
+    def get_random_decision_node_test(self):
+        return self.get_random_decision_node()
+
     cdef SIZE_t get_random_leaf(self):
         cdef SIZE_t random_id = self.randint_c(0, self.nodes.count)
         while self.nodes.elements[random_id].left_child != _TREE_LEAF:
             random_id = self.randint_c(0, self.nodes.count)
         return random_id
+
+    def get_random_leaf_test(self):
+        return self.get_random_leaf()
 
     cdef SIZE_t get_new_random_feature(self, SIZE_t last_feature):
         cdef SIZE_t new_feature = self.randint_c(0, self.n_features - 1)

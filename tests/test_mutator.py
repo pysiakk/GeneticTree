@@ -1,8 +1,80 @@
 from tests.utils_testing import *
+from tests.test_tree import build_simple_tree
+
 
 # ==============================================================================
-# Mutation functions (if it will be standalone)
+# Mutation functions
 # ==============================================================================
+
+@pytest.fixture
+def tree() -> Tree:
+    return build_simple_tree(4.8, 0)
+
+
+def mutate_node_test(tree: Tree, copied_tree: Tree):
+    node_id = copied_tree.randint(0, 5)
+    if node_id == 0 or node_id == 2:  # if decision node
+        test_mutate_feature(copied_tree, node_id)
+    else:
+        test_mutate_class(copied_tree, node_id)
+
+    mutate_random_node(tree)
+
+
+def mutate_class_or_threshold_test(tree: Tree, copied_tree: Tree):
+    node_id = copied_tree.randint(0, 5)
+    if node_id == 0 or node_id == 2:  # if decision node
+        test_mutate_threshold(copied_tree, node_id)
+    else:
+        test_mutate_class(copied_tree, node_id)
+
+    mutate_random_class_or_threshold(tree)
+
+
+def mutate_feature_test(tree: Tree, copied_tree: Tree):
+    node_id = copied_tree.get_random_decision_node_test()
+    new_feature_id = copied_tree.randint(0, 3)
+    if new_feature_id >= copied_tree.feature[node_id]:
+        new_feature_id += 1
+    copied_tree.change_feature_or_class_test(node_id, new_feature_id)
+    test_mutate_threshold(copied_tree, node_id, feature_changed=1)
+
+    mutate_random_feature(tree)
+
+
+def mutate_threshold_test(tree: Tree, copied_tree: Tree):
+    node_id = copied_tree.get_random_decision_node_test()
+    feature_id = copied_tree.feature[node_id]
+    new_threshold_id = copied_tree.randint(0, copied_tree.n_thresholds - 1)
+    if copied_tree.thresholds[new_threshold_id, feature_id] >= copied_tree.threshold[node_id]:
+        new_threshold_id += 1
+    copied_tree.change_threshold_test(node_id, copied_tree.thresholds[new_threshold_id, feature_id])
+
+    mutate_random_threshold(tree)
+
+
+def mutate_class_test(tree: Tree, copied_tree: Tree):
+    node_id = copied_tree.get_random_leaf_test()
+    new_class_id = copied_tree.randint(0, 2)
+    if new_class_id >= copied_tree.feature[node_id]:
+        new_class_id += 1
+    copied_tree.change_feature_or_class_test(node_id, new_class_id)
+
+    mutate_random_class(tree)
+
+
+@pytest.mark.parametrize("function", [mutate_node_test, mutate_class_or_threshold_test,
+                                      mutate_class_test, mutate_feature_test, mutate_threshold_test])
+def test_mutation(tree, function):
+    copied_tree = copy_tree(tree, same_seed=1)
+    for i in range(100):
+        seeds = [np.random.randint(0, 10**8), np.random.randint(0, 10**8),
+                 np.random.randint(0, 10**8), np.random.randint(0, 10**8)]
+        tree.seeds = seeds
+        copied_tree.seeds = seeds
+        function(tree, copied_tree)
+        assert_array_equal(tree.feature, copied_tree.feature)
+        assert_array_equal(tree.threshold, copied_tree.threshold)
 
 
 # ==============================================================================

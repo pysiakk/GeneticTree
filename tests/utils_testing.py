@@ -29,6 +29,7 @@ from tree.builder import Builder, FullTreeBuilder, test_add_node, test_add_leaf
 from tree.mutator import mutate_random_node, mutate_random_class_or_threshold
 from tree.mutator import mutate_random_feature, mutate_random_threshold
 from tree.mutator import mutate_random_class
+from tree.mutator import test_mutate_feature, test_mutate_class, test_mutate_threshold
 from tree.crosser import cross_trees
 from tree.evaluation import get_accuracies, get_trees_depths, get_trees_n_leaves
 
