@@ -121,20 +121,20 @@ class GeneticTree:
         if is_remove_variables is not None:
             self._is_remove_variables = is_remove_variables
 
-    def fit(self, X, y, *args, weights: np.array = None, check_input: bool = True, **kwargs):
+    def fit(self, X, y, *args, sample_weight: np.array = None, check_input: bool = True, **kwargs):
         self._can_predict = False
         self.set_params(**kwargs)
-        X, y, weights = self._check_input(X, y, weights, check_input)
-        self._prepare_new_training(X, y, weights)
+        X, y, sample_weight = self._check_input(X, y, sample_weight, check_input)
+        self._prepare_new_training(X, y, sample_weight)
         self._growth_trees()
         self._prepare_to_predict()
 
-    def _prepare_new_training(self, X, y, weights):
+    def _prepare_new_training(self, X, y, sample_weight):
         self.stop_condition.reset_private_variables()
 
         thresholds = prepare_thresholds_array(self._n_thresholds, X)
         if self._trees is None:  # when previously trees was removed
-            self._trees = self.initializer.initialize(X, y, weights, thresholds)
+            self._trees = self.initializer.initialize(X, y, sample_weight, thresholds)
 
     def _growth_trees(self):
         offspring = self._trees
@@ -248,7 +248,7 @@ class GeneticTree:
         if not self._can_predict:
             raise Exception('Cannot predict. Model not prepared.')
 
-    def _check_input(self, X, y, weights, check_input: bool):
+    def _check_input(self, X, y, sample_weight, check_input: bool):
         """
         Check if X and y have proper dtype and have the same number of observations
 
@@ -266,23 +266,23 @@ class GeneticTree:
             if y.dtype != SIZE or not y.flags.contiguous:
                 y = np.ascontiguousarray(y, dtype=SIZE)
 
-            if weights is None:
-                weights = np.ones(y.shape[0], dtype=np.float32)
+            if sample_weight is None:
+                sample_weight = np.ones(y.shape[0], dtype=np.float32)
             else:
-                if weights.shape[0] != y.shape[0]:
-                    raise ValueError(f"y and weights should have the same "
+                if sample_weight.shape[0] != y.shape[0]:
+                    raise ValueError(f"y and sample_weight should have the same "
                                      f"number of observations. Weights "
-                                     f"have {weights.shape[0]} observations "
+                                     f"have {sample_weight.shape[0]} observations "
                                      f"and y have {y.shape[0]} observations.")
-                if weights.dtype != np.float32 or not weights.flags.contiguous:
-                    weights = np.ascontiguousarray(weights, dtype=np.float32)
+                if sample_weight.dtype != np.float32 or not sample_weight.flags.contiguous:
+                    sample_weight = np.ascontiguousarray(sample_weight, dtype=np.float32)
 
         if y.shape[0] != X.shape[0]:
             raise ValueError(f"X and y should have the same number of "
                              f"observations. X have {X.shape[0]} observations "
                              f"and y have {y.shape[0]} observations.")
 
-        return X, y, weights
+        return X, y, sample_weight
 
     def _check_X(self, X, check_input: bool):
         """

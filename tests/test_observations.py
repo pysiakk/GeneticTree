@@ -7,12 +7,12 @@ def X_converted():
 
 
 def test_observations_creation(X_converted):
-    obs = Observations(X_converted, y, weights)
+    obs = Observations(X_converted, y, sample_weight)
 
 
 @pytest.fixture
 def obs(X_converted):
-    return Observations(X_converted, y, weights)
+    return Observations(X_converted, y, sample_weight)
 
 
 @pytest.fixture

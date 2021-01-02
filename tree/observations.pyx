@@ -20,7 +20,7 @@ cdef class Observations:
     def __cinit__(self,
                   object X,
                   SIZE_t[:] y,
-                  DTYPE_t[:] weights):
+                  DTYPE_t[:] sample_weight):
         self.n_observations = X.shape[0]
         self.proper_classified = 0
 
@@ -28,7 +28,7 @@ cdef class Observations:
         cdef DTYPE_t[:, :] X_ndarray = X
         self.X_ndarray = X_ndarray
         self.y = y
-        self.weights = weights
+        self.sample_weight = sample_weight
 
         self.leaves = NULL
         safe_realloc(&self.leaves, 1)
@@ -124,7 +124,7 @@ cdef class Observations:
         cdef IntArray observations = self.leaves.elements[leaves_id]
         for i in range(observations.count):
             if self.y[observations.elements[i]] == leaf_class:
-                self.proper_classified -= self.weights[observations.elements[i]]
+                self.proper_classified -= self.sample_weight[observations.elements[i]]
 
         self._copy_element_from_leaves_to_leaves_to_reassign(leaves_id)
 
@@ -149,7 +149,7 @@ cdef class Observations:
             nodes[node_id].right_child = self._append_leaves(y_id)
 
         if nodes[node_id].feature == self.y[y_id]:          # feature means class
-            self.proper_classified += self.weights[y_id]
+            self.proper_classified += self.sample_weight[y_id]
 
     cdef SIZE_t _find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil:
         cdef SIZE_t current_node_id = below_node_id
@@ -406,7 +406,7 @@ cdef class Observations:
 
 
 cpdef Observations copy_observations(Observations observations):
-    cdef Observations observations_copied = Observations(observations.X, observations.y, observations.weights)
+    cdef Observations observations_copied = Observations(observations.X, observations.y, observations.sample_weight)
     copy_leaves(observations.leaves, observations_copied.leaves)
     copy_int_array(observations.empty_leaves_ids, observations_copied.empty_leaves_ids)
     copy_leaves(observations.leaves_to_reassign, observations_copied.leaves_to_reassign)

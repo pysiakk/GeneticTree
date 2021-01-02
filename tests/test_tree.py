@@ -215,26 +215,26 @@ def test_apply(tree):
 
 @pytest.fixture
 def tree_weighted():
-    weights = np.random.random(150)
-    # weights = np.ones(150)*3
-    weights = np.ascontiguousarray(weights, dtype=np.float32)
-    tree = Tree(np.unique(y).shape[0], X, y, weights, thresholds, np.random.randint(10 ** 8))
-    return tree, weights
+    sample_weight = np.random.random(150)
+    # sample_weight = np.ones(150)*3
+    sample_weight = np.ascontiguousarray(sample_weight, dtype=np.float32)
+    tree = Tree(np.unique(y).shape[0], X, y, sample_weight, thresholds, np.random.randint(10 ** 8))
+    return tree, sample_weight
 
 
-def test_tree_weights(tree_weighted):
-    tree, weights = tree_weighted
+def test_tree_sample_weight(tree_weighted):
+    tree, sample_weight = tree_weighted
     test_add_node(tree, TREE_UNDEFINED, 0, 2, 3.0, 1)
     # tree, parent, is_left, class, depth
     test_add_leaf(tree, 0, 1, 0, 2)
     test_add_leaf(tree, 0, 0, 0, 2)
 
     tree.initialize_observations()
-    assert_array_almost_equal(tree.proper_classified, np.sum(weights[y == 0]), decimal=5)
+    assert_array_almost_equal(tree.proper_classified, np.sum(sample_weight[y == 0]), decimal=5)
 
 
-def test_tree_weights_on_bigger_tree(tree_weighted):
-    tree, weights = tree_weighted
+def test_tree_sample_weight_on_bigger_tree(tree_weighted):
+    tree, sample_weight = tree_weighted
     test_add_node(tree, TREE_UNDEFINED, 0, 2, 3.0, 1)
     # tree, parent, is_left, class, depth
     test_add_leaf(tree, 0, 1, 1, 2)
@@ -244,7 +244,7 @@ def test_tree_weights_on_bigger_tree(tree_weighted):
     test_add_leaf(tree, 2, 0, 1, 3)
 
     tree.initialize_observations()
-    assert_almost_equal(tree.proper_classified, np.sum(weights[y == 1]), decimal=5)
+    assert_almost_equal(tree.proper_classified, np.sum(sample_weight[y == 1]), decimal=5)
 
 
 # ++++++++++++++++++++++++++

@@ -129,7 +129,7 @@ cdef class Tree:
     def __cinit__(self, int n_classes,
                   object X,
                   SIZE_t[:] y,
-                  DTYPE_t[:] weights,
+                  DTYPE_t[:] sample_weight,
                   DTYPE_t[:, :] thresholds,
                   uint64_t seed):
         """Constructor."""
@@ -140,7 +140,7 @@ cdef class Tree:
 
         self.X = X
         self.y = y
-        self.weights = weights
+        self.sample_weight = sample_weight
         self.thresholds = thresholds
 
         # Inner structures
@@ -158,7 +158,7 @@ cdef class Tree:
         self.removed_nodes.capacity = 0
         self.removed_nodes.elements = NULL
 
-        self.observations = Observations(X, y, weights)
+        self.observations = Observations(X, y, sample_weight)
 
         self.seed1 = seed
         self.seed2 = 987654321
@@ -507,7 +507,7 @@ cdef class Tree:
         self.observations = None
         self.X = None
         self.y = None
-        self.weights = None
+        self.sample_weight = None
         self.thresholds = None
 
     cpdef np.ndarray predict(self, object X):
@@ -550,7 +550,7 @@ cpdef Tree copy_tree(Tree tree, bint same_seed=0):
     seed = tree.seed1
     if same_seed == 0:
         seed = tree.randint(0, 10**8)
-    cdef Tree tree_copied = Tree(tree.n_classes, tree.X, tree.y, tree.weights, tree.thresholds, seed)
+    cdef Tree tree_copied = Tree(tree.n_classes, tree.X, tree.y, tree.sample_weight, tree.thresholds, seed)
     if same_seed == 1:
         tree_copied.seeds = tree.seeds
     tree_copied.depth = tree.depth

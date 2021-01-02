@@ -1,7 +1,7 @@
 from tests.utils_testing import *
 
 
-def check_thresholds_memory_usage(X, X2, y2, weights2, n_trees: int = 10, n_thresholds: int = 10, depth: int = 3):
+def check_thresholds_memory_usage(X, X2, y2, sample_weight2, n_trees: int = 10, n_thresholds: int = 10, depth: int = 3):
     """
     Check if tree really only gets the memory view (reference for object inside memory)
     And that tree does not copy all thresholds array
@@ -15,7 +15,7 @@ def check_thresholds_memory_usage(X, X2, y2, weights2, n_trees: int = 10, n_thre
     builder: FullTreeBuilder = FullTreeBuilder()
     start = time.time()
     for i in range(n_trees):
-        tree: Tree = Tree(3,  X2, y2, weights2, thresholds, np.random.randint(10**8))
+        tree: Tree = Tree(3,  X2, y2, sample_weight2, thresholds, np.random.randint(10**8))
         tree.resize_by_initial_depth(depth)
         builder.build(tree, 3)
         trees.append(tree)
@@ -39,10 +39,10 @@ if __name__ == "__main__":
     n_thresholds = 200000000
     # y2 = np.repeat(y, 1000, axis=0)
     # X2 = np.repeat(X, 1000, axis=0)
-    # weights = np.repeat(weights, 1000, axis=0)
-    check_thresholds_memory_usage(X, X, y, weights, n_thresholds=10, n_trees=10000)
-    # check_thresholds_memory_usage(X, X2, y2, weights, n_thresholds=10, n_trees=10000)
-    # check_thresholds_memory_usage(X, X, y, weights, n_thresholds=n_thresholds, n_trees=10000)
+    # sample_weight = np.repeat(sample_weight, 1000, axis=0)
+    check_thresholds_memory_usage(X, X, y, sample_weight, n_thresholds=10, n_trees=10000)
+    # check_thresholds_memory_usage(X, X2, y2, sample_weight, n_thresholds=10, n_trees=10000)
+    # check_thresholds_memory_usage(X, X, y, sample_weight, n_thresholds=n_thresholds, n_trees=10000)
 # The memory used by trees does not depend on number of thresholds array (so not depend on the size of this array)
 # Also there is not a measurable time difference
 # There is also no difference if X and y are bigger or not

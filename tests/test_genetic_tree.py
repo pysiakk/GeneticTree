@@ -156,21 +156,21 @@ def test_append_metrics_more_iterations(X_converted):
 # Check input
 # +++++++++++++++
 
-def test_ones_as_weights(genetic_tree, X_converted):
-    *_, weights = genetic_tree._check_input(X_converted, y, None, True)
-    assert_array_equal(weights, np.ones(150))
+def test_ones_as_sample_weight(genetic_tree, X_converted):
+    *_, sample_weight = genetic_tree._check_input(X_converted, y, None, True)
+    assert_array_equal(sample_weight, np.ones(150))
 
 
-def test_converting_weights(genetic_tree, X_converted):
-    weights = np.random.random(150)
-    *_, weights = genetic_tree._check_input(X_converted, y, weights, True)
-    assert weights.shape[0] == 150
-    assert weights.dtype == np.float32
-    assert weights.flags.contiguous
+def test_converting_sample_weight(genetic_tree, X_converted):
+    sample_weight = np.random.random(150)
+    *_, sample_weight = genetic_tree._check_input(X_converted, y, sample_weight, True)
+    assert sample_weight.shape[0] == 150
+    assert sample_weight.dtype == np.float32
+    assert sample_weight.flags.contiguous
 
 
-def test_weights_exception(genetic_tree, X_converted):
-    weights = np.random.random(149)
+def test_sample_weight_exception(genetic_tree, X_converted):
+    sample_weight = np.random.random(149)
     with pytest.raises(ValueError):
-        genetic_tree._check_input(X_converted, y, weights, True)
+        genetic_tree._check_input(X_converted, y, sample_weight, True)
 

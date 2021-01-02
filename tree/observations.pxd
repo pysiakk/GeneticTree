@@ -21,7 +21,7 @@ cdef class Observations:
     cdef public object X                    # Array with observations features (TODO: possibility of sparse array)
     cdef DTYPE_t[:, :] X_ndarray
     cdef public SIZE_t[:] y                 # Array with classes of observations
-    cdef public DTYPE_t[:] weights          # Array with weights of observations
+    cdef public DTYPE_t[:] sample_weight          # Array with sample_weight of observations
 
     cdef void initialize_observations(self, Tree tree)
 
