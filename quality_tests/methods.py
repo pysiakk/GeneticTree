@@ -35,7 +35,7 @@ def plot_json(json_path, x_axis, y_axis, colors):
 
 
 if __name__ == "__main__":
-    data = test_over_params([X], [y], "n_iters", [1, 2, 3], "file_path.json")
+    data = test_over_params([X], [y], "max_iter", [1, 2, 3], "file_path.json")
     print(data)
     data = test_over_params([X], [y], "cross_prob", [0.5, 0.8], "file_path.json", max_iterations=5)
     print(data)

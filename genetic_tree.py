@@ -25,15 +25,15 @@ class GeneticTree:
                  # most important params
                  n_thresholds: int = 10,
                  n_trees: int = 400,
-                 n_iters: int = 500,
+                 max_iter: int = 500,
                  cross_prob: float = 0.6,
                  mutation_prob: float = 0.4,
                  initialization_type: InitializationType = InitializationType.Split,
                  metric: Metric = Metric.AccuracyMinusDepth,
                  selection_type: SelectionType = SelectionType.StochasticUniform,
                  n_elitism: int = 3,
-                 use_without_improvement: bool = False,
-                 n_iters_without_improvement: int = 100,
+                 early_stopping: bool = False,
+                 n_iter_no_change: int = 100,
 
                  # additional genetic algorithm params
                  cross_is_both: bool = True,
