@@ -46,7 +46,7 @@ def test_none_argument():
 
 @pytest.fixture
 def genetic_tree() -> GeneticTree:
-    genetic_tree = GeneticTree(n_trees=10, max_iter=3, is_keep_last_population=True, is_remove_variables=False)
+    genetic_tree = GeneticTree(n_trees=10, max_iter=3, keep_last_population=True, remove_variables=False)
     return genetic_tree
 
 
@@ -140,13 +140,13 @@ def assert_last_metric(genetic_tree):
 
 
 def test_append_metrics(X_converted):
-    genetic_tree = GeneticTree(n_trees=10, max_iter=0, is_keep_last_population=True, is_remove_variables=False)
+    genetic_tree = GeneticTree(n_trees=10, max_iter=0, keep_last_population=True, remove_variables=False)
     genetic_tree.fit(X_converted, y)
     assert_last_metric(genetic_tree)
 
 
 def test_append_metrics_more_iterations(X_converted):
-    genetic_tree = GeneticTree(n_trees=10, max_iter=1, is_keep_last_population=True, is_remove_variables=False)
+    genetic_tree = GeneticTree(n_trees=10, max_iter=1, keep_last_population=True, remove_variables=False)
     for i in range(10):
         genetic_tree.fit(X_converted, y)
         assert_last_metric(genetic_tree)

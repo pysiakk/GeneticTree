@@ -17,7 +17,7 @@ def initialization():
 
 def mutate_feature():
     gt = GeneticTree(initial_depth=1, max_iter=1,
-                     is_keep_last_population=True, is_remove_variables=False)
+                     keep_last_population=True, remove_variables=False)
     gt.fit(X, y)
     trees_before = gt._trees
     gt.crosser.cross_population(trees_before)

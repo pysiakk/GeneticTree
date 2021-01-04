@@ -5,7 +5,7 @@ n_trees = 20
 
 @pytest.fixture
 def genetic_tree():
-    gt = GeneticTree(n_trees=n_trees, max_iter=30, is_keep_last_population=True, is_remove_variables=False)
+    gt = GeneticTree(n_trees=n_trees, max_iter=30, keep_last_population=True, remove_variables=False)
     gt.fit(iris.data, iris.target)
     return gt
 
@@ -44,7 +44,7 @@ def test_high_level_and_low_level_prediction(genetic_tree, X):
 
 
 if __name__ == "__main__":
-    gt = GeneticTree(is_keep_last_population=True, is_remove_variables=False, max_iter=30)
+    gt = GeneticTree(keep_last_population=True, remove_variables=False, max_iter=30)
     gt.fit(iris.data, iris.target)
     tree = gt._best_tree
     print(tree.proper_classified)

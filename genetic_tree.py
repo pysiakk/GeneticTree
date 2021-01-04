@@ -48,9 +48,9 @@ class GeneticTree:
 
                  # technical params
                  random_state: int = None,
-                 is_save_metrics: bool = True,
-                 is_keep_last_population: bool = False,
-                 is_remove_variables: bool = True,
+                 save_metrics: bool = True,
+                 keep_last_population: bool = False,
+                 remove_variables: bool = True,
 
                  # TODO: params not used yet:
                  verbose: bool = True,
@@ -77,7 +77,7 @@ class GeneticTree:
         self.evaluator = Evaluator(**kwargs)
         self.stopper = Stopper(**kwargs)
 
-        self._is_save_metrics = is_save_metrics
+        self._save_metrics = save_metrics
         self.acc_mean = []
         self.acc_best = []
         self.n_leaves_mean = []
@@ -87,8 +87,8 @@ class GeneticTree:
         self.metric_best = []
         self.metric_mean = []
 
-        self._is_keep_last_population = is_keep_last_population
-        self._is_remove_variables = is_remove_variables
+        self._keep_last_population = keep_last_population
+        self._remove_variables = remove_variables
         self._leave_selected_parents = leave_selected_parents
 
         self._trees = None
@@ -106,7 +106,7 @@ class GeneticTree:
                     return k
         return False
 
-    def set_params(self, is_keep_last_population: bool = None, is_remove_variables: bool = None):
+    def set_params(self, keep_last_population: bool = None, remove_variables: bool = None):
         # TODO add all params
 
         kwargs = vars()
@@ -118,10 +118,10 @@ class GeneticTree:
         self.selector.set_params(**kwargs)
         self.evaluator.set_params(**kwargs)
         self.stopper.set_params(**kwargs)
-        if is_keep_last_population is not None:
-            self._is_keep_last_population = is_keep_last_population
-        if is_remove_variables is not None:
-            self._is_remove_variables = is_remove_variables
+        if keep_last_population is not None:
+            self._keep_last_population = keep_last_population
+        if remove_variables is not None:
+            self._remove_variables = remove_variables
 
     def fit(self, X, y, *args, sample_weight: np.array = None, check_input: bool = True, **kwargs):
         self._can_predict = False
@@ -164,11 +164,11 @@ class GeneticTree:
 
     def _prepare_to_predict(self):
         self._prepare_best_tree_to_prediction()
-        if not self._is_keep_last_population:
+        if not self._keep_last_population:
             self._trees = None
-            if self._is_remove_variables:
+            if self._remove_variables:
                 self._best_tree.remove_variables()
-        elif self._is_remove_variables:
+        elif self._remove_variables:
             for tree in self._trees:
                 tree.remove_variables()
         self._can_predict = True
@@ -179,7 +179,7 @@ class GeneticTree:
         self._best_tree.prepare_tree_to_prediction()
     
     def _append_metrics(self, trees):
-        if self._is_save_metrics:
+        if self._save_metrics:
             best_tree_index = self.evaluator.get_best_tree_index(trees)
             accuracies = self.evaluator.get_accuracies(trees)
             self.acc_best.append(accuracies[best_tree_index])

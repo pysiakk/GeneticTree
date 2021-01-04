@@ -31,9 +31,9 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
                      n_iters_without_improvement: int = 100,
                      use_without_improvement: bool = False,
                      random_state: int = None,
-                     is_save_metrics: bool = True,
-                     is_keep_last_population: bool = False,
-                     is_remove_variables: bool = True,
+                     save_metrics: bool = True,
+                     keep_last_population: bool = False,
+                     remove_variables: bool = True,
                      verbose: bool = True,
                      n_jobs: int = -1):
 
@@ -61,9 +61,9 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
             "n_iters_without_improvement": int(n_iters_without_improvement),
             "use_without_improvement": use_without_improvement,
             "random_state": random_state,
-            "is_save_metrics": is_save_metrics,
-            "is_keep_last_population": is_keep_last_population,
-            "is_remove_variables": is_remove_variables,
+            "save_metrics": save_metrics,
+            "keep_last_population": keep_last_population,
+            "remove_variables": remove_variables,
             "verbose": verbose,
             "n_jobs": int(n_jobs)
         }
@@ -93,9 +93,9 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
                   "n_iters_without_improvement": int(n_iters_without_improvement),
                   "use_without_improvement": use_without_improvement,
                   "random_state": random_state,
-                  "is_save_metrics": is_save_metrics,
-                  "is_keep_last_population": is_keep_last_population,
-                  "is_remove_variables": is_remove_variables,
+                  "save_metrics": save_metrics,
+                  "keep_last_population": keep_last_population,
+                  "remove_variables": remove_variables,
                   "verbose": verbose,
                   "n_jobs": int(n_jobs),
                   iterate_over_1: iter_1}
