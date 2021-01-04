@@ -2,7 +2,7 @@ import math
 import statistics
 
 
-class StopCondition:
+class Stopper:
     """
     Class responsible for checking stop condition in genetic algorithm
 

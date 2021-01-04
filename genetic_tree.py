@@ -8,7 +8,7 @@ from genetic.selector import Selector
 from genetic.selector import SelectionType
 from genetic.evaluator import Evaluator
 from genetic.evaluator import Metric
-from genetic.stop_condition import StopCondition
+from genetic.stopper import Stopper
 from tree.thresholds import prepare_thresholds_array
 from scipy.sparse import issparse
 
@@ -75,7 +75,7 @@ class GeneticTree:
         self.crosser = Crosser(**kwargs)
         self.selector = Selector(**kwargs)
         self.evaluator = Evaluator(**kwargs)
-        self.stop_condition = StopCondition(**kwargs)
+        self.stopper = Stopper(**kwargs)
 
         self._is_save_metrics = is_save_metrics
         self.acc_mean = []
@@ -117,7 +117,7 @@ class GeneticTree:
         self.crosser.set_params(**kwargs)
         self.selector.set_params(**kwargs)
         self.evaluator.set_params(**kwargs)
-        self.stop_condition.set_params(**kwargs)
+        self.stopper.set_params(**kwargs)
         if is_keep_last_population is not None:
             self._is_keep_last_population = is_keep_last_population
         if is_remove_variables is not None:
@@ -132,7 +132,7 @@ class GeneticTree:
         self._prepare_to_predict()
 
     def _prepare_new_training(self, X, y, sample_weight):
-        self.stop_condition.reset_private_variables()
+        self.stopper.reset_private_variables()
 
         thresholds = prepare_thresholds_array(self._n_thresholds, X)
         if self._trees is None:  # when previously trees was removed
@@ -143,7 +143,7 @@ class GeneticTree:
         trees_metrics = self.evaluator.evaluate(offspring)
         self._append_metrics(offspring)
 
-        while not self.stop_condition.stop(trees_metrics):
+        while not self.stopper.stop(trees_metrics):
             elite = self.selector.get_elite_population(offspring, trees_metrics)
             selected_parents = self.selector.select(offspring, trees_metrics)
             mutated_population = self.mutator.mutate(selected_parents)
