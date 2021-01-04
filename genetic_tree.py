@@ -44,7 +44,7 @@ class GeneticTree:
                  n_leaves_factor: float = 0.0001,
                  depth_factor: float = 0.01,
                  tournament_size: int = 3,
-                 is_leave_selected_parents: bool = False,
+                 leave_selected_parents: bool = False,
 
                  # technical params
                  random_state: int = None,
@@ -89,7 +89,7 @@ class GeneticTree:
 
         self._is_keep_last_population = is_keep_last_population
         self._is_remove_variables = is_remove_variables
-        self._is_leave_selected_parents = is_leave_selected_parents
+        self._leave_selected_parents = leave_selected_parents
 
         self._trees = None
         self._best_tree = None
@@ -152,7 +152,7 @@ class GeneticTree:
             # offspring based on elite parents from previous
             # population, and trees made by mutation and crossing
             offspring = mutated_population + crossed_population
-            if self._is_leave_selected_parents:
+            if self._leave_selected_parents:
                 offspring += selected_parents
             else:
                 offspring += elite
