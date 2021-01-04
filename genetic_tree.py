@@ -194,7 +194,7 @@ class GeneticTree:
             self.metric_best.append(metrics[best_tree_index])
             self.metric_mean.append(np.mean(metrics))
 
-    def predict(self, X, check_input=True):
+    def predict(self, X, check_input=True) -> np.ndarray:
         """
         Function to classify each observation in X to one class
 
@@ -211,7 +211,7 @@ class GeneticTree:
         X = self._check_X(X, check_input)
         return self._best_tree.predict(X)
 
-    def predict_proba(self, X, check_input=True):
+    def predict_proba(self, X, check_input=True) -> np.ndarray:
         """
         Function to classify each observation in X with the probability of
         being each class
@@ -229,7 +229,7 @@ class GeneticTree:
         X = self._check_X(X, check_input)
         return self._best_tree.predict_proba(X)
 
-    def apply(self, X, check_input=True):
+    def apply(self, X, check_input=True) -> np.ndarray:
         """
         Return the index of the leaf that each sample is predicted as.
 
@@ -250,7 +250,7 @@ class GeneticTree:
         if not self._can_predict:
             raise Exception('Cannot predict. Model not prepared.')
 
-    def _check_input(self, X, y, sample_weight, check_input: bool):
+    def _check_input(self, X, y, sample_weight, check_input: bool) -> tuple:
         """
         Check if X and y have proper dtype and have the same number of observations
 
@@ -286,7 +286,7 @@ class GeneticTree:
 
         return X, y, sample_weight
 
-    def _check_X(self, X, check_input: bool):
+    def _check_X(self, X, check_input: bool) -> object:
         """
         Checks if X has proper dtype
         If not it return proper X
