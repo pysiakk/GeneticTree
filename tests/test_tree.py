@@ -220,7 +220,7 @@ def tree_weighted():
     sample_weight = np.random.random(150)
     # sample_weight = np.ones(150)*3
     sample_weight = np.ascontiguousarray(sample_weight, dtype=np.float32)
-    tree = Tree(np.unique(y).shape[0], X, y, sample_weight, thresholds, np.random.randint(10 ** 8))
+    tree = Tree(np.unique(y), X, y, sample_weight, thresholds, np.random.randint(10 ** 8))
     return tree, sample_weight
 
 

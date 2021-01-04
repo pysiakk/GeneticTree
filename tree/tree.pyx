@@ -125,7 +125,8 @@ cdef class Tree:
             self.seed3 = seeds[2]
             self.seed4 = seeds[3]
 
-    def __cinit__(self, int n_classes,
+    def __cinit__(self,
+                  SIZE_t[:] classes,
                   object X,
                   SIZE_t[:] y,
                   DTYPE_t[:] sample_weight,
@@ -134,11 +135,12 @@ cdef class Tree:
         """Constructor."""
         self.n_features = X.shape[1]
         self.n_observations = X.shape[0]
-        self.n_classes = n_classes
+        self.n_classes = classes.shape[0]
         self.n_thresholds = thresholds.shape[0]
 
         self.X = X
         self.y = y
+        self.classes = classes
         self.sample_weight = sample_weight
         self.thresholds = thresholds
 
@@ -180,7 +182,7 @@ cdef class Tree:
         empty_1d_array_int = np.empty(1, dtype=np.intp)
         empty_1d_array = np.empty(1, dtype=np.float32)
         return (Tree,
-               (self.n_classes,
+               (np.array(self.classes),
                empty_2d_array,
                empty_1d_array_int,
                empty_1d_array,
@@ -442,7 +444,7 @@ cdef class Tree:
         return self.thresholds[new_threshold_index, feature]
 
     cdef SIZE_t get_new_random_class(self, SIZE_t last_class):
-        cdef SIZE_t new_class = self.randint_c(0, self.n_classes - 1)
+        cdef SIZE_t new_class = self.classes[self.randint_c(0, self.n_classes - 1)]
         if new_class >= last_class:
             new_class += 1
         return new_class
@@ -545,7 +547,7 @@ cpdef Tree copy_tree(Tree tree, bint same_seed=0):
     seed = tree.seed1
     if same_seed == 0:
         seed = tree.randint(0, 10**8)
-    cdef Tree tree_copied = Tree(tree.n_classes, tree.X, tree.y, tree.sample_weight, tree.thresholds, seed)
+    cdef Tree tree_copied = Tree(tree.classes, tree.X, tree.y, tree.sample_weight, tree.thresholds, seed)
     if same_seed == 1:
         tree_copied.seeds = tree.seeds
     tree_copied.depth = tree.depth
