@@ -5,7 +5,7 @@ from genetic.initializer import Initialization
 from genetic.mutator import Mutator
 from genetic.crosser import Crosser
 from genetic.selector import Selector
-from genetic.selector import SelectionType
+from genetic.selector import Selection
 from genetic.evaluator import Evaluator
 from genetic.evaluator import Metric
 from genetic.stopper import Stopper
@@ -30,7 +30,7 @@ class GeneticTree:
                  mutation_prob: float = 0.4,
                  initialization: Initialization = Initialization.Split,
                  metric: Metric = Metric.AccuracyMinusDepth,
-                 selection_type: SelectionType = SelectionType.StochasticUniform,
+                 selection: Selection = Selection.StochasticUniform,
                  n_elitism: int = 3,
                  early_stopping: bool = False,
                  n_iter_no_change: int = 100,

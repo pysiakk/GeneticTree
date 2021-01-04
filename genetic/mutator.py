@@ -18,7 +18,7 @@ class Mutation(Enum):
                           if decision node then mutate threshold \
                           if leaf then mutate class
 
-    Look at SelectionType to see how to add new Mutation
+    Look at Selection to see how to add new Mutation
     """
     def __new__(cls, function, *args):
         obj = object.__new__(cls)

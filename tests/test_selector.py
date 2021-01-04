@@ -147,7 +147,7 @@ def test_roulette_selection(metrics, n_individuals):
 # Base selector
 @pytest.fixture
 def selector():
-    return Selector(10, SelectionType.Rank, 3)
+    return Selector(10, Selection.Rank, 3)
 
 
 @pytest.fixture
@@ -171,23 +171,23 @@ def test_set_n_trees_below_one(selector, n_trees):
     assert selector.n_trees == 1
 
 
-@pytest.mark.parametrize("selection_type", [SelectionType.Rank,
-                                            SelectionType.Tournament])
-def test_set_selection_type(selector, selection_type):
-    selector.set_params(selection_type=selection_type)
-    assert selector.selection_type == selection_type
+@pytest.mark.parametrize("selection", [Selection.Rank,
+                                            Selection.Tournament])
+def test_set_selection(selector, selection):
+    selector.set_params(selection=selection)
+    assert selector.selection == selection
 
 
-@pytest.mark.parametrize("selection_type", ["some_string"])
-def test_set_selection_type_with_wrong_type(selector, selection_type):
+@pytest.mark.parametrize("selection", ["some_string"])
+def test_set_selection_with_wrong_type(selector, selection):
     with pytest.raises(TypeError):
-        selector.set_params(selection_type=selection_type)
+        selector.set_params(selection=selection)
 
 
-def test_set_new_selection_type(selector):
-    SelectionType.add_new("NewSelector", lambda x: x)
-    selector.set_params(selection_type=SelectionType.NewSelector)
-    assert str(type(selector.selection_type)) == str(SelectionType)
+def test_set_new_selection(selector):
+    Selection.add_new("NewSelector", lambda x: x)
+    selector.set_params(selection=Selection.NewSelector)
+    assert str(type(selector.selection)) == str(Selection)
 
 
 def test_set_params_kwargs(selector):
@@ -253,7 +253,7 @@ def real_metrics():
 
 def test_copying_trees(selector, real_trees, real_metrics):
     # should select last tree 3 times but also should copy this tree
-    selector.set_params(3, selection_type=SelectionType.Tournament)
+    selector.set_params(3, selection=Selection.Tournament)
     selected_trees = selector.select(real_trees, real_metrics)
     assert id(selected_trees[0]) != id(selected_trees[1]) != id(selected_trees[2]) != id(selected_trees[0])
     assert_array_equal(selected_trees[0].feature, selected_trees[1].feature)
@@ -266,18 +266,18 @@ def test_copying_trees(selector, real_trees, real_metrics):
 # SelectionTypes
 # +++++++++++++++
 
-@pytest.mark.parametrize("selection_type", [SelectionType.Rank,
-                                            SelectionType.Tournament,
-                                            SelectionType.Roulette,
-                                            SelectionType.StochasticUniform
+@pytest.mark.parametrize("selection", [Selection.Rank,
+                                            Selection.Tournament,
+                                            Selection.Roulette,
+                                            Selection.StochasticUniform
                                             ])
-def test_calling_proper_selection_type(selector, real_metrics, real_trees, selection_type):
-    selector.set_params(selection_type=selection_type, n_trees=2)
+def test_calling_proper_selection(selector, real_metrics, real_trees, selection):
+    selector.set_params(selection=selection, n_trees=2)
     np.random.seed(123)
     trees_by_selector = selector.select(real_trees, real_metrics)
     np.random.seed(123)
-    indices_by_selection_type = selection_type.select(real_metrics, selector.n_trees)
-    assert_trees_equal(np.array(real_trees)[indices_by_selection_type], trees_by_selector)
+    indices_by_selection = selection.select(real_metrics, selector.n_trees)
+    assert_trees_equal(np.array(real_trees)[indices_by_selection], trees_by_selector)
 
 
 def assert_trees_equal(trees1, trees2):
@@ -286,19 +286,19 @@ def assert_trees_equal(trees1, trees2):
         assert_array_equal(trees1[i].feature, trees2[i].feature)
 
 
-@pytest.mark.parametrize("selection_type", [SelectionType.Rank,
-                                            SelectionType.Tournament,
-                                            SelectionType.Roulette,
-                                            SelectionType.StochasticUniform
+@pytest.mark.parametrize("selection", [Selection.Rank,
+                                            Selection.Tournament,
+                                            Selection.Roulette,
+                                            Selection.StochasticUniform
                                             ])
-def test_warning_that_there_are_less_than_n_trees(selector, real_metrics, real_trees, selection_type):
-    selector.set_params(n_trees=4, selection_type=selection_type)
+def test_warning_that_there_are_less_than_n_trees(selector, real_metrics, real_trees, selection):
+    selector.set_params(n_trees=4, selection=selection)
     with pytest.warns(UserWarning):
         selector.select(real_trees, real_metrics)
 
 
 # ==============================================================================
-# SelectionType
+# Selection
 # ==============================================================================
 
 def random_function():
@@ -306,6 +306,6 @@ def random_function():
     return 9
 
 
-def test_add_new_selection_type():
-    SelectionType.add_new("MyNewName", random_function)
-    assert SelectionType.MyNewName.select() == 9
+def test_add_new_selection():
+    Selection.add_new("MyNewName", random_function)
+    assert Selection.MyNewName.select() == 9

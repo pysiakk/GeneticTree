@@ -28,7 +28,7 @@ class Metric(Enum):
         AccuracyMinusLeavesNumber -- accuracy + constant times number of nodes of tree
         AccuracyMinusDepth -- accuracy + constant times maximal depth of tree
 
-    To add new Metric see genetic.selector.SelectionType
+    To add new Metric see genetic.selector.Selection
     """
     def __new__(cls, function, *args):
         obj = object.__new__(cls)

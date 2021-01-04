@@ -3,7 +3,7 @@ from genetic_tree import GeneticTree
 import pandas as pd
 import numpy as np
 from genetic.initializer import Initialization
-from genetic.selector import SelectionType
+from genetic.selector import Selection
 from genetic.evaluator import Metric
 import json
 
@@ -16,7 +16,7 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
                      mutation_prob: float = 0.4,
                      initialization: Initialization = Initialization.Full,
                      metric: Metric = Metric.AccuracyMinusDepth,
-                     selection_type: SelectionType = SelectionType.StochasticUniform,
+                     selection: Selection = Selection.StochasticUniform,
                      n_elitism: int = 3,
                      n_thresholds: int = 10,
                      cross_is_both: bool = True,
@@ -46,7 +46,7 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
             "mutation_prob": float(mutation_prob),
             "initialization": initialization.name,
             "metric": metric.name,
-            "selection_type": selection_type.name,
+            "selection": selection.name,
             "n_elitism": int(n_elitism),
             "n_thresholds": int(n_thresholds),
             "cross_is_both": cross_is_both,
@@ -67,7 +67,7 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
             "verbose": verbose,
             "n_jobs": int(n_jobs)
         }
-        if iterate_over_1 in ["initialization", "selection_type", "metric"]:
+        if iterate_over_1 in ["initialization", "selection", "metric"]:
             parms[iterate_over_1] = iter_1.name
         else:
             parms[iterate_over_1] = iter_1
@@ -78,7 +78,7 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
                   "mutation_prob": float(mutation_prob),
                   "initialization": initialization,
                   "metric": metric,
-                  "selection_type": selection_type,
+                  "selection": selection,
                   "n_elitism": int(n_elitism),
                   "n_thresholds": int(n_thresholds),
                   "cross_is_both": cross_is_both,
@@ -155,8 +155,8 @@ if __name__ == "__main__":
                             [diabetes_X_test, ozone_X_test],
                             [diabetes_y_test, ozone_y_test],
                             ["diabetes", "ozone"],
-                            "selection_type", [SelectionType.StochasticUniform, SelectionType.Rank,
-                                               SelectionType.Roulette, SelectionType.Tournament],
+                            "selection", [Selection.StochasticUniform, Selection.Rank,
+                                               Selection.Roulette, Selection.Tournament],
                             "quality_tests/selection_test_1.json",
                             initial_depth=4)
 

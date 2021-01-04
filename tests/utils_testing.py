@@ -40,7 +40,7 @@ from genetic.mutator import Mutator, Mutation
 from genetic.crosser import Crosser
 from genetic.evaluator import Evaluator, Metric
 from genetic.evaluator import get_accuracy, get_accuracy_and_n_leaves, get_accuracy_and_depth
-from genetic.selector import SelectionType, Selector, metrics_greater_than_zero
+from genetic.selector import Selection, Selector, metrics_greater_than_zero
 from genetic.selector import get_selected_indices_by_rank_selection
 from genetic.selector import get_selected_indices_by_tournament_selection
 from genetic.selector import get_selected_indices_by_roulette_selection

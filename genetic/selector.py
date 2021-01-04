@@ -151,9 +151,9 @@ def get_selected_indices_by_stochastic_uniform_selection(metrics: np.array, n_in
     return selected_indices
 
 
-class SelectionType(Enum):
+class Selection(Enum):
     """
-    SelectionType is enumerator with possible selections to use:
+    Selection is enumerator with possible selections to use:
         Rank -- select best (based on metric) n trees
         Tournament -- n tournaments with k individuals - each tournament is won \
         by the best individual
@@ -163,7 +163,7 @@ class SelectionType(Enum):
         are distant from each other the same distance; individuals sections are \
         proportional to metric
 
-    To add new SelectionType execute code similar to:
+    To add new Selection execute code similar to:
     <code>
     def selection_function(metrics: np.array, n_individuals: int) -> np.array:
         # function that will get np array of trees metrics
@@ -171,10 +171,10 @@ class SelectionType(Enum):
         # it returns np array with selected indices
         indices = ...
         return indices
-    SelectionType.add_new("SelectionTypeName", selection_function)
+    Selection.add_new("SelectionTypeName", selection_function)
     </code>
     Then you can use new selection type by passing in genetic tree
-    SelectionType.SelectionTypeName
+    Selection.SelectionTypeName
     """
     def __new__(cls, function, *args):
         obj = object.__new__(cls)
@@ -184,7 +184,7 @@ class SelectionType(Enum):
 
     @staticmethod
     def add_new(name, function):
-        extend_enum(SelectionType, name, function)
+        extend_enum(Selection, name, function)
 
     # after each entry should be at least delimiter
     # (also can be more arguments which will be ignored)
@@ -214,24 +214,24 @@ class Selector:
 
     Args:
         n_trees: number of trees to select
-        selection_type: a selection policy how to select new individuals
+        selection: a selection policy how to select new individuals
         n_elitism: number of best trees to select unconditionally between 2 \
         iterations
     """
 
     def __init__(self,
                  n_trees: int = 400,
-                 selection_type: SelectionType = SelectionType.StochasticUniform,
+                 selection: Selection = Selection.StochasticUniform,
                  n_elitism: int = 3,
                  **kwargs):
         self.n_trees: int = self._check_n_trees(n_trees)
-        self.selection_type: SelectionType = self._check_selection_type(selection_type)
+        self.selection: Selection = self._check_selection(selection)
         self.n_elitism: int = self._check_n_elitism(n_elitism)
         self._kwargs = kwargs
 
     def set_params(self,
                    n_trees: int = None,
-                   selection_type: SelectionType = None,
+                   selection: Selection = None,
                    n_elitism: int = None,
                    **kwargs):
         """
@@ -241,8 +241,8 @@ class Selector:
         """
         if n_trees is not None:
             self.n_trees = self._check_n_trees(n_trees)
-        if selection_type is not None:
-            self.selection_type = self._check_selection_type(selection_type)
+        if selection is not None:
+            self.selection = self._check_selection(selection)
         if n_elitism is not None:
             self.n_elitism = self._check_n_elitism(n_elitism)
         self._kwargs = dict(self._kwargs, **kwargs)
@@ -256,13 +256,13 @@ class Selector:
         return n_trees
 
     @staticmethod
-    def _check_selection_type(selection_type):
-        # comparison of strings because after using SelectionType.add_new() SelectionType is reference to other class
-        if str(type(selection_type)) == str(SelectionType):
-            return selection_type
+    def _check_selection(selection):
+        # comparison of strings because after using Selection.add_new() Selection is reference to other class
+        if str(type(selection)) == str(Selection):
+            return selection
         else:
-            raise TypeError(f"Passed selection_type={selection_type} with type {type(selection_type)}, "
-                            f"Needed argument with type SelectionType")
+            raise TypeError(f"Passed selection={selection} with type {type(selection)}, "
+                            f"Needed argument with type Selection")
 
     def _check_n_elitism(self, n_elitism):
         if n_elitism >= self.n_trees:
@@ -275,7 +275,7 @@ class Selector:
         """
         Function selects parents from population
         It selects self.n_trees trees
-        It uses selection_type policy
+        It uses selection policy
 
         Args:
             trees: List with all trees
@@ -290,7 +290,7 @@ class Selector:
                           f"by offspring or set bigger mutation or crossing "
                           f"probability with do not replacing parents.",
                           UserWarning)
-        indices = self.selection_type.select(trees_metrics, self.n_trees, **self._kwargs)
+        indices = self.selection.select(trees_metrics, self.n_trees, **self._kwargs)
         new_trees = self._get_new_trees_by_indices(trees, indices)
         return new_trees
 
