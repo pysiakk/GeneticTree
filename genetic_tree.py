@@ -23,6 +23,7 @@ class GeneticTree:
 
     def __init__(self,
                  # most important params
+                 n_thresholds: int = 10,
                  n_trees: int = 400,
                  n_iters: int = 500,
                  cross_prob: float = 0.6,
@@ -31,9 +32,10 @@ class GeneticTree:
                  metric: Metric = Metric.AccuracyMinusDepth,
                  selection_type: SelectionType = SelectionType.StochasticUniform,
                  n_elitism: int = 3,
+                 use_without_improvement: bool = False,
+                 n_iters_without_improvement: int = 100,
 
                  # additional genetic algorithm params
-                 n_thresholds: int = 10,
                  cross_is_both: bool = True,
                  mutations_additional: list = None,
                  mutation_is_replace: bool = False,
@@ -43,8 +45,6 @@ class GeneticTree:
                  depth_factor: float = 0.01,
                  tournament_size: int = 3,
                  is_leave_selected_parents: bool = False,
-                 n_iters_without_improvement: int = 100,
-                 use_without_improvement: bool = False,
 
                  # technical params
                  random_state: int = None,
@@ -54,7 +54,9 @@ class GeneticTree:
 
                  # TODO: params not used yet:
                  verbose: bool = True,
-                 n_jobs: int = -1
+                 n_jobs: int = -1,
+                 max_depth: int = 20,
+                 **kwargs
                  ):
 
         if random_state is not None:
