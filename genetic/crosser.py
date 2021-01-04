@@ -9,7 +9,7 @@ class Crosser:
 
     Args:
         cross_prob: The chance that each tree will be selected as first parent.
-        cross_is_both: If cross first parent with second and second with first \
+        cross_both: If cross first parent with second and second with first \
                        or only first with second
 
     For each tree selected with cross_prob chance there will be found second
@@ -18,14 +18,14 @@ class Crosser:
 
     def __init__(self,
                  cross_prob: float = 0.6,
-                 cross_is_both: bool = True,
+                 cross_both: bool = True,
                  **kwargs):
         self.cross_prob: float = self._check_cross_prob(cross_prob)
-        self.cross_is_both: bool = self._check_cross_is_both(cross_is_both)
+        self.cross_both: bool = self._check_cross_both(cross_both)
 
     def set_params(self,
                    cross_prob: float = None,
-                   cross_is_both: bool = None,
+                   cross_both: bool = None,
                    **kwargs):
         """
         Function to set new parameters for Crosser
@@ -34,8 +34,8 @@ class Crosser:
         """
         if cross_prob is not None:
             self.cross_prob = self._check_cross_prob(cross_prob)
-        if cross_is_both is not None:
-            self.cross_is_both = self._check_cross_is_both(cross_is_both)
+        if cross_both is not None:
+            self.cross_both = self._check_cross_both(cross_both)
 
     @staticmethod
     def _check_cross_prob(cross_prob):
@@ -49,11 +49,11 @@ class Crosser:
         return cross_prob
 
     @staticmethod
-    def _check_cross_is_both(cross_is_both):
-        if type(cross_is_both) is not bool:
-            raise TypeError(f"cross_is_both: {cross_is_both} should be "
-                            f"bool. Instead it is {type(cross_is_both)}")
-        return cross_is_both
+    def _check_cross_both(cross_both):
+        if type(cross_both) is not bool:
+            raise TypeError(f"cross_both: {cross_both} should be "
+                            f"bool. Instead it is {type(cross_both)}")
+        return cross_both
 
     def cross_population(self, trees):
         """
@@ -79,7 +79,7 @@ class Crosser:
 
             # create children and append them to list
             new_created_trees.append(cross_trees(first_parent, second_parent, first_node_id, second_node_id))
-            if self.cross_is_both:
+            if self.cross_both:
                 new_created_trees.append(cross_trees(second_parent, first_parent, second_node_id, first_node_id))
 
         return new_created_trees

@@ -29,7 +29,7 @@ def trees():
 def test_crosser_init(prob, is_both):
     crosser = Crosser(prob, is_both)
     assert prob == crosser.cross_prob
-    assert is_both == crosser.cross_is_both
+    assert is_both == crosser.cross_both
 
 # +++++++++++++++
 # Set params
@@ -61,14 +61,14 @@ def test_set_cross_prob_wrong_type(crosser, cross_prob):
 
 @pytest.mark.parametrize("is_both", [True, False])
 def test_set_is_both(crosser, is_both):
-    crosser.set_params(cross_is_both=is_both)
-    assert crosser.cross_is_both == is_both
+    crosser.set_params(cross_both=is_both)
+    assert crosser.cross_both == is_both
 
 
 @pytest.mark.parametrize("is_both", ["string", [True]])
 def test_set_is_both_wrong_type(crosser, is_both):
     with pytest.raises(TypeError):
-        crosser.set_params(cross_is_both=is_both)
+        crosser.set_params(cross_both=is_both)
 
 
 # ==============================================================================
