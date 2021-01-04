@@ -8,9 +8,9 @@ from tree.mutator import mutate_random_feature, mutate_random_threshold
 from tree.mutator import mutate_random_class
 
 
-class MutationType(Enum):
+class Mutation(Enum):
     """
-    MutationType is enumerator with possible mutations to use:
+    Mutation is enumerator with possible mutations to use:
         Class: mutate class in random leaf
         Threshold: mutate threshold in random decision node
         Feature: mutate both feature and threshold in random decision node
@@ -18,7 +18,7 @@ class MutationType(Enum):
                           if decision node then mutate threshold \
                           if leaf then mutate class
 
-    Look at SelectionType to see how to add new MutationType
+    Look at SelectionType to see how to add new Mutation
     """
     def __new__(cls, function, *args):
         obj = object.__new__(cls)
@@ -28,7 +28,7 @@ class MutationType(Enum):
 
     @staticmethod
     def add_new(name, function):
-        extend_enum(MutationType, name, function)
+        extend_enum(Mutation, name, function)
 
     # after each entry should be at least delimiter
     # (also can be more arguments which will be ignored)
@@ -53,8 +53,8 @@ class Mutator:
                        if decision node then mutate both feature and threshold \
                        if leaf then mutate class
         mutations_additional: list of tuples \
-                              each tuple contains MutationType \
-                              and probability of this MutationType
+                              each tuple contains Mutation \
+                              and probability of this Mutation
         mutation_is_replace: if new trees should replace previous or should \
                              previous trees be modified directly
     """
@@ -113,10 +113,10 @@ class Mutator:
                             f"not type list")
         for i in range(len(mutations_additional)):
             element = mutations_additional[i]
-            # comparison of strings because after using MutationType.add_new() MutationType is reference to other class
-            if str(type(element[0])) != str(MutationType):
-                raise TypeError(f"MutationType inside mutations additional: "
-                                f"{element[0]} is not a MutationType")
+            # comparison of strings because after using Mutation.add_new() Mutation is reference to other class
+            if str(type(element[0])) != str(Mutation):
+                raise TypeError(f"Mutation inside mutations additional: "
+                                f"{element[0]} is not a Mutation")
             error_name = f"Mutation probability inside mutations additional for {element[0]}"
             element = element[0], Mutator._check_mutation_prob(element[1], error_name)
             mutations_additional[i] = element
@@ -127,8 +127,8 @@ class Mutator:
         It mutates all trees based on params
 
         First it mutate random node with probability mutation_prob
-        Then for each pair (MutationType, prob) inside
-        additional_mutation list it mutates MutationType with prob probability
+        Then for each pair (Mutation, prob) inside
+        additional_mutation list it mutates Mutation with prob probability
 
         Args:
             trees: List with all trees to mutate
@@ -136,18 +136,18 @@ class Mutator:
         Returns:
             mutated_trees:
         """
-        mutated_population = self._mutate_by_mutation_type(trees, None, self.mutation_prob)
+        mutated_population = self._mutate_by_mutation(trees, None, self.mutation_prob)
         for elem in self.mutations_additional:
-            mutated_population += self._mutate_by_mutation_type(trees, elem[0], elem[1])
+            mutated_population += self._mutate_by_mutation(trees, elem[0], elem[1])
         return mutated_population
 
-    def _mutate_by_mutation_type(self, trees, mutation_type: MutationType, prob: float):
+    def _mutate_by_mutation(self, trees, mutation: Mutation, prob: float):
         """
         It mutate all trees by function with prob probability
 
         Args:
             trees: List with all trees to mutate
-            mutation_type: MutationType
+            mutation: Mutation
             prob: The probability that each tree will be mutated
 
         Returns:
@@ -159,26 +159,26 @@ class Mutator:
         for tree_id in tree_ids:
             tree: Tree = trees[tree_id]
             if self.mutation_is_replace:
-                self._run_mutation_function(tree, mutation_type)
+                self._run_mutation_function(tree, mutation)
             else:
                 tree = copy_tree(tree)
-                self._run_mutation_function(tree, mutation_type)
+                self._run_mutation_function(tree, mutation)
                 new_created_trees.append(tree)
         return new_created_trees
 
     @staticmethod
-    def _run_mutation_function(tree: Tree, mutation_type: MutationType):
+    def _run_mutation_function(tree: Tree, mutation: Mutation):
         """
-        Run proper mutation based on mutation_type argument.
+        Run proper mutation based on mutation argument.
 
         Args:
             tree: Tree
-            mutation_type: MutationType
+            mutation: Mutation
         """
-        if mutation_type is None:
+        if mutation is None:
             mutate_random_node(tree)
         else:
-            mutation_type.mutate(tree)
+            mutation.mutate(tree)
 
     @staticmethod
     def _get_random_trees(n_trees: int, probability: float) -> np.array:

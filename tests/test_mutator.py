@@ -101,8 +101,8 @@ def trees():
 
 @pytest.mark.parametrize("prob, mutations_additional, is_replace",
                          [(0.1, None, True),
-                          (0.2, [(MutationType.Feature, 0.3)], True),
-                          (0.5, [(MutationType.Feature, 0.4), (MutationType.Threshold, 0.2)], False),
+                          (0.2, [(Mutation.Feature, 0.3)], True),
+                          (0.5, [(Mutation.Feature, 0.4), (Mutation.Threshold, 0.2)], False),
                           ])
 def test_mutator_init(prob, mutations_additional, is_replace):
     mutator = Mutator(prob, mutations_additional, is_replace)
@@ -154,7 +154,7 @@ def test_set_is_replace_wrong_type(mutator, is_replace):
         mutator.set_params(mutation_is_replace=is_replace)
 
 
-@pytest.mark.parametrize("mutations_additional", [[], [(MutationType.Feature, 0.4), (MutationType.Threshold, 0.2)]])
+@pytest.mark.parametrize("mutations_additional", [[], [(Mutation.Feature, 0.4), (Mutation.Threshold, 0.2)]])
 def test_set_additional_mutations(mutator, mutations_additional):
     mutator.set_params(mutations_additional=mutations_additional)
     assert mutator.mutations_additional == mutations_additional
@@ -162,16 +162,16 @@ def test_set_additional_mutations(mutator, mutations_additional):
 
 @pytest.mark.parametrize("mutations_additional", [True, "string",
                                                   [("string", 0.4)],
-                                                  [(MutationType.Feature, "string")]])
+                                                  [(Mutation.Feature, "string")]])
 def test_set_additional_mutations_wrong_type(mutator, mutations_additional):
     with pytest.raises(TypeError):
         mutator.set_params(mutations_additional=mutations_additional)
 
 
 def test_set_new_mutation(mutator):
-    MutationType.add_new("NewMutation", lambda x: x)
-    mutator.set_params(mutations_additional=[(MutationType.NewMutation, 0.2)])
-    assert str(type(mutator.mutations_additional[0][0])) == str(MutationType)
+    Mutation.add_new("NewMutation", lambda x: x)
+    mutator.set_params(mutations_additional=[(Mutation.NewMutation, 0.2)])
+    assert str(type(mutator.mutations_additional[0][0])) == str(Mutation)
 
 
 # +++++++++++++++
@@ -188,58 +188,58 @@ def test_get_random_trees(n_trees, prob):
     assert len(trees) == len(np.unique(trees))
 
 
-@pytest.mark.parametrize("mutation_type, mutation_function",
-                         [(MutationType.Feature, mutate_random_feature),
+@pytest.mark.parametrize("mutation, mutation_function",
+                         [(Mutation.Feature, mutate_random_feature),
                           (None, mutate_random_node)])
-def test_run_mutation_function(trees, mutation_type, mutation_function):
+def test_run_mutation_function(trees, mutation, mutation_function):
     tree = trees[0]
     tree_mutated = copy_tree(tree, same_seed=1)
-    Mutator._run_mutation_function(tree_mutated, mutation_type)
+    Mutator._run_mutation_function(tree_mutated, mutation)
     mutation_function(tree)
     assert_array_equal(tree.feature, tree_mutated.feature)
     assert_array_equal(tree.threshold, tree_mutated.threshold)
 
 
-@pytest.mark.parametrize("mutation_type, mutation_function",
-                         [(MutationType.Feature, mutate_random_feature),
+@pytest.mark.parametrize("mutation, mutation_function",
+                         [(Mutation.Feature, mutate_random_feature),
                           (None, mutate_random_node)])
-def test_mutate_by_mutation_type_prob_one_replace(trees, mutation_type, mutation_function):
+def test_mutate_by_mutation_prob_one_replace(trees, mutation, mutation_function):
     trees = trees[:1]
     trees_copied = [copy_tree(tree, same_seed=1) for tree in trees]
-    Mutator._mutate_by_mutation_type(Mutator(mutation_is_replace=True), trees_copied, mutation_type, 1)
+    Mutator._mutate_by_mutation(Mutator(mutation_is_replace=True), trees_copied, mutation, 1)
     for tree, tree_mutated in zip(trees, trees_copied):
         mutation_function(tree)
         assert_array_equal(tree.feature, tree_mutated.feature)
         assert_array_equal(tree.threshold, tree_mutated.threshold)
 
 
-@pytest.mark.parametrize("mutation_type, mutation_function",
-                         [(MutationType.Feature, mutate_random_feature),
+@pytest.mark.parametrize("mutation, mutation_function",
+                         [(Mutation.Feature, mutate_random_feature),
                           (None, mutate_random_node)])
-def test_mutate_by_mutation_type_prob_one_not_replace(trees, mutation_type, mutation_function):
+def test_mutate_by_mutation_prob_one_not_replace(trees, mutation, mutation_function):
     trees = trees[:1]
     trees_copied = [copy_tree(tree, same_seed=1) for tree in trees]
     trees_copied_random_seed = [copy_tree(tree, same_seed=0) for tree in trees]
-    trees_mutated = Mutator._mutate_by_mutation_type(Mutator(mutation_is_replace=False), trees_copied, mutation_type, 1)
+    trees_mutated = Mutator._mutate_by_mutation(Mutator(mutation_is_replace=False), trees_copied, mutation, 1)
     for tree, tree_mutated in zip(trees_copied_random_seed, trees_mutated):
         mutation_function(tree)
         assert_array_equal(tree.feature, tree_mutated.feature)
         assert_array_equal(tree.threshold, tree_mutated.threshold)
 
 
-@pytest.mark.parametrize("mutation_type, mutation_function",
-                         [(MutationType.Feature, mutate_random_feature),
+@pytest.mark.parametrize("mutation, mutation_function",
+                         [(Mutation.Feature, mutate_random_feature),
                           (None, mutate_random_node)])
-def test_mutate_by_mutation_type_prob_zero(trees, mutation_type, mutation_function):
+def test_mutate_by_mutation_prob_zero(trees, mutation, mutation_function):
     trees_copied = [copy_tree(tree, same_seed=1) for tree in trees]
-    Mutator._mutate_by_mutation_type(Mutator(), trees_copied, mutation_type, 0)
+    Mutator._mutate_by_mutation(Mutator(), trees_copied, mutation, 0)
     for tree, tree_mutated in zip(trees, trees_copied):
         assert_array_equal(tree.feature, tree_mutated.feature)
         assert_array_equal(tree.threshold, tree_mutated.threshold)
 
 
 def test_mutate(trees, mutator):
-    mutations_additional = [(MutationType.Feature, 1), (MutationType.Threshold, 1)]
+    mutations_additional = [(Mutation.Feature, 1), (Mutation.Threshold, 1)]
     mutator.set_params(mutation_prob=1, mutations_additional=mutations_additional, mutation_is_replace=False)
     trees_mutated = mutator.mutate(trees)
     assert len(trees) * 3 == len(trees_mutated)
