@@ -5,7 +5,7 @@ from tests.utils_testing import *
 
 
 def test_initialize_full():
-    initializer = Initializer(n_trees=20, initial_depth=5, initialization_type=InitializationType.Full)
+    initializer = Initializer(n_trees=20, initial_depth=5, initialization=Initialization.Full)
     trees = initializer.initialize(X=X, y=y, sample_weight=sample_weight, threshold=thresholds)
     assert isinstance(trees[0], Tree)
     assert len(trees) == 20
@@ -14,7 +14,7 @@ def test_initialize_full():
 
 
 def test_initialize_full_depth_diff():
-    initializer = Initializer(n_trees=20, initial_depth=8, initialization_type=InitializationType.Full)
+    initializer = Initializer(n_trees=20, initial_depth=8, initialization=Initialization.Full)
     trees = initializer.initialize(X=X, y=y, sample_weight=sample_weight, threshold=thresholds)
     assert isinstance(trees[0], Tree)
     assert len(trees) == 20
@@ -23,7 +23,7 @@ def test_initialize_full_depth_diff():
 
 
 def test_initialize_half():
-    initializer = Initializer(n_trees=20, initial_depth=5, initialization_type=InitializationType.Half)
+    initializer = Initializer(n_trees=20, initial_depth=5, initialization=Initialization.Half)
     trees = initializer.initialize(X=X, y=y, sample_weight=sample_weight, threshold=thresholds)
     assert isinstance(trees[0], Tree)
     assert len(trees) == 20
@@ -32,7 +32,7 @@ def test_initialize_half():
 
 
 def test_initialize_split():
-    initializer = Initializer(n_trees=20, initial_depth=5, initialization_type=InitializationType.Split, split_prob=0.7)
+    initializer = Initializer(n_trees=20, initial_depth=5, initialization=Initialization.Split, split_prob=0.7)
     trees = initializer.initialize(X=X, y=y, sample_weight=sample_weight, threshold=thresholds)
     assert isinstance(trees[0], Tree)
     assert len(trees) == 20

@@ -2,7 +2,7 @@
 from genetic_tree import GeneticTree
 import pandas as pd
 import numpy as np
-from genetic.initializer import InitializationType
+from genetic.initializer import Initialization
 from genetic.selector import SelectionType
 from genetic.evaluator import Metric
 import json
@@ -14,7 +14,7 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
                      n_iters: int = 500,
                      cross_prob: float = 0.6,
                      mutation_prob: float = 0.4,
-                     initialization_type: InitializationType = InitializationType.Full,
+                     initialization: Initialization = Initialization.Full,
                      metric: Metric = Metric.AccuracyMinusDepth,
                      selection_type: SelectionType = SelectionType.StochasticUniform,
                      n_elitism: int = 3,
@@ -44,7 +44,7 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
             "n_iters": int(n_iters),
             "cross_prob": float(cross_prob),
             "mutation_prob": float(mutation_prob),
-            "initialization_type": initialization_type.name,
+            "initialization": initialization.name,
             "metric": metric.name,
             "selection_type": selection_type.name,
             "n_elitism": int(n_elitism),
@@ -67,7 +67,7 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
             "verbose": verbose,
             "n_jobs": int(n_jobs)
         }
-        if iterate_over_1 in ["initialization_type", "selection_type", "metric"]:
+        if iterate_over_1 in ["initialization", "selection_type", "metric"]:
             parms[iterate_over_1] = iter_1.name
         else:
             parms[iterate_over_1] = iter_1
@@ -76,7 +76,7 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
                   "n_iters": int(n_iters),
                   "cross_prob": float(cross_prob),
                   "mutation_prob": float(mutation_prob),
-                  "initialization_type": initialization_type,
+                  "initialization": initialization,
                   "metric": metric,
                   "selection_type": selection_type,
                   "n_elitism": int(n_elitism),
@@ -165,8 +165,8 @@ if __name__ == "__main__":
                             [diabetes_X_test, ozone_X_test],
                             [diabetes_y_test, ozone_y_test],
                             ["diabetes", "ozone"],
-                            "initialization_type", [InitializationType.Full, InitializationType.Half,
-                                                    InitializationType.Split],
+                            "initialization", [Initialization.Full, Initialization.Half,
+                                                    Initialization.Split],
                             "quality_tests/initialization_test_1.json",
                             initial_depth=4)
 

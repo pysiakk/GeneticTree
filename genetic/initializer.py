@@ -4,7 +4,7 @@ from tree.tree import Tree
 import numpy as np
 
 
-class InitializationType(Enum):
+class Initialization(Enum):
     Full = auto()
     Half = auto()
     Split = auto()
@@ -21,17 +21,17 @@ class Initializer:
     Args:
         n_trees: number of trees to create
         initial_depth: depth of all trees (if initialization type use it)
-        initialization_type: how to initialize trees
+        initialization: how to initialize trees
     """
 
     def __init__(self,
                  n_trees: int = 400, initial_depth: int = 1,
-                 initialization_type: InitializationType = InitializationType.Split,
+                 initialization: Initialization = Initialization.Split,
                  split_prob: float = 0.7,
                  **kwargs):
         self.n_trees: int = n_trees
         self.initial_depth: int = initial_depth
-        self.initialization_type: InitializationType = initialization_type
+        self.initialization: Initialization = initialization
         self.split_prob: float = split_prob
         self.builder: Builder = self.initialize_builder()
 
@@ -40,14 +40,14 @@ class Initializer:
         Returns:
             Builder: cython builder to initialize new trees
         """
-        if self.initialization_type == InitializationType.Full\
-                or self.initialization_type == InitializationType.Half:
+        if self.initialization == Initialization.Full\
+                or self.initialization == Initialization.Half:
             return FullTreeBuilder()
-        elif self.initialization_type == InitializationType.Split:
+        elif self.initialization == Initialization.Split:
             return SplitTreeBuilder()
 
     def set_params(self, initial_depth: int = None,
-                   initialization_type: InitializationType = None,
+                   initialization: Initialization = None,
                    **kwargs):
         """
         Function to set new parameters for Initializer
@@ -56,8 +56,8 @@ class Initializer:
         """
         if initial_depth is not None:
             self.initial_depth = initial_depth
-        if initialization_type is not None:
-            self.initialization_type = initialization_type
+        if initialization is not None:
+            self.initialization = initialization
 
     def initialize(self, X, y, sample_weight, threshold):
         """
@@ -66,11 +66,11 @@ class Initializer:
         Args:
             forest: Container with all trees
         """
-        if self.initialization_type == InitializationType.Full:
+        if self.initialization == Initialization.Full:
             trees = self.initialize_full(X, y, sample_weight, threshold)
-        elif self.initialization_type == InitializationType.Half:
+        elif self.initialization == Initialization.Half:
             trees = self.initialize_half(X, y, sample_weight, threshold)
-        elif self.initialization_type == InitializationType.Split:
+        elif self.initialization == Initialization.Split:
             trees = self.initialize_split(X, y, sample_weight, threshold)
         return trees
 

@@ -1,7 +1,7 @@
 import numpy as np
 
 from genetic.initializer import Initializer
-from genetic.initializer import InitializationType
+from genetic.initializer import Initialization
 from genetic.mutator import Mutator
 from genetic.crosser import Crosser
 from genetic.selector import Selector
@@ -28,7 +28,7 @@ class GeneticTree:
                  max_iter: int = 500,
                  cross_prob: float = 0.6,
                  mutation_prob: float = 0.4,
-                 initialization_type: InitializationType = InitializationType.Split,
+                 initialization: Initialization = Initialization.Split,
                  metric: Metric = Metric.AccuracyMinusDepth,
                  selection_type: SelectionType = SelectionType.StochasticUniform,
                  n_elitism: int = 3,

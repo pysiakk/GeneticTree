@@ -35,7 +35,7 @@ from tree.evaluation import get_accuracies, get_trees_depths, get_trees_n_leaves
 
 
 # high level (Python) imports
-from genetic.initializer import Initializer, InitializationType
+from genetic.initializer import Initializer, Initialization
 from genetic.mutator import Mutator, MutationType
 from genetic.crosser import Crosser
 from genetic.evaluator import Evaluator, Metric
