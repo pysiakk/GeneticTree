@@ -481,7 +481,7 @@ cdef class Tree:
         cdef IntArray observations
         cdef SIZE_t node_id
         cdef SIZE_t i
-        self.probabilities = dok_matrix((self.nodes.count, self.n_classes), dtype=np.float32)
+        self.probabilities = np.empty([self.nodes.count, self.n_classes], dtype=np.float32)
         # for each node (f the node is leaf) change class for the most occurring
         for node_id in range(self.nodes.count):
             # if it is leaf and has one or more observation
@@ -500,8 +500,6 @@ cdef class Tree:
                 # add probabilities of leaf
                 observations_in_class[self.nodes.elements[node_id].feature] += EPSILON
                 self.probabilities[node_id, :] = observations_in_class / np.sum(observations_in_class)
-
-        self.probabilities = csr_matrix(self.probabilities)
 
     cpdef void remove_variables(self):
         self.observations = None
@@ -522,17 +520,17 @@ cdef class Tree:
 
         return y
 
-    cpdef object predict_proba(self, object X):
+    cpdef np.ndarray predict_proba(self, object X):
         cdef DTYPE_t[:, :] X_ndarray = X
         cdef n_observations = X_ndarray.shape[0]
-        y_prob = dok_matrix((n_observations, self.n_classes), dtype=np.float32)
+        y_prob = np.empty([n_observations, self.n_classes], dtype=np.float32)
         cdef SIZE_t observation_id
 
         for observation_id in range(n_observations):
             node_id = self._find_leaf_for_observation(observation_id, X_ndarray, 0)
-            y_prob[observation_id, :] = self.probabilities[node_id, :][0]
+            y_prob[observation_id, :] = self.probabilities[node_id, :]
 
-        return csr_matrix(y_prob)
+        return y_prob
 
     cpdef np.ndarray apply(self, object X):
         cdef DTYPE_t[:, :] X_ndarray = X

@@ -174,7 +174,7 @@ def test_not_changing_class_when_two_classes_have_the_same_number_of_observation
     tree.initialize_observations()
     tree.prepare_tree_to_prediction()
     assert tree.feature[3] == 1 or tree.feature[3] == 2
-    probabilities = tree.probabilities[3, :].toarray()[0]
+    probabilities = tree.probabilities[3, :]
     if tree.feature[3] == 1:
         assert probabilities[1] > probabilities[2]
     if tree.feature[3] == 2:
@@ -184,9 +184,9 @@ def test_not_changing_class_when_two_classes_have_the_same_number_of_observation
 def test_tree_probabilities(tree):
     tree.initialize_observations()
     tree.prepare_tree_to_prediction()
-    assert_array_almost_equal(tree.probabilities[1, :].toarray()[0], np.array([50, 1, 0]) / 51)
-    assert_array_almost_equal(tree.probabilities[3, :].toarray()[0], np.array([0, 43, 1]) / 44)
-    assert_array_almost_equal(tree.probabilities[4, :].toarray()[0], np.array([0, 6, 49]) / 55)
+    assert_array_almost_equal(tree.probabilities[1, :], np.array([50, 1, 0]) / 51)
+    assert_array_almost_equal(tree.probabilities[3, :], np.array([0, 43, 1]) / 44)
+    assert_array_almost_equal(tree.probabilities[4, :], np.array([0, 6, 49]) / 55)
 
 
 def test_predict(tree):
@@ -199,7 +199,7 @@ def test_predict_proba(tree):
     tree.initialize_observations()
     tree.prepare_tree_to_prediction()
     prob_1 = np.array([0, 43, 1]) / 44
-    assert_array_almost_equal(tree.predict_proba(X[np.argsort(X[:, 1])][:5]).toarray(),
+    assert_array_almost_equal(tree.predict_proba(X[np.argsort(X[:, 1])][:5]),
                               np.stack([prob_1, prob_1, np.array([0, 6, 49]) / 55, prob_1, np.array([50, 1, 0]) / 51]))
 
 
