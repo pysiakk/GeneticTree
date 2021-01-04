@@ -55,17 +55,17 @@ class Mutator:
         mutations_additional: list of tuples \
                               each tuple contains Mutation \
                               and probability of this Mutation
-        mutation_is_replace: if new trees should replace previous or should \
+        mutation_replace: if new trees should replace previous or should \
                              previous trees be modified directly
     """
 
     def __init__(self,
                  mutation_prob: float = 0.4,
                  mutations_additional: list = None,
-                 mutation_is_replace: bool = False,
+                 mutation_replace: bool = False,
                  **kwargs):
         self.mutation_prob = self._check_mutation_prob(mutation_prob)
-        self.mutation_is_replace = self._check_mutation_is_replace(mutation_is_replace)
+        self.mutation_replace = self._check_mutation_replace(mutation_replace)
         if mutations_additional is not None:
             self.mutations_additional = self._check_mutations_additional(mutations_additional)
         else:
@@ -74,7 +74,7 @@ class Mutator:
     def set_params(self,
                    mutation_prob: float = None,
                    mutations_additional: list = None,
-                   mutation_is_replace: bool = None,
+                   mutation_replace: bool = None,
                    **kwargs):
         """
         Function to set new parameters for Mutator
@@ -83,8 +83,8 @@ class Mutator:
         """
         if mutation_prob is not None:
             self.mutation_prob = self._check_mutation_prob(mutation_prob)
-        if mutation_is_replace is not None:
-            self.mutation_is_replace = self._check_mutation_is_replace(mutation_is_replace)
+        if mutation_replace is not None:
+            self.mutation_replace = self._check_mutation_replace(mutation_replace)
         if mutations_additional is not None:
             self.mutations_additional = self._check_mutations_additional(mutations_additional)
 
@@ -100,11 +100,11 @@ class Mutator:
         return mutation_prob
     
     @staticmethod
-    def _check_mutation_is_replace(mutation_is_replace):
-        if type(mutation_is_replace) is not bool:
-            raise TypeError(f"mutation_is_replace: {mutation_is_replace} should be "
-                            f"bool. Instead it is {type(mutation_is_replace)}")
-        return mutation_is_replace
+    def _check_mutation_replace(mutation_replace):
+        if type(mutation_replace) is not bool:
+            raise TypeError(f"mutation_replace: {mutation_replace} should be "
+                            f"bool. Instead it is {type(mutation_replace)}")
+        return mutation_replace
 
     @staticmethod
     def _check_mutations_additional(mutations_additional):
@@ -158,7 +158,7 @@ class Mutator:
         tree_ids: np.array = self._get_random_trees(trees_number, prob)
         for tree_id in tree_ids:
             tree: Tree = trees[tree_id]
-            if self.mutation_is_replace:
+            if self.mutation_replace:
                 self._run_mutation_function(tree, mutation)
             else:
                 tree = copy_tree(tree)

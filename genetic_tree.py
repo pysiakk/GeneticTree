@@ -38,7 +38,7 @@ class GeneticTree:
                  # additional genetic algorithm params
                  cross_both: bool = True,
                  mutations_additional: list = None,
-                 mutation_is_replace: bool = False,
+                 mutation_replace: bool = False,
                  initial_depth: int = 1,
                  split_prob: float = 0.7,
                  n_leaves_factor: float = 0.0001,

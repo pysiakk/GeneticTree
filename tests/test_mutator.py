@@ -107,7 +107,7 @@ def trees():
 def test_mutator_init(prob, mutations_additional, is_replace):
     mutator = Mutator(prob, mutations_additional, is_replace)
     assert prob == mutator.mutation_prob
-    assert is_replace == mutator.mutation_is_replace
+    assert is_replace == mutator.mutation_replace
     if mutations_additional is None:
         assert mutator.mutations_additional == []
     else:
@@ -144,14 +144,14 @@ def test_set_mutation_prob_wrong_type(mutator, mutation_prob):
 
 @pytest.mark.parametrize("is_replace", [True, False])
 def test_set_is_replace(mutator, is_replace):
-    mutator.set_params(mutation_is_replace=is_replace)
-    assert mutator.mutation_is_replace == is_replace
+    mutator.set_params(mutation_replace=is_replace)
+    assert mutator.mutation_replace == is_replace
 
 
 @pytest.mark.parametrize("is_replace", ["string", [True]])
 def test_set_is_replace_wrong_type(mutator, is_replace):
     with pytest.raises(TypeError):
-        mutator.set_params(mutation_is_replace=is_replace)
+        mutator.set_params(mutation_replace=is_replace)
 
 
 @pytest.mark.parametrize("mutations_additional", [[], [(Mutation.Feature, 0.4), (Mutation.Threshold, 0.2)]])
@@ -206,7 +206,7 @@ def test_run_mutation_function(trees, mutation, mutation_function):
 def test_mutate_by_mutation_prob_one_replace(trees, mutation, mutation_function):
     trees = trees[:1]
     trees_copied = [copy_tree(tree, same_seed=1) for tree in trees]
-    Mutator._mutate_by_mutation(Mutator(mutation_is_replace=True), trees_copied, mutation, 1)
+    Mutator._mutate_by_mutation(Mutator(mutation_replace=True), trees_copied, mutation, 1)
     for tree, tree_mutated in zip(trees, trees_copied):
         mutation_function(tree)
         assert_array_equal(tree.feature, tree_mutated.feature)
@@ -220,7 +220,7 @@ def test_mutate_by_mutation_prob_one_not_replace(trees, mutation, mutation_funct
     trees = trees[:1]
     trees_copied = [copy_tree(tree, same_seed=1) for tree in trees]
     trees_copied_random_seed = [copy_tree(tree, same_seed=0) for tree in trees]
-    trees_mutated = Mutator._mutate_by_mutation(Mutator(mutation_is_replace=False), trees_copied, mutation, 1)
+    trees_mutated = Mutator._mutate_by_mutation(Mutator(mutation_replace=False), trees_copied, mutation, 1)
     for tree, tree_mutated in zip(trees_copied_random_seed, trees_mutated):
         mutation_function(tree)
         assert_array_equal(tree.feature, tree_mutated.feature)
@@ -240,7 +240,7 @@ def test_mutate_by_mutation_prob_zero(trees, mutation, mutation_function):
 
 def test_mutate(trees, mutator):
     mutations_additional = [(Mutation.Feature, 1), (Mutation.Threshold, 1)]
-    mutator.set_params(mutation_prob=1, mutations_additional=mutations_additional, mutation_is_replace=False)
+    mutator.set_params(mutation_prob=1, mutations_additional=mutations_additional, mutation_replace=False)
     trees_mutated = mutator.mutate(trees)
     assert len(trees) * 3 == len(trees_mutated)
 
