@@ -56,7 +56,6 @@ cdef extern from "numpy/arrayobject.h":
 # Types and constants
 # =============================================================================
 
-cdef DTYPE_t EPSILON = 0.00001
 TREE_LEAF = -1
 TREE_UNDEFINED = -2
 NODE_REMOVED = -3
@@ -497,8 +496,6 @@ cdef class Tree:
                 else:
                     observations_in_class = np.ones(self.n_classes, dtype=np.float32)
 
-                # add probabilities of leaf
-                observations_in_class[self.nodes.elements[node_id].feature] += EPSILON
                 self.probabilities[node_id, :] = observations_in_class / np.sum(observations_in_class)
 
     cpdef void remove_variables(self):

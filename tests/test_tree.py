@@ -172,13 +172,15 @@ def test_changing_classes_to_class_most_often_occurring(tree):
 @pytest.mark.parametrize("tree", [build_simple_tree(6.7, 0), build_simple_tree(6.7, 1), build_simple_tree(6.7, 2)])
 def test_not_changing_class_when_two_classes_have_the_same_number_of_observations(tree):
     tree.initialize_observations()
+    feature = tree.feature[3]
     tree.prepare_tree_to_prediction()
-    assert tree.feature[3] == 1 or tree.feature[3] == 2
     probabilities = tree.probabilities[3, :]
     if tree.feature[3] == 1:
-        assert probabilities[1] > probabilities[2]
+        assert probabilities[1] >= probabilities[2]
     if tree.feature[3] == 2:
-        assert probabilities[1] < probabilities[2]
+        assert probabilities[1] <= probabilities[2]
+    if feature == 1 or feature == 2:
+        assert feature == tree.feature[3]
 
 
 def test_tree_probabilities(tree):
