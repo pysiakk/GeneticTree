@@ -18,7 +18,7 @@ def obs(X_converted):
 @pytest.fixture
 def tree(X_converted):
     tree = initialize_iris_tree()
-    FullTreeBuilder.build(FullTreeBuilder(), tree, 10)
+    full_tree_builder(tree, 10)
     return tree
 
 
