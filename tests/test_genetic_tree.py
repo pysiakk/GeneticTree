@@ -110,12 +110,12 @@ def test_set_seed(np_randint):
 
 def test_predict(genetic_tree_fitted, X_converted):
     assert_array_equal(genetic_tree_fitted.predict(X),
-                       genetic_tree_fitted._best_tree.predict(X_converted))
+                       genetic_tree_fitted._best_tree.test_predict(X_converted))
 
 
 def test_predict_proba(genetic_tree_fitted, X_converted):
     assert_array_equal(genetic_tree_fitted.predict_proba(X),
-                       genetic_tree_fitted._best_tree.predict_proba(X_converted))
+                       genetic_tree_fitted._best_tree.test_predict_proba(X_converted))
 
 
 def test_apply(genetic_tree_fitted, X_converted):

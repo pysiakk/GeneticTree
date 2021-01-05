@@ -194,14 +194,14 @@ def test_tree_probabilities(tree):
 def test_predict(tree):
     tree.initialize_observations()
     tree.prepare_tree_to_prediction()
-    assert_array_equal(tree.predict(X[np.argsort(X[:, 1])][:5]), np.array([1, 1, 2, 1, 0]))
+    assert_array_equal(tree.test_predict(X[np.argsort(X[:, 1])][:5]), np.array([1, 1, 2, 1, 0]))
 
 
 def test_predict_proba(tree):
     tree.initialize_observations()
     tree.prepare_tree_to_prediction()
     prob_1 = np.array([0, 43, 1]) / 44
-    assert_array_almost_equal(tree.predict_proba(X[np.argsort(X[:, 1])][:5]),
+    assert_array_almost_equal(tree.test_predict_proba(X[np.argsort(X[:, 1])][:5]),
                               np.stack([prob_1, prob_1, np.array([0, 6, 49]) / 55, prob_1, np.array([50, 1, 0]) / 51]))
 
 

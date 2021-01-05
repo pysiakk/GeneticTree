@@ -84,14 +84,9 @@ cdef class Tree:
     # Observations functions
     cpdef initialize_observations(self)
 
-    cdef SIZE_t _find_leaf_for_observation(self, SIZE_t observation_id, DTYPE_t[:, :] X_ndarray,
-                                        SIZE_t node_id_to_start) nogil
-
     # Prediction functions
     cpdef prepare_tree_to_prediction(self)
     cpdef void remove_variables(self)
-    cpdef np.ndarray predict(self, object X)
-    cpdef np.ndarray predict_proba(self, object X)
     cpdef np.ndarray apply(self, object X)
 
 
