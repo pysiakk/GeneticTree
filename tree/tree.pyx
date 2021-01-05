@@ -542,10 +542,12 @@ cdef class Tree:
         cdef DTYPE_t[:, :] X_ndarray = X
         cdef n_observations = X_ndarray.shape[0]
         cdef np.ndarray nodes = np.empty(n_observations, dtype=np.intp)
-        cdef SIZE_t observation_id
+        cdef SIZE_t y_id
 
-        for observation_id in range(n_observations):
-            nodes[observation_id] = self._find_leaf_for_observation(observation_id, X_ndarray, 0)
+        self.observations.initialize_find_leaf(X)
+
+        for y_id in range(n_observations):
+            nodes[y_id] = self.observations.find_leaf_for_observation(self.nodes.elements, y_id, 0)
 
         return nodes
 

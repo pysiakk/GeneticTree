@@ -151,7 +151,7 @@ cdef class Observations:
         self._resize_empty_leaves_ids()
 
     cdef _assign_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id):
-        cdef node_id = self._find_leaf_for_observation(nodes, y_id, below_node_id)
+        cdef node_id = self.find_leaf_for_observation(nodes, y_id, below_node_id)
 
         if nodes[node_id].right_child != TREE_LEAF:         # in right child is leaves_id
             self._append_observations(nodes[node_id].right_child, y_id)
@@ -161,7 +161,7 @@ cdef class Observations:
         if nodes[node_id].feature == self.y[y_id]:          # feature means class
             self.proper_classified += self.sample_weight[y_id]
 
-    cdef SIZE_t _find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil:
+    cdef SIZE_t find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil:
         if self.issparse_X == 1:
             return self._find_leaf_for_observation_sparse(nodes, y_id, below_node_id)
         else:

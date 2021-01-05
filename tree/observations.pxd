@@ -35,7 +35,7 @@ cdef class Observations:
     cdef void reassign_observations(self, Tree tree, SIZE_t below_node_id)
 
     cdef _assign_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id)
-    cdef SIZE_t _find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil
+    cdef SIZE_t find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil
     cdef SIZE_t _find_leaf_for_observation_dense(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil
     cdef SIZE_t _find_leaf_for_observation_sparse(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil
 
