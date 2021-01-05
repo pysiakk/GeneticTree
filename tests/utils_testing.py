@@ -73,7 +73,7 @@ sample_weight = np.ascontiguousarray(np.ones(150), dtype=np.float32)
 
 
 def initialize_iris_tree():
-    return Tree(np.unique(y).shape[0], X, y, sample_weight, thresholds, np.random.randint(10 ** 8))
+    return Tree(np.unique(y), X, y, sample_weight, thresholds, np.random.randint(10 ** 8))
 
 
 def build_trees(depth: int = 1, n_trees: int = 10):

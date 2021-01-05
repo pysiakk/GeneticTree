@@ -125,7 +125,8 @@ cdef class Tree:
             self.seed3 = seeds[2]
             self.seed4 = seeds[3]
 
-    def __cinit__(self, int n_classes,
+    def __cinit__(self,
+                  SIZE_t[:] classes,
                   object X,
                   SIZE_t[:] y,
                   DTYPE_t[:] sample_weight,
@@ -134,11 +135,12 @@ cdef class Tree:
         """Constructor."""
         self.n_features = X.shape[1]
         self.n_observations = X.shape[0]
-        self.n_classes = n_classes
+        self.n_classes = classes.shape[0]
         self.n_thresholds = thresholds.shape[0]
 
         self.X = X
         self.y = y
+        self.classes = classes
         self.sample_weight = sample_weight
         self.thresholds = thresholds
 
@@ -180,7 +182,7 @@ cdef class Tree:
         empty_1d_array_int = np.empty(1, dtype=np.intp)
         empty_1d_array = np.empty(1, dtype=np.float32)
         return (Tree,
-               (self.n_classes,
+               (np.array(self.classes),
                empty_2d_array,
                empty_1d_array_int,
                empty_1d_array,
@@ -442,10 +444,11 @@ cdef class Tree:
         return self.thresholds[new_threshold_index, feature]
 
     cdef SIZE_t get_new_random_class(self, SIZE_t last_class):
-        cdef SIZE_t new_class = self.randint_c(0, self.n_classes - 1)
+        cdef SIZE_t class_index = self.randint_c(0, self.n_classes - 1)
+        cdef SIZE_t new_class = self.classes[class_index]
         if new_class >= last_class:
-            new_class += 1
-        return new_class
+            class_index += 1
+        return self.classes[class_index]
 
 # ===========================================================================================================
 # Observations functions
@@ -481,6 +484,11 @@ cdef class Tree:
         cdef SIZE_t node_id
         cdef SIZE_t i
         self.probabilities = np.empty([self.nodes.count, self.n_classes], dtype=np.float32)
+
+        classes_ids = {}
+        for i, c in enumerate(self.classes):
+            classes_ids[c] = i
+
         # for each node (f the node is leaf) change class for the most occurring
         for node_id in range(self.nodes.count):
             # if it is leaf and has one or more observation
@@ -489,10 +497,11 @@ cdef class Tree:
                     observations_in_class = np.zeros(self.n_classes, dtype=np.float32)
                     observations = self.observations.leaves.elements[self.nodes.elements[node_id].right_child]
                     for i in range(observations.count):
-                        observations_in_class[self.y[observations.elements[i]]] += 1
+                        class_value = self.y[observations.elements[i]]
+                        observations_in_class[classes_ids[class_value]] += 1
                     # change class if it is not the maximum value
-                    if observations_in_class[self.nodes.elements[node_id].feature] != np.max(observations_in_class):
-                        self.nodes.elements[node_id].feature = np.argmax(observations_in_class)
+                    if observations_in_class[classes_ids[self.nodes.elements[node_id].feature]] != np.max(observations_in_class):
+                        self.nodes.elements[node_id].feature = self.classes[np.argmax(observations_in_class)]
                 else:
                     observations_in_class = np.ones(self.n_classes, dtype=np.float32)
 
@@ -545,7 +554,7 @@ cpdef Tree copy_tree(Tree tree, bint same_seed=0):
     seed = tree.seed1
     if same_seed == 0:
         seed = tree.randint(0, 10**8)
-    cdef Tree tree_copied = Tree(tree.n_classes, tree.X, tree.y, tree.sample_weight, tree.thresholds, seed)
+    cdef Tree tree_copied = Tree(tree.classes, tree.X, tree.y, tree.sample_weight, tree.thresholds, seed)
     if same_seed == 1:
         tree_copied.seeds = tree.seeds
     tree_copied.depth = tree.depth

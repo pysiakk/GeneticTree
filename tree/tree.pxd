@@ -48,7 +48,8 @@ cdef class Tree:
     cdef public DTYPE_t[:, :] thresholds    # Array with possible thresholds for each feature
     cdef public object X                    # Array with observations features (TODO: possibility of sparse array)
     cdef public SIZE_t[:] y                 # Array with classes of observations
-    cdef public DTYPE_t[:] sample_weight          # Array with sample_weight of observations
+    cdef public SIZE_t[:] classes           # Array with unique classes
+    cdef public DTYPE_t[:] sample_weight    # Array with sample_weight of observations
 
     cdef uint64_t seed1
     cdef uint64_t seed2
