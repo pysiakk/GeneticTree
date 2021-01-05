@@ -174,3 +174,18 @@ def test_sample_weight_exception(genetic_tree, X_converted):
     with pytest.raises(ValueError):
         genetic_tree._check_input(X_converted, y, sample_weight, True)
 
+
+# +++++++++++++++
+# Check classes
+# +++++++++++++++
+
+@pytest.mark.parametrize("X, y", [(X, y)])
+def test_fit_tree_with_classes_not_starting_from_0(X, y):
+    y_copied = copy.deepcopy(y)
+    y_copied[y_copied == 2] = 8
+    y_copied[y_copied == 1] = -3
+    gt = GeneticTree(n_trees=20, max_iter=3)
+    gt.fit(X, y_copied)
+    assert set(np.unique(gt.predict(X))).issubset(np.array([-3, 0, 8]))
+
+

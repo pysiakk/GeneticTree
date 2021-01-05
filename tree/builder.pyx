@@ -84,7 +84,7 @@ cdef class FullTreeBuilder(Builder):
                         parent = <SIZE_t> ((current_node_number-2+is_left) / 2)
 
                     if current_depth == initial_depth:
-                        class_number = tree.randint_c(0, tree.n_classes)
+                        class_number = tree.classes[tree.randint_c(0, tree.n_classes)]
                     else:
                         feature = tree.randint_c(0, tree.n_features)
                         threshold = tree.thresholds[tree.randint_c(0, tree.n_thresholds), feature]
@@ -153,7 +153,7 @@ cdef class SplitTreeBuilder(Builder):
                 is_leaf = 1
 
         if is_leaf == 1:
-            class_number = tree.randint_c(0, tree.n_classes)
+            class_number = tree.classes[tree.randint_c(0, tree.n_classes)]
         else:
             feature = tree.randint_c(0, tree.n_features)
             threshold = tree.thresholds[tree.randint_c(0, tree.n_thresholds), feature]
