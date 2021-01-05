@@ -176,7 +176,7 @@ def test_sample_weight_exception(genetic_tree, X_converted):
 
 
 # +++++++++++++++
-# Check classes
+# Classes
 # +++++++++++++++
 
 @pytest.mark.parametrize("X, y", [(X, y)])
@@ -188,4 +188,25 @@ def test_fit_tree_with_classes_not_starting_from_0(X, y):
     gt.fit(X, y_copied)
     assert set(np.unique(gt.predict(X))).issubset(np.array([-3, 0, 8]))
 
+
+# +++++++++++++++
+# Fit with using previous trees
+# +++++++++++++++
+
+def test_usage_of_previous_trees(genetic_tree, X_converted):
+    genetic_tree.fit(X_converted, y)
+    assert genetic_tree._trees is not None
+    genetic_tree.fit(X_converted[:10, :], y[:10])
+    assert genetic_tree._best_tree.X.shape[0] == 10
+    assert genetic_tree._trees[0].X.shape[0] == 10
+
+
+def test_usage_of_previous_best_tree(genetic_tree, X_converted):
+    genetic_tree.set_params(keep_last_population=False)
+    genetic_tree.fit(X_converted, y)
+    assert genetic_tree._trees is None
+    genetic_tree.set_params(keep_last_population=True)
+    genetic_tree.fit(X_converted[:10, :], y[:10])
+    assert genetic_tree._best_tree.X.shape[0] == 10
+    assert genetic_tree._trees[0].X.shape[0] == 10
 

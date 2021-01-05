@@ -87,6 +87,8 @@ cdef class Tree:
     # Prediction functions
     cpdef prepare_tree_to_prediction(self)
     cpdef void remove_variables(self)
+    cpdef void prepare_new_fit(self, object X, SIZE_t[:] y, DTYPE_t[:] sample_weight, DTYPE_t[:, :] thresholds)
+
     cpdef np.ndarray apply(self, object X)
 
 

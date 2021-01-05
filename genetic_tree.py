@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.sparse import issparse
 
 from genetic.initializer import Initializer
 from genetic.initializer import Initialization
@@ -10,7 +11,7 @@ from genetic.evaluator import Evaluator
 from genetic.evaluator import Metric
 from genetic.stopper import Stopper
 from tree.thresholds import prepare_thresholds_array
-from scipy.sparse import issparse
+from tree.tree import Tree
 
 from numpy import float32 as DTYPE
 from numpy import intp as SIZE
@@ -92,7 +93,7 @@ class GeneticTree:
         self._leave_selected_parents = leave_selected_parents
 
         self._trees = None
-        self._best_tree = None
+        self._best_tree: Tree = None
 
         self._n_thresholds = n_thresholds
         self._n_features = None
@@ -137,7 +138,12 @@ class GeneticTree:
         thresholds = prepare_thresholds_array(self._n_thresholds, X)
         if self._trees is None:  # when previously trees was removed
             self._trees = self.initializer.initialize(X, y, sample_weight, thresholds)
-        # TODO if previous trees not removed: add new X, y, sample_weights and X
+            if self._best_tree is not None:
+                self._best_tree.prepare_new_fit(X, y, sample_weight, thresholds)
+                self._trees = self._trees + [self._best_tree]
+        else:
+            for tree in self._trees:
+                tree.prepare_new_fit(X, y, sample_weight, thresholds)
 
     def _growth_trees(self):
         offspring = self._trees

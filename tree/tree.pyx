@@ -491,11 +491,22 @@ cdef class Tree:
                 self.probabilities[node_id, :] = observations_in_class / np.sum(observations_in_class)
 
     cpdef void remove_variables(self):
+        self.observations.remove_observations(self.nodes.elements, 0)
         self.observations = None
         self.X = None
         self.y = None
         self.sample_weight = None
         self.thresholds = None
+
+    cpdef void prepare_new_fit(self, object X, SIZE_t[:] y, DTYPE_t[:] sample_weight, DTYPE_t[:, :] thresholds):
+        if self.observations is not None:
+            self.observations.remove_observations(self.nodes.elements, 0)
+        self.observations = Observations(X, y, sample_weight)
+        self.initialize_observations()
+        self.X = X
+        self.y = y
+        self.sample_weight = sample_weight
+        self.thresholds = thresholds
 
     cpdef np.ndarray apply(self, object X):
         cdef n_observations = X.shape[0]
