@@ -137,6 +137,7 @@ class GeneticTree:
         thresholds = prepare_thresholds_array(self._n_thresholds, X)
         if self._trees is None:  # when previously trees was removed
             self._trees = self.initializer.initialize(X, y, sample_weight, thresholds)
+        # TODO if previous trees not removed: add new X, y, sample_weights and X
 
     def _growth_trees(self):
         offspring = self._trees
@@ -207,9 +208,9 @@ class GeneticTree:
             For each row x (observation) it classify the observation to one
             class and return this class.
         """
-        self._check_is_fitted()
-        X = self._check_X(X, check_input)
-        return self._best_tree.predict(X)
+        node_ids = self.apply(X)
+        classes = self._best_tree.feature
+        return classes[node_ids]
 
     def predict_proba(self, X, check_input=True) -> np.ndarray:
         """
@@ -225,9 +226,9 @@ class GeneticTree:
             For each row x in X (observation) it finds the proper leaf. Then it
             returns the probability of each class based on leaf.
         """
-        self._check_is_fitted()
-        X = self._check_X(X, check_input)
-        return self._best_tree.predict_proba(X)
+        node_ids = self.apply(X)
+        probabilities = self._best_tree.probabilities
+        return probabilities[node_ids, :]
 
     def apply(self, X, check_input=True) -> np.ndarray:
         """

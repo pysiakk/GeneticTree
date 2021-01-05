@@ -32,7 +32,7 @@ def test_score(genetic_tree, X):
     for i in range(n_trees):
         tree: Tree = genetic_tree._trees[i]
         score_sum += tree.proper_classified
-        y_pred = genetic_tree._trees[i].predict(X)
+        y_pred = genetic_tree._trees[i].test_predict(X)
         score_sum_by_prediction += np.sum(y_pred == iris.target)
     # test if prediction works
     assert score_sum == score_sum_by_prediction
@@ -40,7 +40,7 @@ def test_score(genetic_tree, X):
 
 def test_high_level_and_low_level_prediction(genetic_tree, X):
     # test if high level predict returns the same array as tree.predict()
-    assert_array_equal(genetic_tree.predict(X), genetic_tree._best_tree.predict(X))
+    assert_array_equal(genetic_tree.predict(X), genetic_tree._best_tree.test_predict(X))
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 from libc.stdlib cimport free
 from libc.string cimport memcpy
 from libc.stdint cimport SIZE_MAX
+from scipy.sparse import issparse
 
 from tree._utils cimport resize_c, resize, copy_leaves, copy_int_array, safe_realloc
 
@@ -25,8 +26,8 @@ cdef class Observations:
         self.proper_classified = 0
 
         self.X = X
-        cdef DTYPE_t[:, :] X_ndarray = X
-        self.X_ndarray = X_ndarray
+        self.leaf_finder = LeafFinder(X)
+
         self.y = y
         self.sample_weight = sample_weight
 
@@ -141,7 +142,7 @@ cdef class Observations:
         self._resize_empty_leaves_ids()
 
     cdef _assign_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id):
-        cdef node_id = self._find_leaf_for_observation(nodes, y_id, below_node_id)
+        cdef node_id = self.leaf_finder.find_leaf_for_observation(nodes, y_id, below_node_id)
 
         if nodes[node_id].right_child != TREE_LEAF:         # in right child is leaves_id
             self._append_observations(nodes[node_id].right_child, y_id)
@@ -150,20 +151,6 @@ cdef class Observations:
 
         if nodes[node_id].feature == self.y[y_id]:          # feature means class
             self.proper_classified += self.sample_weight[y_id]
-
-    cdef SIZE_t _find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil:
-        cdef SIZE_t current_node_id = below_node_id
-        cdef SIZE_t feature
-        cdef DOUBLE_t threshold
-        with nogil:
-            while nodes[current_node_id].left_child != _TREE_LEAF:
-                feature = nodes[current_node_id].feature
-                threshold = nodes[current_node_id].threshold
-                if self.X_ndarray[y_id, feature] <= threshold:
-                    current_node_id = nodes[current_node_id].left_child
-                else:
-                    current_node_id = nodes[current_node_id].right_child
-        return current_node_id
 
     cdef SIZE_t _append_leaves(self, SIZE_t y_id):
         cdef SIZE_t leaves_id = self._pop_empty_leaves_ids()
@@ -413,3 +400,39 @@ cpdef Observations copy_observations(Observations observations):
     observations_copied.proper_classified = observations.proper_classified
     return observations_copied
 
+
+cdef class LeafFinder:
+    def __cinit__(self, object X):
+        if issparse(X):
+            self.issparse_X = 1
+        else:
+            self.issparse_X = 0
+
+        cdef DTYPE_t[:, :] X_ndarray = X
+        self.X_ndarray = X_ndarray
+
+
+    cdef SIZE_t find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil:
+        if self.issparse_X == 1:
+            return self._find_leaf_for_observation_sparse(nodes, y_id, below_node_id)
+        else:
+            return self._find_leaf_for_observation_dense(nodes, y_id, below_node_id)
+
+    cdef SIZE_t _find_leaf_for_observation_dense(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil:
+        cdef SIZE_t current_node_id = below_node_id
+        cdef SIZE_t feature
+        cdef DOUBLE_t threshold
+        with nogil:
+            while nodes[current_node_id].left_child != _TREE_LEAF:
+                feature = nodes[current_node_id].feature
+                threshold = nodes[current_node_id].threshold
+                if self.X_ndarray[y_id, feature] <= threshold:
+                    current_node_id = nodes[current_node_id].left_child
+                else:
+                    current_node_id = nodes[current_node_id].right_child
+        return current_node_id
+
+    cdef SIZE_t _find_leaf_for_observation_sparse(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil:
+        with gil:
+            raise Exception("Sparse array is not supported yet")
+        pass

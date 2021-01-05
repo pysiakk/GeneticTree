@@ -35,7 +35,7 @@ from libc.stdint cimport SIZE_MAX
 
 from tree._utils cimport safe_realloc
 
-from tree.observations cimport Observations
+from tree.observations cimport Observations, LeafFinder
 from tree.observations import Observations, copy_observations
 
 import numpy as np
@@ -457,23 +457,6 @@ cdef class Tree:
     cpdef initialize_observations(self):
         self.observations.initialize_observations(self)
 
-    # finding proper leaf for observation
-    cdef SIZE_t _find_leaf_for_observation(self, SIZE_t observation_id, DTYPE_t[:, :] X_ndarray,
-                                               SIZE_t node_id_to_start) nogil:
-        cdef DTYPE_t[:] X_row = X_ndarray[observation_id, :]
-        cdef SIZE_t current_node_id = node_id_to_start
-        cdef SIZE_t feature
-        cdef DOUBLE_t threshold
-        with nogil:
-            while self.nodes.elements[current_node_id].left_child != _TREE_LEAF:
-                feature = self.nodes.elements[current_node_id].feature
-                threshold = self.nodes.elements[current_node_id].threshold
-                if X_row[feature] <= threshold:
-                    current_node_id = self.nodes.elements[current_node_id].left_child
-                else:
-                    current_node_id = self.nodes.elements[current_node_id].right_child
-        return current_node_id
-
 # ===========================================================================================================
 # Prediction functions
 # ===========================================================================================================
@@ -514,40 +497,25 @@ cdef class Tree:
         self.sample_weight = None
         self.thresholds = None
 
-    cpdef np.ndarray predict(self, object X):
-        cdef DTYPE_t[:, :] X_ndarray = X
-        cdef n_observations = X_ndarray.shape[0]
-        cdef np.ndarray y = np.empty(n_observations, dtype=np.intp)
-        cdef SIZE_t observation_id
-
-        for observation_id in range(n_observations):
-            node_id = self._find_leaf_for_observation(observation_id, X_ndarray, 0)
-            y[observation_id] = self.nodes.elements[node_id].feature  # feature means class for leaf
-
-        return y
-
-    cpdef np.ndarray predict_proba(self, object X):
-        cdef DTYPE_t[:, :] X_ndarray = X
-        cdef n_observations = X_ndarray.shape[0]
-        y_prob = np.empty([n_observations, self.n_classes], dtype=np.float32)
-        cdef SIZE_t observation_id
-
-        for observation_id in range(n_observations):
-            node_id = self._find_leaf_for_observation(observation_id, X_ndarray, 0)
-            y_prob[observation_id, :] = self.probabilities[node_id, :]
-
-        return y_prob
-
     cpdef np.ndarray apply(self, object X):
-        cdef DTYPE_t[:, :] X_ndarray = X
-        cdef n_observations = X_ndarray.shape[0]
+        cdef n_observations = X.shape[0]
         cdef np.ndarray nodes = np.empty(n_observations, dtype=np.intp)
-        cdef SIZE_t observation_id
+        cdef SIZE_t y_id
+        cdef LeafFinder leaf_finder = LeafFinder(X)
 
-        for observation_id in range(n_observations):
-            nodes[observation_id] = self._find_leaf_for_observation(observation_id, X_ndarray, 0)
+        for y_id in range(n_observations):
+            nodes[y_id] = leaf_finder.find_leaf_for_observation(self.nodes.elements, y_id, 0)
 
         return nodes
+
+    def test_predict(self, object X) -> np.ndarray:
+        classes = self.feature
+        node_ids = self.apply(X)
+        return classes[node_ids]
+
+    def test_predict_proba(self, object X) -> np.ndarray:
+        node_ids = self.apply(X)
+        return self.probabilities[node_ids]
 
 
 cpdef Tree copy_tree(Tree tree, bint same_seed=0):
