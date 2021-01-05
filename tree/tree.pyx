@@ -35,7 +35,7 @@ from libc.stdint cimport SIZE_MAX
 
 from tree._utils cimport safe_realloc
 
-from tree.observations cimport Observations
+from tree.observations cimport Observations, LeafFinder
 from tree.observations import Observations, copy_observations
 
 import numpy as np
@@ -542,11 +542,10 @@ cdef class Tree:
         cdef n_observations = X.shape[0]
         cdef np.ndarray nodes = np.empty(n_observations, dtype=np.intp)
         cdef SIZE_t y_id
-
-        self.observations.initialize_find_leaf(X)
+        cdef LeafFinder leaf_finder = LeafFinder(X)
 
         for y_id in range(n_observations):
-            nodes[y_id] = self.observations.find_leaf_for_observation(self.nodes.elements, y_id, 0)
+            nodes[y_id] = leaf_finder.find_leaf_for_observation(self.nodes.elements, y_id, 0)
 
         return nodes
 
