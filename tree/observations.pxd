@@ -19,7 +19,9 @@ cdef class Observations:
     cdef public SIZE_t n_observations       # Number of observations in X and y
 
     cdef public object X                    # Array with observations features (TODO: possibility of sparse array)
+    cdef bint issparse_X
     cdef DTYPE_t[:, :] X_ndarray
+
     cdef public SIZE_t[:] y                 # Array with classes of observations
     cdef public DTYPE_t[:] sample_weight          # Array with sample_weight of observations
 
@@ -32,6 +34,8 @@ cdef class Observations:
 
     cdef _assign_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id)
     cdef SIZE_t _find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil
+    cdef SIZE_t _find_leaf_for_observation_dense(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil
+    cdef SIZE_t _find_leaf_for_observation_sparse(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil
 
     cdef SIZE_t _append_leaves(self, SIZE_t y_id)        # return leaves_id
     cdef _append_observations(self, SIZE_t leaves_id, SIZE_t y_id)
