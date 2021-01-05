@@ -25,7 +25,7 @@ from tree._utils import test_copy_int_array, test_copy_leaves
 from tree.tree import Tree, copy_tree, test_independence_of_copied_tree
 from tree.thresholds import prepare_thresholds_array
 from tree.observations import Observations, copy_observations
-from tree.builder import Builder, FullTreeBuilder, test_add_node, test_add_leaf
+from tree.builder import full_tree_builder, split_tree_builder, test_add_node, test_add_leaf
 from tree.mutator import mutate_random_node, mutate_random_class_or_threshold
 from tree.mutator import mutate_random_feature, mutate_random_threshold
 from tree.mutator import mutate_random_class

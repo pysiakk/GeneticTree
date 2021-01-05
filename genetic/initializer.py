@@ -1,9 +1,8 @@
 from aenum import Enum, extend_enum
-from tree.builder import Builder, FullTreeBuilder, SplitTreeBuilder
+from tree.builder import full_tree_builder, split_tree_builder
 from tree.tree import Tree
 import numpy as np
 import warnings
-
 
 def initialize_full(X, y, sample_weight, thresholds, initializer):
     """
@@ -23,7 +22,7 @@ def initialize_full(X, y, sample_weight, thresholds, initializer):
     for tree_index in range(initializer.n_trees):
         tree: Tree = Tree(classes, X, y, sample_weight, thresholds, np.random.randint(10 ** 8))
         tree.resize_by_initial_depth(initializer.initial_depth)
-        initializer.builder.build(tree, initializer.initial_depth)
+        full_tree_builder(tree, initializer.initial_depth)
         tree.initialize_observations()
         trees.append(tree)
     return trees
@@ -48,7 +47,7 @@ def initialize_half(X, y, sample_weight, thresholds, initializer):
         if tree_index % 2 == 0:
             tree: Tree = Tree(classes, X, y, sample_weight, thresholds, np.random.randint(10 ** 8))
             tree.resize_by_initial_depth(initializer.initial_depth)
-            initializer.builder.build(tree, initializer.initial_depth)
+            full_tree_builder(tree, initializer.initial_depth)
             tree.initialize_observations()
             trees.append(tree)
         else:
@@ -58,7 +57,7 @@ def initialize_half(X, y, sample_weight, thresholds, initializer):
                 depth = initializer.initial_depth
             tree: Tree = Tree(classes, X, y, sample_weight, thresholds, np.random.randint(10 ** 8))
             tree.resize_by_initial_depth(depth)
-            initializer.builder.build(tree, depth)
+            full_tree_builder(tree, depth)
             tree.initialize_observations()
             trees.append(tree)
     return trees
@@ -82,7 +81,7 @@ def initialize_split(X, y, sample_weight, thresholds, initializer):
     for tree_index in range(initializer.n_trees):
         tree: Tree = Tree(classes, X, y, sample_weight, thresholds, np.random.randint(10 ** 8))
         tree.resize_by_initial_depth(initializer.initial_depth)
-        initializer.builder.build(tree, initializer.initial_depth, initializer.split_prob)
+        split_tree_builder(tree, initializer.initial_depth, initializer.split_prob)
         tree.initialize_observations()
         trees.append(tree)
     return trees
@@ -139,7 +138,6 @@ class Initializer:
         self.initial_depth: int = self._check_initial_depth(initial_depth)
         self.initialization: Initialization = self._check_initialization(initialization)
         self.split_prob: float = self._check_split_prob(split_prob)
-        self.builder: Builder = self.initialize_builder()
 
     @staticmethod
     def _check_initialization(initialization):
@@ -172,17 +170,6 @@ class Initializer:
                           f"Split prob should have value between 0 and 1")
             split_prob = 1
         return split_prob
-
-    def initialize_builder(self):
-        """
-        Returns:
-            Builder: cython builder to initialize new trees
-        """
-        if self.initialization == Initialization.Full \
-                or self.initialization == Initialization.Half:
-            return FullTreeBuilder()
-        elif self.initialization == Initialization.Split:
-            return SplitTreeBuilder()
 
     def set_params(self, initial_depth: int = None,
                    initialization: Initialization = None,
