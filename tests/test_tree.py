@@ -2,11 +2,10 @@ from tests.utils_testing import *
 
 
 def test_builder_tree_size():
-    builder: FullTreeBuilder = FullTreeBuilder()
     for initial_depth in range(5, 0, -1):
         tree: Tree = initialize_iris_tree()
         tree.resize_by_initial_depth(initial_depth)
-        builder.build(tree, initial_depth)
+        full_tree_builder(tree, initial_depth)
         assert tree.node_count == tree.feature.shape[0] == tree.threshold.shape[0] == 2 ** (initial_depth+1) - 1
 
 

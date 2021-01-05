@@ -77,12 +77,11 @@ def initialize_iris_tree():
 
 
 def build_trees(depth: int = 1, n_trees: int = 10):
-    builder: FullTreeBuilder = FullTreeBuilder()
     trees = []
     for i in range(n_trees):
         tree: Tree = initialize_iris_tree()
         tree.resize_by_initial_depth(depth)
-        builder.build(tree, depth)
+        full_tree_builder(tree, depth)
         tree.initialize_observations()
         trees.append(tree)
     return trees
