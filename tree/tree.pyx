@@ -539,8 +539,7 @@ cdef class Tree:
         return y_prob
 
     cpdef np.ndarray apply(self, object X):
-        cdef DTYPE_t[:, :] X_ndarray = X
-        cdef n_observations = X_ndarray.shape[0]
+        cdef n_observations = X.shape[0]
         cdef np.ndarray nodes = np.empty(n_observations, dtype=np.intp)
         cdef SIZE_t y_id
 
