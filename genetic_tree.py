@@ -210,7 +210,9 @@ class GeneticTree:
         """
         self._check_is_fitted()
         X = self._check_X(X, check_input)
-        return self._best_tree.predict(X)
+        node_ids = self._best_tree.apply(X)
+        classes = self._best_tree.feature
+        return classes[node_ids]
 
     def predict_proba(self, X, check_input=True) -> np.ndarray:
         """
