@@ -25,6 +25,8 @@ cdef class Observations:
     cdef public SIZE_t[:] y                 # Array with classes of observations
     cdef public DTYPE_t[:] sample_weight          # Array with sample_weight of observations
 
+    cdef initialize_find_leaf(self, object X)
+
     cdef void initialize_observations(self, Tree tree)
 
     cdef void remove_observations(self, Node* nodes, SIZE_t below_node_id)

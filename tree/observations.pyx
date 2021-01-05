@@ -26,14 +26,7 @@ cdef class Observations:
         self.proper_classified = 0
 
         self.X = X
-
-        if issparse(X):
-            self.issparse_X = 1
-        else:
-            self.issparse_X = 0
-
-        cdef DTYPE_t[:, :] X_ndarray = X
-        self.X_ndarray = X_ndarray
+        self.initialize_find_leaf(X)
 
         self.y = y
         self.sample_weight = sample_weight
@@ -107,6 +100,15 @@ cdef class Observations:
         #                      'cannot be imported')
 
         # TODO: add unpickling of leaves and empty_leaves_ids
+
+    cdef initialize_find_leaf(self, object X):
+        if issparse(X):
+            self.issparse_X = 1
+        else:
+            self.issparse_X = 0
+
+        cdef DTYPE_t[:, :] X_ndarray = X
+        self.X_ndarray = X_ndarray
 
     cdef void initialize_observations(self, Tree tree):
         cdef SIZE_t y_id
