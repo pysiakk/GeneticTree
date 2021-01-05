@@ -208,9 +208,7 @@ class GeneticTree:
             For each row x (observation) it classify the observation to one
             class and return this class.
         """
-        self._check_is_fitted()
-        X = self._check_X(X, check_input)
-        node_ids = self._best_tree.apply(X)
+        node_ids = self.apply(X)
         classes = self._best_tree.feature
         return classes[node_ids]
 
@@ -228,9 +226,7 @@ class GeneticTree:
             For each row x in X (observation) it finds the proper leaf. Then it
             returns the probability of each class based on leaf.
         """
-        self._check_is_fitted()
-        X = self._check_X(X, check_input)
-        node_ids = self._best_tree.apply(X)
+        node_ids = self.apply(X)
         probabilities = self._best_tree.probabilities
         return probabilities[node_ids, :]
 
