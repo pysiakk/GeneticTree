@@ -175,6 +175,16 @@ def test_sample_weight_exception(genetic_tree, X_converted):
         genetic_tree._check_input(X_converted, y, sample_weight, True)
 
 
+def test_check_classes(genetic_tree, X_converted):
+    assert genetic_tree._classes is None
+    genetic_tree._check_input(X_converted, y, None, True)
+    assert_array_equal(genetic_tree._classes, np.array([0, 1, 2]))
+    y_copy = copy.copy(y)
+    y_copy[y_copy == 1] = 3
+    with pytest.raises(ValueError):
+        genetic_tree._check_input(X_converted, y_copy, None, True)
+
+
 # +++++++++++++++
 # Classes
 # +++++++++++++++

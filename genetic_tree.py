@@ -95,8 +95,10 @@ class GeneticTree:
         self._trees = None
         self._best_tree: Tree = None
 
-        self._n_thresholds = n_thresholds
         self._n_features = None
+        self._classes = None
+
+        self._n_thresholds = n_thresholds
         self._can_predict = False
 
     @staticmethod
@@ -290,6 +292,15 @@ class GeneticTree:
             raise ValueError(f"X and y should have the same number of "
                              f"observations. X have {X.shape[0]} observations "
                              f"and y have {y.shape[0]} observations.")
+
+        classes = np.unique(y)
+        if self._classes is None:
+            self._classes = classes
+        elif not set(classes).issubset(set(self._classes)):
+            raise ValueError(f"Classes put in following fit method must be the "
+                             f"subset of classes saved in model. Model classes "
+                             f"are {self._classes} and input classes are "
+                             f"{classes}.")
 
         return X, y, sample_weight
 
