@@ -12,7 +12,7 @@ The created trees should have smaller sizes with comparable accuracy to the tree
 Project is currently in development (before first version).
 The first working official version should be developed in the January 2021 (with documentation and installation by pip).
 
-## Licence
+## License
 
 High-level interface of package is inspired by sklearn (https://github.com/scikit-learn/scikit-learn).
 Especially there are methods like: fit(), predict(), predict_proba(), apply(), set_params(), check_X(), check_input() which are inspired and / or copied from sklearn.
