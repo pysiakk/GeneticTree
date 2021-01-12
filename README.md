@@ -1,3 +1,6 @@
+![example workflow name](https://github.com/pysiakk/GeneticTree/workflows/GeneticTree/badge.svg)
+![codecov.io](https://codecov.io/github/pysiakk/GeneticTree/coverage.svg?branch=master)
+
 # Genetic Tree
 
 The main objective of the package is to allow creating decision trees that are better in some aspects than trees made by greedy algorithms.
