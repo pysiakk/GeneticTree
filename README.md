@@ -1,5 +1,8 @@
+[![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
+
 ![example workflow name](https://github.com/pysiakk/GeneticTree/workflows/GeneticTree/badge.svg)
 ![codecov.io](https://codecov.io/github/pysiakk/GeneticTree/coverage.svg?branch=master)
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/pysiakk/GeneticTree/blob/master/LICENSE)
 
 # Genetic Tree
 
