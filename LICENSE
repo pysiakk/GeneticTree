@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2020 Karol Pysiak
+Copyright (c) 2020-2021 Karol Pysiak & Tomasz Makowski
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Remark:
+
+Package is based on sklearn with BSD-3-Clause License.
+
+High-level interface of package is inspired by sklearn (https://github.com/scikit-learn/scikit-learn).
+Especially there are methods like: fit(), predict(), predict_proba(), apply(), set_params(), check_X(), check_input() which are inspired and / or copied from sklearn.
+
+A low-level interface is inspired by sklearn decision_tree. The structure of tree (tree/tree.pyx) and some utils (tree/\_utils.pyx) were copied from sklearn tree (https://github.com/scikit-learn/scikit-learn/tree/master/sklearn/tree).
