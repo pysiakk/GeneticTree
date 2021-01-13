@@ -147,9 +147,12 @@ def test_append_metrics(X_converted):
 
 def test_append_metrics_more_iterations(X_converted):
     genetic_tree = GeneticTree(n_trees=10, max_iter=1, keep_last_population=True, remove_variables=False)
+    genetic_tree.fit(X_converted, y)
+    assert_last_metric(genetic_tree)
     for i in range(10):
-        genetic_tree.fit(X_converted, y)
+        genetic_tree.partial_fit(X_converted, y)
         assert_last_metric(genetic_tree)
+        assert len(genetic_tree.acc_best) == i*2+4
 
 
 # +++++++++++++++

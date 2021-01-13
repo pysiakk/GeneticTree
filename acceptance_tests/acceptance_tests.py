@@ -44,4 +44,4 @@ def test_train_model_many_times():
         weights = np.ones(150)
         print(f"Score: {np.sum(gt.predict(X) == y)}")
         weights[gt.predict(X) != y] += 0.5
-        gt.fit(X, y, sample_weight=weights)
+        gt.partial_fit(X, y, sample_weight=weights)

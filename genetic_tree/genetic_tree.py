@@ -127,20 +127,56 @@ class GeneticTree:
             self._remove_variables = remove_variables
 
     def fit(self, X, y, *args, sample_weight: np.array = None, check_input: bool = True, **kwargs):
+        """
+        Function to fit the model with dataset X and proper classes y
+
+        Args:
+            X: dataset to train model on as matrix of shape [n_observations x n_features]
+            y: proper class of each observation as vector of shape [n_observations]
+            sample_weight: a weight of each observation or None (meaning each observation have the same weight)
+            check_input: if should check the input (only set to False use when you know what you does)
+            kwargs: additional arguments to set as params
+
+        Returns:
+            GeneticTree: a classifier itself (self object)
+        """
+        self._fit(X, y, sample_weight, check_input, False, **kwargs)
+        return self
+
+    def partial_fit(self, X, y, *args, sample_weight: np.array = None, check_input: bool = True, **kwargs):
+        """
+        Function to partial fit the model with dataset X and proper classes y.
+        Partial fit means that the old model will be continued training instead
+        of train new model.
+
+        Args:
+            X: dataset to train model on as matrix of shape [n_observations x n_features]
+            y: proper class of each observation as vector of shape [n_observations]
+            sample_weight: a weight of each observation or None (meaning each observation have the same weight)
+            check_input: if should check the input (only set to False use when you know what you does)
+            kwargs: additional arguments to set as params
+
+        Returns:
+            GeneticTree: a classifier itself (self object)
+        """
+        self._fit(X, y, sample_weight, check_input, True, **kwargs)
+        return self
+
+    def _fit(self, X, y, sample_weight: np.array = None, check_input: bool = True, partial_fit: bool = False, **kwargs):
         self._can_predict = False
         self.set_params(**kwargs)
         X, y, sample_weight = self._check_input(X, y, sample_weight, check_input)
-        self._prepare_new_training(X, y, sample_weight)
+        self._prepare_new_training(X, y, sample_weight, partial_fit)
         self._growth_trees()
         self._prepare_to_predict()
 
-    def _prepare_new_training(self, X, y, sample_weight):
+    def _prepare_new_training(self, X, y, sample_weight, partial_fit):
         self.stopper.reset_private_variables()
 
         thresholds = prepare_thresholds_array(self._n_thresholds, X)
-        if self._trees is None:  # when previously trees was removed
+        if self._trees is None or not partial_fit:  # when previously trees was removed
             self._trees = self.initializer.initialize(X, y, sample_weight, thresholds)
-            if self._best_tree is not None:
+            if self._best_tree is not None and partial_fit:
                 self._best_tree.prepare_new_fit(X, y, sample_weight, thresholds)
                 self._trees = self._trees + [self._best_tree]
         else:
