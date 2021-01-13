@@ -35,3 +35,13 @@ def test_get_best_params():
     assert len(accuracy_best) == len(cross_prob)
     best_accuracy_id = np.argmax(np.array(accuracy_best))
     print(f"Best accuracy is for cross prob: {cross_prob[best_accuracy_id]}")
+
+
+def test_train_model_many_times():
+    gt = GeneticTree(max_iter=10)
+    gt.fit(X, y)
+    for i in range(10):
+        weights = np.ones(150)
+        print(f"Score: {np.sum(gt.predict(X) == y)}")
+        weights[gt.predict(X) != y] += 0.5
+        gt.fit(X, y, sample_weight=weights)
