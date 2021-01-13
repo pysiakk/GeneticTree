@@ -38,7 +38,7 @@ def test_get_best_params():
 
 
 def test_train_model_many_times():
-    gt = GeneticTree(max_iter=10)
+    gt = GeneticTree(max_iter=10, keep_last_population=True)
     gt.fit(X, y)
     for i in range(10):
         weights = np.ones(150)

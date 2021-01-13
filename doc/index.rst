@@ -9,6 +9,7 @@ Welcome to Genetic Tree's documentation!
 To get started first see :doc:`Installation guide </installation>`.
 To better know how to use package see :doc:`Usage examples </examples>`.
 If you want you can see :doc:`API documentation </api/api>`.
+The source of project is on `github <https://github.com/pysiakk/GeneticTree>`_.
 
 .. toctree::
    :maxdepth: 2
@@ -17,7 +18,6 @@ If you want you can see :doc:`API documentation </api/api>`.
    Installation guide <installation.rst>
    Usage examples <examples.rst>
    API Documentation <api/api.rst>
-
 
 Indices and tables
 ==================
