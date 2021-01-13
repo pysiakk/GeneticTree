@@ -24,3 +24,14 @@ def test_train_then_predict_proba():
     for i in range(y_pred.shape[0]):
         assert_almost_equal(np.sum(y_pred[i]), 1)
 
+
+def test_get_best_params():
+    cross_prob = [0.2, 0.4, 0.6, 0.8]
+    accuracy_best = []
+    for i in range(len(cross_prob)):
+        gt = GeneticTree(max_iter=10, cross_prob=cross_prob[i])
+        gt.fit(X, y)
+        accuracy_best.append(gt.acc_best[-1])
+    assert len(accuracy_best) == len(cross_prob)
+    best_accuracy_id = np.argmax(np.array(accuracy_best))
+    print(f"Best accuracy is for cross prob: {cross_prob[best_accuracy_id]}")
