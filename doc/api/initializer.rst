@@ -3,11 +3,8 @@
 Initializer
 ===========
 
-.. autoclass:: genetic.initializer.Initializer
+.. autoclass:: genetic_tree.genetic.initializer.Initializer
    :members:
 
-.. autoclass:: tree.builder.Builder
-   :members:
-
-.. autoclass:: tree.builder.FullTreeBuilder
+.. autoclass:: genetic_tree.genetic.initializer.Initialization
    :members:
