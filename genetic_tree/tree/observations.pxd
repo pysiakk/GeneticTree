@@ -6,9 +6,9 @@ ctypedef np.npy_float64 DOUBLE_t        # Type of thresholds
 ctypedef np.npy_float32 DTYPE_t         # Type of X
 ctypedef np.npy_intp SIZE_t             # Type for indices and counters
 
-from tree._utils cimport IntArray, Leaves, Node
-from tree.tree cimport Tree
-from tree.tree import Tree
+from ._utils cimport IntArray, Leaves, Node
+from .tree cimport Tree
+from .tree import Tree
 
 cdef class Observations:
     cdef Leaves* leaves

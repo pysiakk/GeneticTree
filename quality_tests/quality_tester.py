@@ -1,9 +1,9 @@
-from genetic_tree import GeneticTree
+from genetic_tree.genetic_tree import GeneticTree
 import pandas as pd
 import numpy as np
-from genetic.initializer import Initialization
-from genetic.selector import Selection
-from genetic.evaluator import Metric
+from genetic_tree.genetic.initializer import Initialization
+from genetic_tree.genetic.selector import Selection
+from genetic_tree.genetic.evaluator import Metric
 import json
 import mnist
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder

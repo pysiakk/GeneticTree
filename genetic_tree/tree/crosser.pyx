@@ -1,7 +1,5 @@
-# cython: linetrace=True
-
-from tree.tree cimport Tree, Node, copy_tree
-from tree._utils cimport Stack, StackRecord
+from .tree cimport Tree, Node, copy_tree
+from ._utils cimport Stack, StackRecord
 
 from libc.stdlib cimport free
 from libc.stdlib cimport malloc

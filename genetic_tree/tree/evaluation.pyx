@@ -1,6 +1,4 @@
-# cython: linetrace=True
-
-from tree.tree cimport Tree
+from .tree cimport Tree
 
 import numpy as np
 cimport numpy as np

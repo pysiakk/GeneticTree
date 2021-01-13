@@ -2,7 +2,7 @@ import numpy as np
 import warnings
 
 from aenum import Enum, extend_enum
-from tree.tree import copy_tree
+from ..tree.tree import copy_tree
 
 
 def metrics_greater_than_zero(metrics: np.array) -> np.array:

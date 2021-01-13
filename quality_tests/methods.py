@@ -1,6 +1,6 @@
 import copy
 import numpy as np
-from genetic_tree import GeneticTree
+from genetic_tree.genetic_tree import GeneticTree
 from sklearn import datasets
 
 iris = datasets.load_iris()

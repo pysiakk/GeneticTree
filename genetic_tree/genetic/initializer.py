@@ -1,6 +1,6 @@
 from aenum import Enum, extend_enum
-from tree.builder import full_tree_builder, split_tree_builder
-from tree.tree import Tree
+from ..tree.builder import full_tree_builder, split_tree_builder
+from ..tree.tree import Tree
 import numpy as np
 import warnings
 

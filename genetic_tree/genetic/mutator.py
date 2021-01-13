@@ -1,11 +1,11 @@
-from tree.tree import Tree, copy_tree
+from ..tree.tree import Tree, copy_tree
 import math
 import numpy as np
 
 from aenum import Enum, extend_enum
-from tree.mutator import mutate_random_node, mutate_random_class_or_threshold
-from tree.mutator import mutate_random_feature, mutate_random_threshold
-from tree.mutator import mutate_random_class
+from ..tree.mutator import mutate_random_node, mutate_random_class_or_threshold
+from ..tree.mutator import mutate_random_feature, mutate_random_threshold
+from ..tree.mutator import mutate_random_class
 
 
 class Mutation(Enum):

@@ -1,9 +1,8 @@
 from libc.stdlib cimport free
-from libc.string cimport memcpy
 from libc.stdint cimport SIZE_MAX
 from scipy.sparse import issparse
 
-from tree._utils cimport resize_c, resize, copy_leaves, copy_int_array, safe_realloc
+from ._utils cimport resize_c, resize, copy_leaves, copy_int_array, safe_realloc
 
 import numpy as np
 cimport numpy as np

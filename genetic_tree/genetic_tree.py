@@ -1,17 +1,17 @@
 import numpy as np
 from scipy.sparse import issparse
 
-from genetic.initializer import Initializer
-from genetic.initializer import Initialization
-from genetic.mutator import Mutator
-from genetic.crosser import Crosser
-from genetic.selector import Selector
-from genetic.selector import Selection
-from genetic.evaluator import Evaluator
-from genetic.evaluator import Metric
-from genetic.stopper import Stopper
-from tree.thresholds import prepare_thresholds_array
-from tree.tree import Tree
+from .genetic.initializer import Initializer
+from .genetic.initializer import Initialization
+from .genetic.mutator import Mutator
+from .genetic.crosser import Crosser
+from .genetic.selector import Selector
+from .genetic.selector import Selection
+from .genetic.evaluator import Evaluator
+from .genetic.evaluator import Metric
+from .genetic.stopper import Stopper
+from .tree.thresholds import prepare_thresholds_array
+from .tree.tree import Tree
 
 from numpy import float32 as DTYPE
 from numpy import intp as SIZE
