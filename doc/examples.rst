@@ -13,6 +13,7 @@ In this example we only set mutation_prob
 
 .. code-block:: python
 
+    from genetic_tree import GeneticTree
     gt = GeneticTree(mutation_prob=0.3)
 
 Then we can fit a model with dataset X and vector of proper classes y (both numpy array).
