@@ -139,3 +139,6 @@ sklearn_tree/
 
 # Documentation builds
 doc/_build
+
+# Package build
+cythonize.json
