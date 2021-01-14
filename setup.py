@@ -134,7 +134,7 @@ def setup_package():
             url="https://github.com/pysiakk/GeneticTree",
             include_dirs=[numpy.get_include()],
             packages=PACKAGES,
-            version="0.1.1",
+            version="0.1.0",
             ext_modules=ext_modules,
             cmdclass={"build_ext": build_ext_subclass},
             python_requires='>=3.6',
