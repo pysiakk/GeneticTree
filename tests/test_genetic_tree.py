@@ -48,6 +48,10 @@ def test_none_argument():
         GeneticTree(n_trees=None)
 
 
+def test_verbose(genetic_tree):
+    genetic_tree.set_params(verbose=1).fit(X, y)
+
+
 @pytest.fixture
 def genetic_tree() -> GeneticTree:
     genetic_tree = GeneticTree(n_trees=10, max_iter=3, keep_last_population=True, remove_variables=False)

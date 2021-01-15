@@ -87,9 +87,9 @@ class GeneticTree:
                  save_metrics: bool = True,
                  keep_last_population: bool = False,
                  remove_variables: bool = True,
+                 verbose: int = 0,
 
                  # TODO: params not used yet:
-                 verbose: bool = True,
                  n_jobs: int = -1,
                  max_depth: int = 20,
                  **kwargs
@@ -126,6 +126,7 @@ class GeneticTree:
         self._keep_last_population = keep_last_population
         self._remove_variables = remove_variables
         self._leave_selected_parents = leave_selected_parents
+        self._verbose = verbose
 
         self._trees = None
         self._best_tree: Tree = None
@@ -165,6 +166,12 @@ class GeneticTree:
             self._keep_last_population = kwargs["keep_last_population"]
         if kwargs.__contains__("remove_variables"):
             self._remove_variables = kwargs["remove_variables"]
+        if kwargs.__contains__("leave_selected_parents"):
+            self._leave_selected_parents = kwargs["leave_selected_parents"]
+        if kwargs.__contains__("verbose"):
+            self._verbose = kwargs["verbose"]
+        if kwargs.__contains__("random_state"):
+            np.random.seed(kwargs["random_state"])
 
         return self
 
@@ -250,6 +257,7 @@ class GeneticTree:
 
             trees_metrics = self.evaluator.evaluate(offspring)
             self._append_metrics(offspring)
+            self._print_algorithm_info(offspring)
 
         self._trees = offspring
 
@@ -284,6 +292,13 @@ class GeneticTree:
             metrics = self.evaluator.evaluate(trees)
             self.metric_best.append(metrics[best_tree_index])
             self.metric_mean.append(np.mean(metrics))
+
+    def _print_algorithm_info(self, trees):
+        if self._verbose >= 1:
+            accuracies = self.evaluator.get_accuracies(trees)
+            print(f"Ended iteration {self.stopper.current_iteration-1} "
+                  f"with mean accuracy {np.mean(accuracies):0.04f} "
+                  f"and best accuracy {np.max(accuracies):0.04f}")
 
     def predict(self, X, check_input=True) -> np.ndarray:
         """
