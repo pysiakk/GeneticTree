@@ -62,6 +62,7 @@ cpdef Observations copy_observations(Observations observations)
 cdef class LeafFinder:
     cdef bint issparse_X
     cdef DTYPE_t[:, :] X_ndarray
+    cdef object X
 
     cdef SIZE_t find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil
     cdef SIZE_t _find_leaf_for_observation_dense(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil
