@@ -96,26 +96,24 @@ def test_copy_leaves_():
 # LeafFinder
 # ==============================================================================
 
+@pytest.fixture
+def X_sparse(X_converted):
+    return dok_matrix(X_converted).tocsr()
+
+
 def test_find_leaf_dense(X_converted, tree):
     leaf_finder = LeafFinder(X_converted)
     leaf_finder.test_find_leaf_dense(tree)
 
 
-def test_find_leaf_sparse(X_converted, tree):
-    X_sparse = dok_matrix(X_converted).tocsr()
-    # from scipy.sparse import csr_matrix
-    # X_sparse = csr_matrix(([7, 8, 6, 9, 7, 8], ([0, 1, 1, 2, 3, 5], [1, 2, 3, 4, 1, 6])), shape=(7, 7))
-    # X_sparse.indices
-    # X_sparse.data
-    # X_sparse.indptr
+def test_find_leaf_sparse(X_sparse, tree):
     leaf_finder = LeafFinder(X_sparse)
     leaf_finder.test_find_leaf_sparse(tree)
 
 
-def test_find_leaf_sparse_and_dense_equal(X_converted, tree):
+def test_find_leaf_sparse_and_dense_equal(X_converted, X_sparse, tree):
     leaf_finder = LeafFinder(X_converted)
     y_dense = leaf_finder.test_find_leaves(tree)
-    X_sparse = dok_matrix(X_converted).tocsr()
     leaf_finder = LeafFinder(X_sparse)
     y_sparse = leaf_finder.test_find_leaves(tree)
     assert_array_equal(y_dense, y_sparse)
