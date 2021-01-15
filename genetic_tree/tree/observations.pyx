@@ -402,13 +402,14 @@ cpdef Observations copy_observations(Observations observations):
 
 cdef class LeafFinder:
     def __cinit__(self, object X):
+        cdef DTYPE_t[:, :] X_ndarray
         if issparse(X):
             self.issparse_X = 1
+            self.X = X
         else:
             self.issparse_X = 0
-
-        cdef DTYPE_t[:, :] X_ndarray = X
-        self.X_ndarray = X_ndarray
+            X_ndarray = X
+            self.X_ndarray = X_ndarray
 
 
     cdef SIZE_t find_leaf_for_observation(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil:
@@ -432,6 +433,41 @@ cdef class LeafFinder:
         return current_node_id
 
     cdef SIZE_t _find_leaf_for_observation_sparse(self, Node* nodes, SIZE_t y_id, SIZE_t below_node_id) nogil:
+        cdef SIZE_t current_node_id = below_node_id
+        cdef SIZE_t feature
+        cdef DOUBLE_t threshold
+        cdef DTYPE_t[:] X_row
         with gil:
-            raise Exception("Sparse array is not supported yet")
-        pass
+             X_row = self.X[y_id, :].toarray()[0]
+        with nogil:
+            while nodes[current_node_id].left_child != _TREE_LEAF:
+                feature = nodes[current_node_id].feature
+                threshold = nodes[current_node_id].threshold
+                if X_row[feature] <= threshold:
+                    current_node_id = nodes[current_node_id].left_child
+                else:
+                    current_node_id = nodes[current_node_id].right_child
+        return current_node_id
+
+    def test_find_leaf_dense(self, Tree tree):
+        for i in range(self.X_ndarray.shape[0]):
+            node_id1 = self._find_leaf_for_observation_dense(tree.nodes.elements, i, 0)
+            node_id2 = self.find_leaf_for_observation(tree.nodes.elements, i, 0)
+            assert node_id1 == node_id2
+
+    def test_find_leaf_sparse(self, Tree tree):
+        for i in range(self.X.shape[0]):
+            node_id1 = self._find_leaf_for_observation_sparse(tree.nodes.elements, i, 0)
+            node_id2 = self.find_leaf_for_observation(tree.nodes.elements, i, 0)
+            assert node_id1 == node_id2
+
+    def test_find_leaves(self, Tree tree):
+        if self.issparse_X:
+            shape = self.X.shape[0]
+        else:
+            shape = self.X_ndarray.shape[0]
+        y = np.empty(shape)
+        for i in range(shape):
+            node_id = self.find_leaf_for_observation(tree.nodes.elements, i, 0)
+            y[i] = node_id
+        return y

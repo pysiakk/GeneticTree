@@ -2,6 +2,7 @@
 import copy
 import io
 import numpy as np
+from scipy.sparse import dok_matrix
 import pickle
 import psutil
 import pytest
@@ -24,7 +25,7 @@ from sklearn.utils._testing import ignore_warnings
 from genetic_tree.tree._utils import test_copy_int_array, test_copy_leaves
 from genetic_tree.tree.tree import Tree, copy_tree, test_independence_of_copied_tree
 from genetic_tree.tree.thresholds import prepare_thresholds_array
-from genetic_tree.tree.observations import Observations, copy_observations
+from genetic_tree.tree.observations import Observations, copy_observations, LeafFinder
 from genetic_tree.tree.builder import full_tree_builder, split_tree_builder, test_add_node, test_add_leaf
 from genetic_tree.tree.mutator import mutate_random_node, mutate_random_class_or_threshold
 from genetic_tree.tree.mutator import mutate_random_feature, mutate_random_threshold
