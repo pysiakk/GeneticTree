@@ -45,7 +45,7 @@ from genetic.selector import get_selected_indices_by_rank_selection
 from genetic.selector import get_selected_indices_by_tournament_selection
 from genetic.selector import get_selected_indices_by_roulette_selection
 from genetic.selector import get_selected_indices_by_stochastic_uniform_selection
-from genetic.stopper import Stopper
+from genetic.stop_condition import StopCondition
 
 # package interface
 from genetic_tree import GeneticTree
