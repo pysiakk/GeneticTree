@@ -6,7 +6,7 @@ import numpy as np
 
 
 def fig_to_file(name):
-    file = open("quality_tests/" + name + ".json", "r")
+    file = open("quality_tests/results/" + name + ".json", "r")
     data = json.load(file)
 
     leaves = []
@@ -35,21 +35,21 @@ def fig_to_file(name):
     df = pd.DataFrame({iter_over: keys, "n_leaves_mean": leaves, "depth_mean": depth, "generation": gen, "acc_best": acc})
     df.set_index('generation', inplace=True)
     df.groupby(iter_over)["n_leaves_mean"].plot(logy=True)
-    plt.ylabel("n_leaves_mean")
+    plt.ylabel("mean n_leaves_mean")
     plt.legend(bbox_to_anchor=(1, 1), loc="upper left", title=iter_over)
     plt.savefig("quality_tests/images/" + name + "_n_leaves_mean.png", bbox_inches='tight')
     plt.clf()
     df = pd.DataFrame({iter_over: keys, "n_leaves_mean": leaves, "depth_mean": depth, "generation": gen, "acc_best": acc})
     df.set_index('generation', inplace=True)
     df.groupby(iter_over)["depth_mean"].plot(logy=False)
-    plt.ylabel("depth_mean")
+    plt.ylabel("mean depth_mean")
     plt.legend(bbox_to_anchor=(1, 1), loc="upper left", title=iter_over)
     plt.savefig("quality_tests/images/" + name + "_depth_mean.png", bbox_inches='tight')
     plt.clf()
     df = pd.DataFrame({iter_over: keys, "n_leaves_mean": leaves, "depth_mean": depth, "generation": gen, "acc_best": acc})
     df.set_index('generation', inplace=True)
     df.groupby(iter_over)["acc_best"].plot(logy=False)
-    plt.ylabel("acc_best")
+    plt.ylabel("mean accuracy_best")
     plt.legend(bbox_to_anchor=(1, 1), loc="upper left", title=iter_over)
     plt.savefig("quality_tests/images/" + name + "_acc_best.png", bbox_inches='tight')
     plt.clf()
