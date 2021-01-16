@@ -1,5 +1,4 @@
-from tests.utils_testing import *
-
+from genetic.stopper import Stopper
 
 def test_stop_max_false():
     stop = Stopper()

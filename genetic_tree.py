@@ -151,6 +151,7 @@ class GeneticTree:
         self._append_metrics(offspring)
 
         while not self.stopper.stop(trees_metrics):
+            # print(self.n_leaves_mean[len(self.n_leaves_mean)-1])
             elite = self.selector.get_elite_population(offspring, trees_metrics)
             selected_parents = self.selector.select(offspring, trees_metrics)
             mutated_population = self.mutator.mutate(selected_parents)

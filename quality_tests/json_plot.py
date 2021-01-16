@@ -57,73 +57,74 @@ def fig_to_file(name):
 names = ["cross_prob_1", "depth_factor_1", "elitism_1", "initial_depth_1", "initialization_1", "metrics_1", "mut_prob_1",
          "n_leaves_factor_1", "n_thresholds_1", "n_trees_1", "selection_1", "tournament_size_1"]
 
-for name in names:
-    fig_to_file(name)
+# for name in names:
+#     fig_to_file(name)
 
 
-#
+fig_to_file("plants_test_4")
+
 # acc = pd.DataFrame([
-#     ["GeneticTree", "diabetes", 0.7615],
+#     ["GeneticTree", "diabetes", 0.7431],
 #     ["DecisionTree", "diabetes", 0.7431],
 #     ["RandomForest", "diabetes", 0.7706],
-#     ["GeneticTree", "ozone", 0.9254],
+#     ["GeneticTree", "ozone", 0.9309],
 #     ["DecisionTree", "ozone", 0.8785],
 #     ["RandomForest", "ozone", 0.9365],
-#     ["GeneticTree", "banknote", 1.0],
+#     ["GeneticTree", "banknote", 0.9898],
 #     ["DecisionTree", "banknote", 0.9949],
 #     ["RandomForest", "banknote", 1.0],
-#     ["GeneticTree", "plants", 0.1272],
+#     ["GeneticTree", "plants", 0.1622],
 #     ["DecisionTree", "plants", 0.5263],
 #     ["RandomForest", "plants", 0.8246],
-#     ["GeneticTree", "madelon", 0.5714],
+#     ["GeneticTree", "madelon", 0.7763],
 #     ["DecisionTree", "madelon", 0.7116],
 #     ["RandomForest", "madelon", 0.6927],
-#     ["GeneticTree", "abalone", 0.2450],
+#     ["GeneticTree", "abalone", 0.2550],
 #     ["DecisionTree", "abalone", 0.2181],
 #     ["RandomForest", "abalone", 0.2232],
-#     ["GeneticTree", "mnist", 0.6419],
+#     ["GeneticTree", "mnist", 0.7638],
 #     ["DecisionTree", "mnist", 0.8776],
 #     ["RandomForest", "mnist", 0.9697]
 # ], columns=['classifier', 'dataset', 'value'])
 #
 # time = pd.DataFrame([
-#     ["GeneticTree", "diabetes", 24.1227],
+#     ["GeneticTree", "diabetes", 178.928485],
 #     ["DecisionTree", "diabetes", 0.004499],
 #     ["RandomForest", "diabetes", 0.144840],
-#     ["GeneticTree", "ozone", 28.758202],
+#     ["GeneticTree", "ozone", 34.995074],
 #     ["DecisionTree", "ozone", 0.083739],
 #     ["RandomForest", "ozone", 0.510958],
 #     ["GeneticTree", "banknote", 23.756215],
 #     ["DecisionTree", "banknote", 0.002368],
 #     ["RandomForest", "banknote", 0.158727],
-#     ["GeneticTree", "plants", 41.824507],
+#     ["GeneticTree", "plants", 292.662415],
 #     ["DecisionTree", "plants", 0.082996],
 #     ["RandomForest", "plants", 0.787428],
-#     ["GeneticTree", "madelon", 30.891549],
+#     ["GeneticTree", "madelon", 348.548228],
 #     ["DecisionTree", "madelon", 0.541019],
 #     ["RandomForest", "madelon", 1.889679],
-#     ["GeneticTree", "abalone", 166.585893],
+#     ["GeneticTree", "abalone", 1091.539640],
 #     ["DecisionTree", "abalone", 8.303404],
 #     ["RandomForest", "abalone", 16.439596],
-#     ["GeneticTree", "mnist", 190.136757],
+#     ["GeneticTree", "mnist", 4796.033816],
 #     ["DecisionTree", "mnist", 15.103409],
 #     ["RandomForest", "mnist", 29.703812]
 # ], columns=['classifier', 'dataset', 'value'])
 #
 # n_leaves = pd.DataFrame([
-#     ["GeneticTree", "diabetes", 139],
+#     ["GeneticTree", "diabetes", 71],
 #     ["DecisionTree", "diabetes", 122],
-#     ["GeneticTree", "ozone", 102],
+#     ["GeneticTree", "ozone", 1],
 #     ["DecisionTree", "ozone", 100],
-#     ["GeneticTree", "banknote", 38],
+#     ["GeneticTree", "banknote", 33],
 #     ["DecisionTree", "banknote", 28],
-#     ["GeneticTree", "plants", 341],
+#     ["GeneticTree", "plants", 72],
 #     ["DecisionTree", "plants", 415],
-#     ["GeneticTree", "madelon", 250],
+#     ["GeneticTree", "madelon", 62],
 #     ["DecisionTree", "madelon", 190],
-#     ["GeneticTree", "abalone", 15079],
+#     ["GeneticTree", "abalone", 79],
 #     ["DecisionTree", "abalone", 2212],
-#     ["GeneticTree", "mnist", 369],
+#     ["GeneticTree", "mnist", 138],
 #     ["DecisionTree", "mnist", 3943]
 # ], columns=['classifier', 'dataset', 'value'])
 #

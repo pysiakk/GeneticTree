@@ -32,7 +32,7 @@ def test_initialize_half():
 
 
 def test_initialize_split():
-    initializer = Initializer(n_trees=20, initial_depth=5, initialization=Initialization.Split, split_prob=0.7)
+    initializer = Initializer(n_trees=20, initial_depth=100, initialization=Initialization.Split, split_prob=0.5)
     trees = initializer.initialize(X=X, y=y, sample_weight=sample_weight, threshold=thresholds)
     assert isinstance(trees[0], Tree)
     assert len(trees) == 20
@@ -56,3 +56,4 @@ if __name__ == '__main__':
     print("\nSplit initialization:")
     for tree in trees3:
         print(tree.nodes_depth)
+
