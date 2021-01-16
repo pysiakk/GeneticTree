@@ -139,3 +139,9 @@ sklearn_tree/
 
 # Documentation builds
 doc/_build
+
+data/
+
+quality_tests/images/
+
+quality_tests/results/
