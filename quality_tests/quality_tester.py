@@ -8,12 +8,14 @@ import json
 import mnist
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 import openml
+from pytictoc import TicToc
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 
-
-def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, dataset: list,
+def over_parms_test(X_train: list, y_train: list, X_test: list, y_test: list, dataset: list,
                      iterate_over_1: str, iterate_params_1: list, json_path,
                      n_trees: int = 400,
-                     n_iters: int = 500,
+                     max_iter: int = 500,
                      cross_prob: float = 0.6,
                      mutation_prob: float = 0.4,
                      initialization: Initialization = Initialization.Full,
@@ -27,12 +29,12 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
                      initial_depth: int = 1,
                      split_prob: float = 0.7,
                      n_leaves_factor: float = 0.0001,
-                     depth_factor: float = 0.01,
+                     depth_factor: float = 0.001,
                      tournament_size: int = 3,
                      leave_selected_parents: bool = False,
-                     n_iters_without_improvement: int = 100,
-                     use_without_improvement: bool = False,
-                     random_state: int = None,
+                     n_iter_no_change: int = 100,
+                     early_stopping: bool = False,
+                     random_state: int = 123,
                      save_metrics: bool = True,
                      keep_last_population: bool = False,
                      remove_variables: bool = True,
@@ -42,7 +44,7 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
     for iter_1 in iterate_params_1:
         parms = {
             "n_trees": int(n_trees),
-            "n_iters": int(n_iters),
+            "max_iter": int(max_iter),
             "cross_prob": float(cross_prob),
             "mutation_prob": float(mutation_prob),
             "initialization": initialization.name,
@@ -59,8 +61,8 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
             "depth_factor": float(depth_factor),
             "tournament_size": int(tournament_size),
             "leave_selected_parents": leave_selected_parents,
-            "n_iters_without_improvement": int(n_iters_without_improvement),
-            "use_without_improvement": use_without_improvement,
+            "n_iter_no_change": int(n_iter_no_change),
+            "early_stopping": early_stopping,
             "random_state": random_state,
             "save_metrics": save_metrics,
             "keep_last_population": keep_last_population,
@@ -74,7 +76,7 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
             parms[iterate_over_1] = iter_1
 
         kwargs = {"n_trees": int(n_trees),
-                  "n_iters": int(n_iters),
+                  "max_iter": int(max_iter),
                   "cross_prob": float(cross_prob),
                   "mutation_prob": float(mutation_prob),
                   "initialization": initialization,
@@ -91,8 +93,8 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
                   "depth_factor": float(depth_factor),
                   "tournament_size": int(tournament_size),
                   "leave_selected_parents": leave_selected_parents,
-                  "n_iters_without_improvement": int(n_iters_without_improvement),
-                  "use_without_improvement": use_without_improvement,
+                  "n_iter_no_change": int(n_iter_no_change),
+                  "early_stopping": early_stopping,
                   "random_state": random_state,
                   "save_metrics": save_metrics,
                   "keep_last_population": keep_last_population,
@@ -105,7 +107,10 @@ def test_over_params(X_train: list, y_train: list, X_test: list, y_test: list, d
         for X_train_i, y_train_i, X_test_i, y_test_i, dataset_i in zip(X_train, y_train, X_test, y_test, dataset):
             print(dataset_i + ":")
             gt = GeneticTree(**kwargs)
+            t = TicToc()
+            t.tic()
             gt.fit(X=X_train_i, y=y_train_i)
+            t.toc()
             print(sum(gt.predict(X_test_i) == y_test_i) / len(y_test_i))
 
             dataset_record = {
@@ -228,57 +233,281 @@ if __name__ == "__main__":
     dataset_list = ["diabetes", "ozone", "banknote", "plants",
                      "madelon", "abalone", "mnist"]
 
-
-    #
-    # cross_prob = test_over_params([madelon_X_train], [madelon_y_train], [madelon_X_test], [madelon_y_test], ["plants"],
-    #                               "cross_prob", [0.2, 0.4, 0.6, 0.8, 1],
-    #                               "quality_tests/cross_prob_1.json")
-
-    cross_prob = test_over_params(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
+    
+    cross_prob = over_parms_test(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
                                   "cross_prob", [0.2, 0.4, 0.6, 0.8, 1],
                                   "quality_tests/cross_prob_1.json")
-
-    mut_prob = test_over_params(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
+    
+    mut_prob = over_parms_test(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
                                 "mutation_prob", [0.2, 0.4, 0.6, 0.8, 1],
                                 "quality_tests/mut_prob_1.json")
 
-    n_trees = test_over_params(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
-                               "n_trees", [10, 50, 150, 400, 1000],
+    n_trees = over_parms_test(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
+                               "n_trees", [10, 50, 150, 500, 1000],
                                "quality_tests/n_trees_1.json")
 
-    n_thresholds = test_over_params(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
+    n_thresholds = over_parms_test(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
                                     "n_thresholds", [3, 10, 30, 100, 300],
                                     "quality_tests/n_thresholds_1.json")
 
-    metrics = test_over_params(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
+    metrics = over_parms_test(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
                                "metric", [Metric.Accuracy, Metric.AccuracyMinusDepth, Metric.AccuracyMinusLeavesNumber],
                                "quality_tests/metrics_1.json")
-
-    selection = test_over_params(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
+    
+    selection = over_parms_test(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
                                  "selection", [Selection.StochasticUniform, Selection.Tournament, Selection.Roulette,
                                                Selection.Rank],
                                  "quality_tests/selection_1.json")
-
-    initialization = test_over_params(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
+    
+    initialization = over_parms_test(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
                                       "initialization",
                                       [Initialization.Full, Initialization.Half, Initialization.Split],
-                                      "quality_tests/initialization_1.json")
+                                      "quality_tests/initialization_1.json",
+                                     initial_depth=10)
 
-    n_elitism = test_over_params(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
-                                 "n_elitism", [1, 3, 5, 8, 13],
+    tournament_size = over_parms_test(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
+                                      "tournament_size",
+                                      [2, 3, 5, 8, 13],
+                                      "quality_tests/tournament_size_1.json")
+
+    n_elitism = over_parms_test(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
+                                 "n_elitism", [1, 3, 5, 20, 100],
                                  "quality_tests/elitism_1.json")
 
-    n_leaves_factor = test_over_params(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
+    n_leaves_factor = over_parms_test(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
                                        "n_leaves_factor", [0.000001, 0.00001, 0.0001, 0.001, 0.01],
                                        "quality_tests/n_leaves_factor_1.json",
                                        metric=Metric.AccuracyMinusLeavesNumber)
-
-    depth_factor = test_over_params(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
+    
+    depth_factor = over_parms_test(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
                                     "depth_factor", [0.00001, 0.0001, 0.001, 0.01, 0.1],
                                     "quality_tests/depth_factor_1.json",
                                     metric=Metric.AccuracyMinusDepth)
 
-    initial_depth = test_over_params(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
+    initial_depth = over_parms_test(train_X_list, train_y_list, test_X_list, test_y_list, dataset_list,
                                      "initial_depth", [1, 3, 5, 8, 13],
                                      "quality_tests/initial_depth_1.json",
-                                     metric=Metric.AccuracyMinusDepth)
+                                     initialization=Initialization.Split)
+
+    initial_depth = over_parms_test([mnist_X_train], [mnist_y_train], [mnist_X_test], [mnist_y_test], ["mnist"],
+                                     "initial_depth", [20],
+                                     "quality_tests/performance_test_2.json",
+                                     initialization=Initialization.Split,
+                                     metric=Metric.AccuracyMinusLeavesNumber,
+                                     n_leaves_factor=0.00000001,
+                                     random_state=123,
+                                     n_thresholds=15,
+                                     selection=Selection.Tournament,
+                                     n_elitism=3,
+                                     mutation_prob=0.8,
+                                     cross_prob=0.6,
+                                     max_iter=2000)
+
+    initial_depth = over_parms_test([mnist_X_train], [mnist_y_train], [mnist_X_test], [mnist_y_test], ["mnist"],
+                                     "initial_depth", [20],
+                                     "quality_tests/mnist_test_3.json",
+                                     initialization=Initialization.Split,
+                                     metric=Metric.Accuracy,
+                                     # n_leaves_factor=0.00000000001,
+                                     random_state=123,
+                                     n_thresholds=15,
+                                     selection=Selection.Tournament,
+                                     tournament_size=4,
+                                     n_elitism=5,
+                                     mutation_prob=0.8,
+                                     cross_prob=0.6,
+                                     max_iter=2000,
+                                     n_trees=500,
+                                     early_stopping=True,
+                                     n_iter_no_change=50#,
+                                     # mutations_additional=[(Mutation.Feature, 0.5)]
+                                     )
+
+
+    dt = DecisionTreeClassifier(random_state=123)
+    t = TicToc()
+    t.tic()
+    dt.fit(mnist_X_train, mnist_y_train)
+    t.toc()
+    print(dt.get_n_leaves())
+    y_pred = list(dt.predict(mnist_X_test))
+    print(sum(y_pred==mnist_y_test)/len(y_pred))
+
+    rf = RandomForestClassifier(random_state=123)
+    t = TicToc()
+    t.tic()
+    rf.fit(mnist_X_train, mnist_y_train)
+    t.toc()
+    y_pred = list(rf.predict(mnist_X_test))
+    print(sum(y_pred==mnist_y_test)/len(y_pred))
+
+    initial_depth = over_parms_test([diabetes_X_train], [diabetes_y_train], [diabetes_X_test], [diabetes_y_test], ["diabetes"],
+                                     "initial_depth", [10],
+                                     "quality_tests/diabetes_test_3.json",
+                                     initialization=Initialization.Split,
+                                     metric=Metric.AccuracyMinusLeavesNumber,
+                                     n_leaves_factor=0.0000001,
+                                     random_state=123,
+                                     selection=Selection.Tournament,
+                                     n_elitism=3,
+                                     max_iter=2000)
+    
+    dt = DecisionTreeClassifier(random_state=123)
+    t = TicToc()
+    t.tic()
+    dt.fit(diabetes_X_train, diabetes_y_train)
+    t.toc()
+    print(dt.get_n_leaves())
+    y_pred = list(dt.predict(diabetes_X_test))
+    print(sum(y_pred==diabetes_y_test)/len(y_pred))
+    
+    rf = RandomForestClassifier(random_state=123)
+    t = TicToc()
+    t.tic()
+    rf.fit(diabetes_X_train, diabetes_y_train)
+    t.toc()
+    y_pred = list(rf.predict(diabetes_X_test))
+    print(sum(y_pred==diabetes_y_test)/len(y_pred))
+
+    initial_depth = over_parms_test([ozone_X_train], [ozone_y_train], [ozone_X_test], [ozone_y_test], ["ozone"],
+                                     "initial_depth", [10],
+                                     "quality_tests/ozone_test_3.json",
+                                     initialization=Initialization.Split,
+                                     metric=Metric.AccuracyMinusLeavesNumber,
+                                     n_leaves_factor=0.0000001,
+                                     random_state=123,
+                                     selection=Selection.Tournament,
+                                     n_elitism=3,
+                                     max_iter=2000)
+    
+    dt = DecisionTreeClassifier(random_state=123)
+    t = TicToc()
+    t.tic()
+    dt.fit(ozone_X_train, ozone_y_train)
+    t.toc()
+    print(dt.get_n_leaves())
+    y_pred = list(dt.predict(ozone_X_test))
+    print(sum(y_pred==ozone_y_test)/len(y_pred))
+
+    rf = RandomForestClassifier(random_state=123)
+    t = TicToc()
+    t.tic()
+    rf.fit(ozone_X_train, ozone_y_train)
+    t.toc()
+    y_pred = list(rf.predict(ozone_X_test))
+    print(sum(y_pred==ozone_y_test)/len(y_pred))
+
+    initial_depth = over_parms_test([banknote_X_train], [banknote_y_train], [banknote_X_test], [banknote_y_test], ["banknote"],
+                                     "initial_depth", [10],
+                                     "quality_tests/banknote_test_3.json",
+                                     initialization=Initialization.Split,
+                                     metric=Metric.AccuracyMinusLeavesNumber,
+                                     n_leaves_factor=0.0000001,
+                                     random_state=123,
+                                     selection=Selection.Tournament,
+                                     n_elitism=3,
+                                     max_iter=2000)
+    
+    dt = DecisionTreeClassifier(random_state=123)
+    t = TicToc()
+    t.tic()
+    dt.fit(banknote_X_train, banknote_y_train)
+    t.toc()
+    print(dt.get_n_leaves())
+    y_pred = list(dt.predict(banknote_X_test))
+    print(sum(y_pred==banknote_y_test)/len(y_pred))
+    
+    rf = RandomForestClassifier(random_state=123)
+    t = TicToc()
+    t.tic()
+    rf.fit(banknote_X_train, banknote_y_train)
+    t.toc()
+    y_pred = list(rf.predict(banknote_X_test))
+    print(sum(y_pred==banknote_y_test)/len(y_pred))
+
+    initial_depth = over_parms_test([plants_X_train], [plants_y_train], [plants_X_test], [plants_y_test], ["plants"],
+                                     "initial_depth", [20],
+                                     "quality_tests/plants_test_1.json",
+                                     initialization=Initialization.Split,
+                                     metric=Metric.AccuracyMinusLeavesNumber,
+                                     n_leaves_factor=0.00000001,
+                                     random_state=123,
+                                     n_thresholds=50,
+                                     selection=Selection.Tournament,
+                                     n_elitism=3,
+                                     mutation_prob=0.8,
+                                     cross_prob=0.8,
+                                     max_iter=2000)
+    
+    dt = DecisionTreeClassifier(random_state=123)
+    t = TicToc()
+    t.tic()
+    dt.fit(plants_X_train, plants_y_train)
+    t.toc()
+    print(dt.get_n_leaves())
+    y_pred = list(dt.predict(plants_X_test))
+    print(sum(y_pred==plants_y_test)/len(y_pred))
+    
+    rf = RandomForestClassifier(random_state=123)
+    t = TicToc()
+    t.tic()
+    rf.fit(plants_X_train, plants_y_train)
+    t.toc()
+    y_pred = list(rf.predict(plants_X_test))
+    print(sum(y_pred==plants_y_test)/len(y_pred))
+
+    initial_depth = over_parms_test([madelon_X_train], [madelon_y_train], [madelon_X_test], [madelon_y_test], ["madelon"],
+                                     "initial_depth", [10],
+                                     "quality_tests/madelon_test_3.json",
+                                     initialization=Initialization.Split,
+                                     metric=Metric.AccuracyMinusLeavesNumber,
+                                     n_leaves_factor=0.0000001,
+                                     random_state=123,
+                                     selection=Selection.Tournament,
+                                     n_elitism=3,
+                                     max_iter=2000)
+    
+    dt = DecisionTreeClassifier(random_state=123)
+    t = TicToc()
+    t.tic()
+    dt.fit(madelon_X_train, madelon_y_train)
+    t.toc()
+    print(dt.get_n_leaves())
+    y_pred = list(dt.predict(madelon_X_test))
+    print(sum(y_pred==madelon_y_test)/len(y_pred))
+    
+    rf = RandomForestClassifier(random_state=123)
+    t = TicToc()
+    t.tic()
+    rf.fit(madelon_X_train, madelon_y_train)
+    t.toc()
+    y_pred = list(rf.predict(madelon_X_test))
+    print(sum(y_pred==madelon_y_test)/len(y_pred))
+
+    initial_depth = over_parms_test([abalone_X_train], [abalone_y_train], [abalone_X_test], [abalone_y_test], ["abalone"],
+                                     "initial_depth", [10],
+                                     "quality_tests/abalone_test_3.json",
+                                     initialization=Initialization.Split,
+                                     metric=Metric.AccuracyMinusLeavesNumber,
+                                     n_leaves_factor=0.0000001,
+                                     random_state=123,
+                                     selection=Selection.Tournament,
+                                     n_elitism=3,
+                                     max_iter=2000)
+
+    dt = DecisionTreeClassifier(random_state=123)
+    t = TicToc()
+    t.tic()
+    dt.fit(abalone_X_train, abalone_y_train)
+    print(dt.get_n_leaves())
+    t.toc()
+    y_pred = list(dt.predict(abalone_X_test))
+    print(sum(y_pred==abalone_y_test)/len(y_pred))
+
+    rf = RandomForestClassifier(random_state=123)
+    t = TicToc()
+    t.tic()
+    rf.fit(abalone_X_train, abalone_y_train)
+    t.toc()
+    y_pred = list(rf.predict(abalone_X_test))
+    print(sum(y_pred==abalone_y_test)/len(y_pred))
