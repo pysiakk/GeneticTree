@@ -1,5 +1,4 @@
 import math
-import statistics
 
 
 class Stopper:
@@ -51,7 +50,7 @@ class Stopper:
                 self.best_metric_hist.append(score)
                 self.best_metric_hist.pop(0)
                 if self.best_metric_hist[self.n_iter_no_change - 1] \
-                        <= statistics.min(self.best_metric_hist[:self.n_iter_no_change - 1]):
+                        <= min(self.best_metric_hist[:self.n_iter_no_change - 1]):
                     return True
 
         self.current_iteration += 1
