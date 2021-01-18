@@ -1,5 +1,8 @@
-from tree.tree import Tree
-from tree.crosser import cross_trees
+# from tree.tree import Tree
+# from tree.crosser import cross_trees
+
+from ..tree.tree import Tree
+from ..tree.crosser import cross_trees
 import numpy as np
 
 

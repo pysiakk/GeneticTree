@@ -1,12 +1,8 @@
-# cython: linetrace=True
-
 # (LICENSE) based on the same file as tree.pyx
 
-from tree.tree cimport Tree
+from .tree cimport Tree
 
 from libc.stdint cimport SIZE_MAX
-from libc.stdint cimport uint32_t
-from cpython.pycapsule cimport PyCapsule_IsValid, PyCapsule_GetPointer
 
 import numpy as np
 cimport numpy as np

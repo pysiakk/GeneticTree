@@ -1,5 +1,3 @@
-# distutils: define_macros=CYTHON_TRACE_NOGIL=1
-
 # code copied from https://github.com/scikit-learn/scikit-learn/blob/fd237278e895b42abe8d8d09105cbb82dc2cbba7/sklearn/tree/_tree.pxd
 # notes above this file:
 
@@ -18,9 +16,9 @@
 import numpy as np
 cimport numpy as np
 
-from tree.observations cimport Observations
-from tree.observations import Observations
-from tree._utils cimport Node, NodeArray, IntArray, resize, resize_c
+from .observations cimport Observations
+from .observations import Observations
+from ._utils cimport Node, NodeArray, IntArray, resize, resize_c
 
 ctypedef np.npy_float64 DOUBLE_t        # Type of thresholds
 ctypedef np.npy_float32 DTYPE_t         # Type of X

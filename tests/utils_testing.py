@@ -2,6 +2,7 @@
 import copy
 import io
 import numpy as np
+from scipy.sparse import dok_matrix
 import pickle
 import psutil
 import pytest
@@ -21,37 +22,38 @@ from sklearn.utils._testing import create_memmap_backed_data
 from sklearn.utils._testing import ignore_warnings
 
 # low level (Cython) imports
-from tree._utils import test_copy_int_array, test_copy_leaves
-from tree.tree import Tree, copy_tree, test_independence_of_copied_tree
-from tree.thresholds import prepare_thresholds_array
-from tree.observations import Observations, copy_observations
-from tree.builder import full_tree_builder, split_tree_builder, test_add_node, test_add_leaf
-from tree.mutator import mutate_random_node, mutate_random_class_or_threshold
-from tree.mutator import mutate_random_feature, mutate_random_threshold
-from tree.mutator import mutate_random_class
-from tree.mutator import test_mutate_feature, test_mutate_class, test_mutate_threshold
-from tree.crosser import cross_trees
-from tree.evaluation import get_accuracies, get_trees_depths, get_trees_n_leaves
+from genetic_tree.tree._utils import test_copy_int_array, test_copy_leaves
+from genetic_tree.tree.tree import Tree, copy_tree, test_independence_of_copied_tree
+from genetic_tree.tree.thresholds import prepare_thresholds_array
+from genetic_tree.tree.observations import Observations, copy_observations, LeafFinder
+from genetic_tree.tree.builder import full_tree_builder, split_tree_builder, test_add_node, test_add_leaf
+from genetic_tree.tree.mutator import mutate_random_node, mutate_random_class_or_threshold
+from genetic_tree.tree.mutator import mutate_random_feature, mutate_random_threshold
+from genetic_tree.tree.mutator import mutate_random_class
+from genetic_tree.tree.mutator import test_mutate_feature, test_mutate_class, test_mutate_threshold
+from genetic_tree.tree.crosser import cross_trees
+from genetic_tree.tree.evaluation import get_accuracies, get_trees_depths, get_trees_n_leaves
 
 
 # high level (Python) imports
-from genetic.initializer import Initializer, Initialization
-from genetic.mutator import Mutator, Mutation
-from genetic.crosser import Crosser
-from genetic.evaluator import Evaluator, Metric
-from genetic.evaluator import get_accuracy, get_accuracy_and_n_leaves, get_accuracy_and_depth
-from genetic.selector import Selection, Selector, metrics_greater_than_zero
-from genetic.selector import get_selected_indices_by_rank_selection
-from genetic.selector import get_selected_indices_by_tournament_selection
-from genetic.selector import get_selected_indices_by_roulette_selection
-from genetic.selector import get_selected_indices_by_stochastic_uniform_selection
-from genetic.stopper import Stopper
+from genetic_tree import Initializer, Initialization
+from genetic_tree import Mutator, Mutation
+from genetic_tree import Crosser
+from genetic_tree import Evaluator, Metric
+from genetic_tree.genetic.evaluator import get_accuracy, get_accuracy_and_n_leaves, get_accuracy_and_depth
+from genetic_tree import Selection, Selector
+from genetic_tree.genetic.selector import metrics_greater_than_zero
+from genetic_tree.genetic.selector import get_selected_indices_by_rank_selection
+from genetic_tree.genetic.selector import get_selected_indices_by_tournament_selection
+from genetic_tree.genetic.selector import get_selected_indices_by_roulette_selection
+from genetic_tree.genetic.selector import get_selected_indices_by_stochastic_uniform_selection
+from genetic_tree import Stopper
 
 # package interface
 from genetic_tree import GeneticTree
 
 # import constants
-from tree.tree import TREE_UNDEFINED
+from genetic_tree.tree.tree import TREE_UNDEFINED
 
 # load iris dataset and randomly permute it (example from sklearn.tree.test.test_tree)
 iris = datasets.load_iris()

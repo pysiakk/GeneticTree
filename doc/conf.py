@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'Genetic Tree'
-copyright = '2020, Makowski, Pysiak'
+copyright = '2020-2021, Makowski, Pysiak'
 author = 'Makowski, Pysiak'
 
 

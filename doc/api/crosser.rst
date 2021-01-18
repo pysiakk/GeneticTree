@@ -3,8 +3,5 @@
 Crosser
 =======
 
-.. autoclass:: genetic.crosser.Crosser
-   :members:
-
-.. autoclass:: tree.crosser.TreeCrosser
+.. autoclass:: genetic_tree.genetic.crosser.Crosser
    :members:

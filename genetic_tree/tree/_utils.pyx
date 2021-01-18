@@ -1,5 +1,3 @@
-# cython: linetrace=True
-
 # copied from sklearn.tree._utils.pyx
 # cython: cdivision=True
 # cython: boundscheck=False

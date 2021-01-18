@@ -140,8 +140,10 @@ sklearn_tree/
 # Documentation builds
 doc/_build
 
+# building package
+cythonize.json
+
+# datasets and quality tests
 data/
-
 quality_tests/images/
-
 quality_tests/results/

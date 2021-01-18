@@ -3,9 +3,18 @@ from tests.utils_testing import *
 n_trees = 20
 const_seed = np.random.randint(0, 10**8)
 
+
 # ====================================================================================================
 # Genetic Tree
 # ====================================================================================================
+
+def assert_trees_equal(tree, tree2):
+    assert_array_equal(tree.feature, tree2.feature)
+    assert_array_equal(tree.threshold, tree2.threshold)
+    assert_array_equal(tree.nodes_depth, tree2.nodes_depth)
+    assert_array_equal(tree.children_left, tree2.children_left)
+    assert_array_equal(tree.children_right, tree2.children_right)
+    assert_array_equal(tree.parent, tree2.parent)
 
 
 def test_seed():
@@ -21,12 +30,7 @@ def test_seed():
     gt2.fit(X, y)
     tree2: Tree = gt2._best_tree
 
-    assert_array_equal(tree.feature, tree2.feature)
-    assert_array_equal(tree.threshold, tree2.threshold)
-    assert_array_equal(tree.nodes_depth, tree2.nodes_depth)
-    assert_array_equal(tree.children_left, tree2.children_left)
-    assert_array_equal(tree.children_right, tree2.children_right)
-    assert_array_equal(tree.parent, tree2.parent)
+    assert_trees_equal(tree, tree2)
 
 
 def test_none_seed():
@@ -44,6 +48,10 @@ def test_none_argument():
         GeneticTree(n_trees=None)
 
 
+def test_verbose(genetic_tree):
+    genetic_tree.set_params(verbose=1).fit(X, y)
+
+
 @pytest.fixture
 def genetic_tree() -> GeneticTree:
     genetic_tree = GeneticTree(n_trees=10, max_iter=3, keep_last_population=True, remove_variables=False)
@@ -59,6 +67,18 @@ def genetic_tree_fitted(genetic_tree):
 @pytest.fixture
 def X_converted(genetic_tree):
     return genetic_tree._check_X(X, True)
+
+
+@pytest.fixture
+def X_sparse(X_converted):
+    return dok_matrix(X_converted).tocsr()
+
+
+def test_fit_dense_and_sparse(X_sparse):
+    random_state = np.random.randint(0, 10**8)
+    best_dense: Tree = GeneticTree(max_iter=1, n_trees=10, random_state=random_state).fit(X, y)._best_tree
+    best_sparse: Tree = GeneticTree(max_iter=1, n_trees=10, random_state=random_state).fit(X_sparse, y)._best_tree
+    assert_trees_equal(best_dense, best_sparse)
 
 
 def test_predict_exception_when_not_fit(genetic_tree):
@@ -123,6 +143,10 @@ def test_apply(genetic_tree_fitted, X_converted):
                        genetic_tree_fitted._best_tree.apply(X_converted))
 
 
+def test_apply_sparse_and_dense(genetic_tree_fitted, X_sparse):
+    assert_array_equal(genetic_tree_fitted.apply(X),
+                       genetic_tree_fitted.apply(X_sparse))
+
 # +++++++++++++++
 # Metric functions
 # +++++++++++++++
@@ -147,9 +171,12 @@ def test_append_metrics(X_converted):
 
 def test_append_metrics_more_iterations(X_converted):
     genetic_tree = GeneticTree(n_trees=10, max_iter=1, keep_last_population=True, remove_variables=False)
+    genetic_tree.fit(X_converted, y)
+    assert_last_metric(genetic_tree)
     for i in range(10):
-        genetic_tree.fit(X_converted, y)
+        genetic_tree.partial_fit(X_converted, y)
         assert_last_metric(genetic_tree)
+        assert len(genetic_tree.acc_best) == i*2+4
 
 
 # +++++++++++++++

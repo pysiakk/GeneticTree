@@ -1,5 +1,3 @@
-# cython: linetrace=True
-
 # code copied from https://github.com/scikit-learn/scikit-learn/blob/fd237278e895b42abe8d8d09105cbb82dc2cbba7/sklearn/tree/_tree.pyx
 # notes above this file:
 
@@ -27,22 +25,19 @@
 # the last thing copied was utils (exactly 2 functions) used directly in tree
 
 from cpython cimport Py_INCREF, PyObject, PyTypeObject
-from cpython.pycapsule cimport PyCapsule_IsValid, PyCapsule_GetPointer
 
 from libc.stdlib cimport free
 from libc.string cimport memcpy
 from libc.stdint cimport SIZE_MAX
 
-from tree._utils cimport safe_realloc
+from ._utils cimport safe_realloc
 
-from tree.observations cimport Observations, LeafFinder
-from tree.observations import Observations, copy_observations
+from .observations cimport  LeafFinder
+from .observations import Observations, copy_observations
 
 import numpy as np
 cimport numpy as np
 np.import_array()
-
-from scipy.sparse import dok_matrix, csr_matrix
 
 from numpy import float64 as DOUBLE
 

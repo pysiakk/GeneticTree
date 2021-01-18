@@ -1,17 +1,17 @@
 import numpy as np
 from scipy.sparse import issparse
 
-from genetic.initializer import Initializer
-from genetic.initializer import Initialization
-from genetic.mutator import Mutator
-from genetic.crosser import Crosser
-from genetic.selector import Selector
-from genetic.selector import Selection
-from genetic.evaluator import Evaluator
-from genetic.evaluator import Metric
-from genetic.stopper import Stopper
-from tree.thresholds import prepare_thresholds_array
-from tree.tree import Tree
+from .genetic.initializer import Initializer
+from .genetic.initializer import Initialization
+from .genetic.mutator import Mutator
+from .genetic.crosser import Crosser
+from .genetic.selector import Selector
+from .genetic.selector import Selection
+from .genetic.evaluator import Evaluator
+from .genetic.evaluator import Metric
+from .genetic.stopper import Stopper
+from .tree.thresholds import prepare_thresholds_array
+from .tree.tree import Tree
 
 from numpy import float32 as DTYPE
 from numpy import intp as SIZE
@@ -19,7 +19,42 @@ from numpy import intp as SIZE
 
 class GeneticTree:
     """
-    High level interface possible to use like scikit-learn class
+    A classifier to construct decision tree by usage of genetic algorithm.
+    It provides interface that looks as any classifier in scikit-learn.
+
+    Args:
+        n_thresholds: number of thresholds to choose from when set random threshold in the decision node
+        n_trees: population size
+        max_iter: maximum number of iterations run genetic algorithm
+        cross_prob: probability of crossing individual
+        mutation_prob: probability of mutating individual
+        initialization: which initialization type will be used
+        metric: how to evaluate individuals
+        selection: type of selecting individuals to crossing and mutation
+        n_elitism: number of the best individuals unconditionally chosen to next iteration
+        early_stopping: if stop algorithm when it coverages
+        n_iter_no_change: number of iteration without better result to stop algorithm
+        cross_both: if during crossing should be also crossed second individual with first
+        mutations_additional: list of additional mutations, each element is a tuple (Mutation, probability) \
+        Mutation is value of Mutation enum and probability is float >=0 and <=1
+        mutation_replace: if should mutated individuals replace their parents
+        initial_depth: the maximum depth of individuals during initialization
+        split_prob: probability of splitting node in Split Initialization
+        n_leaves_factor: a factor of leaves number component in AccuracyMinusLeavesNumber Metric
+        depth_factor: a factor of depth component in AccuracyMinusDepth Metric
+        tournament_size: a size of tournament in Tournament Selection
+        leave_selected_parents: if selected parents should be left to next iteration or not
+        random_state: a random state used in random generator
+        save_metrics: if save metrics of individuals after each generation
+        keep_last_population: if keep population left after last generation
+        remove_variables: if remove additional variables from tree
+        verbose: if algorithm should print status of training on console
+        n_jobs: number of concurrent threads when using parallelization
+        max_depth: maximal depth of selected trees
+        kwargs: additional arguments to Selections, Metrics, Mutations and Initialization created by user
+
+    Returns:
+        GeneticTree: instance with set parameters
     """
 
     def __init__(self,
@@ -52,9 +87,9 @@ class GeneticTree:
                  save_metrics: bool = True,
                  keep_last_population: bool = False,
                  remove_variables: bool = True,
+                 verbose: int = 0,
 
                  # TODO: params not used yet:
-                 verbose: bool = True,
                  n_jobs: int = -1,
                  max_depth: int = 20,
                  **kwargs
@@ -91,6 +126,7 @@ class GeneticTree:
         self._keep_last_population = keep_last_population
         self._remove_variables = remove_variables
         self._leave_selected_parents = leave_selected_parents
+        self._verbose = verbose
 
         self._trees = None
         self._best_tree: Tree = None
@@ -109,38 +145,91 @@ class GeneticTree:
                     return k
         return False
 
-    def set_params(self, keep_last_population: bool = None, remove_variables: bool = None):
-        # TODO add all params
+    def set_params(self, **kwargs):
+        """
+        Function to change parameters of the model. Can set any parameter that \
+        can be set during initialization of object GeneticTree.
 
-        kwargs = vars()
-        kwargs.pop('self')
+        Args:
+            kwargs: key-value arguments
 
+        Returns:
+            GeneticTree: a classifier itself (self object)
+        """
         self.initializer.set_params(**kwargs)
         self.mutator.set_params(**kwargs)
         self.crosser.set_params(**kwargs)
         self.selector.set_params(**kwargs)
         self.evaluator.set_params(**kwargs)
         self.stopper.set_params(**kwargs)
-        if keep_last_population is not None:
-            self._keep_last_population = keep_last_population
-        if remove_variables is not None:
-            self._remove_variables = remove_variables
+        if kwargs.__contains__("keep_last_population"):
+            self._keep_last_population = kwargs["keep_last_population"]
+        if kwargs.__contains__("remove_variables"):
+            self._remove_variables = kwargs["remove_variables"]
+        if kwargs.__contains__("leave_selected_parents"):
+            self._leave_selected_parents = kwargs["leave_selected_parents"]
+        if kwargs.__contains__("verbose"):
+            self._verbose = kwargs["verbose"]
+        if kwargs.__contains__("random_state"):
+            np.random.seed(kwargs["random_state"])
 
-    def fit(self, X, y, *args, sample_weight: np.array = None, check_input: bool = True, **kwargs):
+        return self
+
+    def fit(self, X: np.array, y: np.array, *args,
+            sample_weight: np.array = None, check_input: bool = True,
+            **kwargs):
+        """
+        Function to fit the model with dataset X and proper classes y
+
+        Args:
+            X: dataset to train model on as matrix of shape [n_observations x n_features]
+            y: proper class of each observation as vector of shape [n_observations]
+            sample_weight: a weight of each observation or None (meaning each observation have the same weight)
+            check_input: if should check the input (only set to False use when you know what you does)
+            kwargs: additional arguments to set as params
+
+        Returns:
+            GeneticTree: a classifier itself (self object)
+        """
+        self._fit(X, y, sample_weight, check_input, False, **kwargs)
+        return self
+
+    def partial_fit(self, X: np.array, y: np.array, *args,
+                    sample_weight: np.array = None, check_input: bool = True,
+                    **kwargs):
+        """
+        Function to partial fit the model with dataset X and proper classes y.
+        Partial fit means that the old model will be continued training instead
+        of train new model.
+
+        Args:
+            X: dataset to train model on as matrix of shape [n_observations x n_features]
+            y: proper class of each observation as vector of shape [n_observations]
+            sample_weight: a weight of each observation or None (meaning each observation have the same weight)
+            check_input: if should check the input (only set to False use when you know what you does)
+            kwargs: additional arguments to set as params
+
+        Returns:
+            GeneticTree: a classifier itself (self object)
+        """
+        self._fit(X, y, sample_weight, check_input, True, **kwargs)
+        return self
+
+    def _fit(self, X, y, sample_weight: np.array = None, check_input: bool = True, partial_fit: bool = False, **kwargs):
         self._can_predict = False
         self.set_params(**kwargs)
         X, y, sample_weight = self._check_input(X, y, sample_weight, check_input)
-        self._prepare_new_training(X, y, sample_weight)
+        self._prepare_new_training(X, y, sample_weight, partial_fit)
         self._growth_trees()
         self._prepare_to_predict()
 
-    def _prepare_new_training(self, X, y, sample_weight):
+    def _prepare_new_training(self, X, y, sample_weight, partial_fit):
         self.stopper.reset_private_variables()
 
         thresholds = prepare_thresholds_array(self._n_thresholds, X)
-        if self._trees is None:  # when previously trees was removed
+        if self._trees is None or not partial_fit:  # when previously trees was removed
             self._trees = self.initializer.initialize(X, y, sample_weight, thresholds)
-            if self._best_tree is not None:
+            if self._best_tree is not None and partial_fit:
                 self._best_tree.prepare_new_fit(X, y, sample_weight, thresholds)
                 self._trees = self._trees + [self._best_tree]
         else:
@@ -168,6 +257,7 @@ class GeneticTree:
 
             trees_metrics = self.evaluator.evaluate(offspring)
             self._append_metrics(offspring)
+            self._print_algorithm_info(offspring)
 
         self._trees = offspring
 
@@ -202,6 +292,13 @@ class GeneticTree:
             metrics = self.evaluator.evaluate(trees)
             self.metric_best.append(metrics[best_tree_index])
             self.metric_mean.append(np.mean(metrics))
+
+    def _print_algorithm_info(self, trees):
+        if self._verbose >= 1:
+            accuracies = self.evaluator.get_accuracies(trees)
+            print(f"Ended iteration {self.stopper.current_iteration-1} "
+                  f"with mean accuracy {np.mean(accuracies):0.04f} "
+                  f"and best accuracy {np.max(accuracies):0.04f}")
 
     def predict(self, X, check_input=True) -> np.ndarray:
         """

@@ -1,4 +1,4 @@
-from tree.evaluation import get_accuracies, get_trees_depths, get_trees_n_leaves
+from ..tree.evaluation import get_accuracies, get_trees_depths, get_trees_n_leaves
 import numpy as np
 
 from aenum import Enum, extend_enum
