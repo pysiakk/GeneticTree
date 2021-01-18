@@ -9,7 +9,7 @@ from genetic.selector import Selector
 from genetic.selector import Selection
 from genetic.evaluator import Evaluator
 from genetic.evaluator import Metric
-from genetic.stop_condition import StopCondition
+from genetic.stopper import Stopper
 from tree.thresholds import prepare_thresholds_array
 from tree.tree import Tree
 
@@ -76,7 +76,7 @@ class GeneticTree:
         self.crosser = Crosser(**kwargs)
         self.selector = Selector(**kwargs)
         self.evaluator = Evaluator(**kwargs)
-        self.stopper = StopCondition(**kwargs)
+        self.stopper = Stopper(**kwargs)
 
         self._save_metrics = save_metrics
         self.acc_mean = []
