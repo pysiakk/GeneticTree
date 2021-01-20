@@ -87,3 +87,12 @@ def build_trees(depth: int = 1, n_trees: int = 10):
         tree.initialize_observations()
         trees.append(tree)
     return trees
+
+
+def assert_trees_equal(tree, tree2):
+    assert_array_equal(tree.feature, tree2.feature)
+    assert_array_equal(tree.threshold, tree2.threshold)
+    assert_array_equal(tree.nodes_depth, tree2.nodes_depth)
+    assert_array_equal(tree.children_left, tree2.children_left)
+    assert_array_equal(tree.children_right, tree2.children_right)
+    assert_array_equal(tree.parent, tree2.parent)
