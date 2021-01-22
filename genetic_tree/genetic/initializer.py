@@ -6,6 +6,20 @@ import warnings
 
 
 def _initialize(X, y, sample_weight, thresholds, initializer, tree_builder, half):
+    """
+    A helping function for initializing trees. Its main purpose is to reduce the code repetition. Some
+    initialization methods may use it with proper parameters to execute specific types of the initialization.
+
+    Args:
+        X: dataset to train model on as matrix of shape [n_observations x n_features]
+        y: proper class of each observation as vector of shape [n_observations]
+        sample_weight: a weight of each observation or None (meaning each observation have the same weight)
+        thresholds: array of thresholds for particular dataset
+        initializer: main initialization object containing crucial information about building trees
+        tree_builder: function that builds trees during initialization (imported from tree.builder)
+        half: indicator if trees should be initialized with a half method (half of the trees is initialized to
+        the maximum depth and the other half is initialized to a random depth lower or equal than the maximum depth)
+     """
     trees = []
     tree: Tree
     classes: np.ndarray = np.unique(y)
@@ -35,42 +49,42 @@ def _initialize(X, y, sample_weight, thresholds, initializer, tree_builder, half
 
 def initialize_full(X, y, sample_weight, thresholds, initializer):
     """
-    Function to initialize forest
+    Function that executes the initialization with a full method.
 
     Args:
-        initializer:
-        thresholds:
-        sample_weight:
-        y:
-        X:
+        X: dataset to train model on as matrix of shape [n_observations x n_features]
+        y: proper class of each observation as vector of shape [n_observations]
+        sample_weight: a weight of each observation or None (meaning each observation have the same weight)
+        thresholds: array of thresholds for particular dataset
+        initializer: main initialization object containing crucial information about building trees
     """
     return _initialize(X, y, sample_weight, thresholds, initializer, full_tree_builder, False)
 
 
 def initialize_half(X, y, sample_weight, thresholds, initializer):
     """
-    Function to initialize forest
+    Function that executes the initialization with a half method.
 
     Args:
-        initializer:
-        thresholds:
-        sample_weight:
-        y:
-        X:
+        X: dataset to train model on as matrix of shape [n_observations x n_features]
+        y: proper class of each observation as vector of shape [n_observations]
+        sample_weight: a weight of each observation or None (meaning each observation have the same weight)
+        thresholds: array of thresholds for particular dataset
+        initializer: main initialization object containing crucial information about building trees
     """
     return _initialize(X, y, sample_weight, thresholds, initializer, full_tree_builder, True)
 
 
 def initialize_split(X, y, sample_weight, thresholds, initializer):
     """
-    Function to initialize forest
+    Function that executes the initialization with a split method.
 
     Args:
-        initializer:
-        thresholds:
-        sample_weight:
-        y:
-        X:
+        X: dataset to train model on as matrix of shape [n_observations x n_features]
+        y: proper class of each observation as vector of shape [n_observations]
+        sample_weight: a weight of each observation or None (meaning each observation have the same weight)
+        thresholds: array of thresholds for particular dataset
+        initializer: main initialization object containing crucial information about building trees
     """
     return _initialize(X, y, sample_weight, thresholds, initializer, split_tree_builder, False)
 
@@ -78,9 +92,11 @@ def initialize_split(X, y, sample_weight, thresholds, initializer):
 class Initialization(Enum):
     """
     Initialization is enumerator with possible initialization methods to use:
-        Full --
-        Half --
-        Split --
+        Full -- every tree is build fully to exactly the same depth
+        Half -- every tree is build full, but half of the trees has the maximum depth and the other half has a random
+        depth lower or equal than the maximum depth
+        Split -- every tree is build by randomly deciding in each node (beginning with the root decision node) if this
+        node should be a decision node or a leaf (split_prob is a probability of creating a decision node)
 
     To add new Initialization method see genetic.initialization.Initialization
     """
@@ -113,8 +129,10 @@ class Initializer:
 
     Args:
         n_trees: number of trees to create
-        initial_depth: depth of all trees (if initialization type use it)
+        initial_depth: maximum depth of the trees (if initialization type use it)
         initialization: how to initialize trees
+        split_prob: probability of creating a decision node during initialization (only viable for the split
+        initialization method)
     """
 
     def __init__(self,
@@ -177,10 +195,10 @@ class Initializer:
         Function to initialize forest
 
         Args:
-            X:
-            y:
-            sample_weight:
-            threshold:
+            X: dataset to train model on as matrix of shape [n_observations x n_features]
+            y: proper class of each observation as vector of shape [n_observations]
+            sample_weight: a weight of each observation or None (meaning each observation have the same weight)
+            thresholds: array of thresholds for particular dataset
         """
         return self.initialization.initialize(X, y, sample_weight, threshold, self)
 
