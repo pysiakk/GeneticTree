@@ -18,6 +18,25 @@ The created trees should have smaller sizes with comparable accuracy to the tree
 Project is currently in development (before first version).
 The first working official version should be developed in the January 2021 (with documentation and installation by pip).
 
+# Installation
+
+To download the latest official release of the package use a pip command below:
+```bash
+pip install genetic-tree
+```
+
+# Usage
+
+Example usage:
+```python
+from genetic_tree import GeneticTree
+
+gt = GeneticTree()
+gt.fit(X_train, y_train)
+y_pred = gt.predict(X_test)
+```
+The `ypred` contains an array with classes predicted by the `GeneticTree`
+
 ## License
 
 High-level interface of package is inspired by sklearn (https://github.com/scikit-learn/scikit-learn).
