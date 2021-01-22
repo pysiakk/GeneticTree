@@ -19,6 +19,9 @@ def _initialize(X, y, sample_weight, thresholds, initializer, tree_builder, half
         tree_builder: function that builds trees during initialization (imported from tree.builder)
         half: indicator if trees should be initialized with a half method (half of the trees is initialized to
         the maximum depth and the other half is initialized to a random depth lower or equal than the maximum depth)
+
+        Returns:
+            An array of an initial population of trees
      """
     trees = []
     tree: Tree
@@ -57,6 +60,9 @@ def initialize_full(X, y, sample_weight, thresholds, initializer):
         sample_weight: a weight of each observation or None (meaning each observation have the same weight)
         thresholds: array of thresholds for particular dataset
         initializer: main initialization object containing crucial information about building trees
+
+        Returns:
+            An array of an initial population of trees
     """
     return _initialize(X, y, sample_weight, thresholds, initializer, full_tree_builder, False)
 
@@ -71,6 +77,9 @@ def initialize_half(X, y, sample_weight, thresholds, initializer):
         sample_weight: a weight of each observation or None (meaning each observation have the same weight)
         thresholds: array of thresholds for particular dataset
         initializer: main initialization object containing crucial information about building trees
+
+        Returns:
+            An array of an initial population of trees
     """
     return _initialize(X, y, sample_weight, thresholds, initializer, full_tree_builder, True)
 
@@ -85,6 +94,9 @@ def initialize_split(X, y, sample_weight, thresholds, initializer):
         sample_weight: a weight of each observation or None (meaning each observation have the same weight)
         thresholds: array of thresholds for particular dataset
         initializer: main initialization object containing crucial information about building trees
+
+        Returns:
+            An array of an initial population of trees
     """
     return _initialize(X, y, sample_weight, thresholds, initializer, split_tree_builder, False)
 
@@ -199,6 +211,9 @@ class Initializer:
             y: proper class of each observation as vector of shape [n_observations]
             sample_weight: a weight of each observation or None (meaning each observation have the same weight)
             thresholds: array of thresholds for particular dataset
+
+        Returns:
+            An array of an initial population of trees
         """
         return self.initialization.initialize(X, y, sample_weight, threshold, self)
 
