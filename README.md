@@ -42,6 +42,8 @@ The `y_pred` contains an array with classes predicted by the `GeneticTree`
 
 ## License
 
+The work is a banchelor thesis on Warsaw University of Technology. Commercial use forbidden.
+
 High-level interface of package is inspired by sklearn (https://github.com/scikit-learn/scikit-learn).
 Especially there are methods like: fit(), predict(), predict_proba(), apply(), set_params(), check_X(), check_input() which are inspired and / or copied from sklearn.
 
