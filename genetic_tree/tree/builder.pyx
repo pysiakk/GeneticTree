@@ -22,7 +22,11 @@ cdef SIZE_t _TREE_UNDEFINED = TREE_UNDEFINED
 
 cpdef full_tree_builder(Tree tree, int initial_depth):
     """
-    Build a random decision tree
+    Build a full decision tree
+    
+    Args:
+        tree: Tree object that we created node in
+        initial_depth: Maximum depth of initialized tree
     """
     cdef SIZE_t parent = TREE_UNDEFINED
     cdef bint is_left = 0
@@ -73,7 +77,12 @@ cpdef full_tree_builder(Tree tree, int initial_depth):
 
 cpdef split_tree_builder(Tree tree, int initial_depth, double split_prob):
     """
-    Build a random decision tree
+    Build a decision tree using split method
+    
+    Args:
+        tree: Tree object that we created node in
+        initial_depth: Maximum depth of initialized tree
+        split_prob: Probability of creating a decision node (not creating a leaf)
     """
     cdef max_node_number = 2**initial_depth
     cdef SIZE_t parent = TREE_UNDEFINED
@@ -97,6 +106,21 @@ cpdef split_tree_builder(Tree tree, int initial_depth, double split_prob):
 
 cdef int _node_creation(Tree tree, int initial_depth, int parent, int current_depth,
                         int is_left, int is_root, double split_prob) nogil:
+    """
+    A helping function for a recurrent node creation in the split initialization method
+    
+    Args:
+        tree: Tree object that we created node in
+        initial_depth: Maximum depth of initialized tree
+        parent: Parent node of a node that is created in a current iteration
+        current_depth: Depth of a current node
+        is_left: Indicator if this node is a left child of the parent node
+        is_root: Indicator if this node is a root node
+        split_prob: Probability of creating a decision node (not creating a leaf)
+
+    Returns:
+        Maximum depth of a tree found in a subtree of a current node
+    """
     if current_depth == 0:
         is_leaf = 0
     elif current_depth == initial_depth:
@@ -140,6 +164,19 @@ cdef int _node_creation(Tree tree, int initial_depth, int parent, int current_de
     return 0
 
 cdef SIZE_t add_node(Tree tree, SIZE_t parent, bint is_left, bint is_leaf, SIZE_t current_depth) nogil:
+    """
+    Function for adding node to the tree
+    
+    Args:
+        tree: Tree object that we created node in
+        parent: Parent node of a node that is created in a current iteration
+        is_left: Indicator if this node is a left child of the parent node
+        is_leaf: Indicator if this node is a leaf
+        current_depth: Depth of a current node
+
+    Returns:
+        Index of the created node in an array of nodes
+    """
     cdef SIZE_t class_number
     cdef SIZE_t feature
     cdef DTYPE_t threshold
