@@ -30,12 +30,15 @@ pip install genetic-tree
 Example usage:
 ```python
 from genetic_tree import GeneticTree
+from sklearn import datasets
+
+iris = datasets.load_iris()       # get iris data
 
 gt = GeneticTree()
-gt.fit(X_train, y_train)
-y_pred = gt.predict(X_test)
+gt.fit(iris.data, iris.target)
+y_pred = gt.predict(iris.data)    # it is recommended to predict on another subset of data than training
 ```
-The `ypred` contains an array with classes predicted by the `GeneticTree`
+The `y_pred` contains an array with classes predicted by the `GeneticTree`
 
 ## License
 
