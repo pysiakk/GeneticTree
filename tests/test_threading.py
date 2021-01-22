@@ -22,11 +22,10 @@ def check_creating_trees_with_many_threads(X, n_trees: int = 10, n_jobs: int = 4
 
 
 def create_trees_in_one_thread(n_trees, thresholds, depth, trees):
-    builder: FullTreeBuilder = FullTreeBuilder()
     for i in range(n_trees):
         tree: Tree = Tree(3, X, y, sample_weight, thresholds, np.random.randint(10**8))
         tree.resize_by_initial_depth(depth)
-        builder.build(tree, depth)
+        full_tree_builder(tree, depth)
         # tree.initialize_observations(X, y)
         trees.append(tree)
 
