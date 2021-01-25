@@ -42,6 +42,6 @@ after_success:
     echo "Ended deploy to test-pypi"
     if [[ $TRAVIS_TAG ]]; then
       echo "Deploy to pypi..."
-      TWINE_PASSWORD = $TWINE_PASSWORD_PYPI
+      TWINE_PASSWORD=$TWINE_PASSWORD_PYPI
       python3 -m twine upload wheelhouse/*.whl
     fi
