@@ -26,7 +26,7 @@ for whl in wheelhouse/*.whl; do
 done
 
 # Install packages and test
-for PYBIN in /opt/python/cp36-cp36m/bin/; do
-    "${PYBIN}/pip" install python-manylinux-demo --no-index -f /io/wheelhouse
-    (cd "$HOME"; "${PYBIN}/nosetests" pymanylinuxdemo)
-done
+# for PYBIN in /opt/python/cp36-cp36m/bin/; do
+#     "${PYBIN}/pip" install genetic-tree --no-index -f /io/wheelhouse
+#     (cd "$HOME"; "${PYBIN}/nosetests" pymanylinuxdemo) # TODO edit this line
+# done
