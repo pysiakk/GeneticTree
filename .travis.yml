@@ -38,4 +38,4 @@ after_success:
   # if the release was tagged, upload them to PyPI
   - |
     python3 -m pip install twine
-    python3 -m twine upload wheelhouse/*.whl
+    python3 -m twine upload --repository testpypi wheelhouse/*.whl
