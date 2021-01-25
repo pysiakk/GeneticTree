@@ -6,10 +6,6 @@ matrix:
     services:
     - docker
     env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64 PLAT=manylinux1_x86_64
-    language: python
-    python:
-    - "3.6"  
-    - "3.9"
   - sudo: required
     services:
     - docker
