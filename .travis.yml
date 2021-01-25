@@ -4,12 +4,15 @@ jobs:
   include:
     # perform a linux build
     - services: docker
+      env: PYTHON="python3"
     # and a mac build
     - os: osx
       language: shell
+      env: PYTHON="python3"
     # and a windows build
     - os: windows
       language: shell
+      env: PYTHON="python"
       before_install:
         - choco install python --version 3.8.0
         - export PATH="/c/Python38:/c/Python38/Scripts:$PATH"
@@ -21,24 +24,17 @@ env:
     - CIBW_BEFORE_BUILD="pip install -r requirements_dev.txt"
 
 install:
-  - |
-    if  [[ "${TRAVIS_OS_NAME:-}" == "windows" ]]; then
-      python -m pip install cibuildwheel==1.4.2
-    else
-      python3 -m pip install cibuildwheel==1.4.2
-    fi
+  - $PYTHON -m pip install cibuildwheel==1.4.2
 
 script:
-  - python3 -m cibuildwheel --output-dir wheelhouse
+  - $PYTHON -m cibuildwheel --output-dir wheelhouse
 
 after_success:
   # if the release was tagged, upload them to PyPI
   - |
     python3 -m pip install twine
     python3 -m twine upload --repository testpypi wheelhouse/*.whl
-    echo "Ended deploy to test-pypi"
     if [[ $TRAVIS_TAG ]]; then
-      echo "Deploy to pypi..."
       TWINE_PASSWORD=$TWINE_PASSWORD_PYPI
       python3 -m twine upload wheelhouse/*.whl
     fi
