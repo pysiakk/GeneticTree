@@ -39,8 +39,9 @@ after_success:
   - |
     python3 -m pip install twine
     python3 -m twine upload --repository testpypi wheelhouse/*.whl
+    echo "Ended deploy to test-pypi"
     if [[ $TRAVIS_TAG ]]; then
-      echo "Deploy to pypi"
+      echo "Deploy to pypi..."
       TWINE_PASSWORD = $TWINE_PASSWORD_PYPI
       python3 -m twine upload wheelhouse/*.whl
     fi
