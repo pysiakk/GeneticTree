@@ -21,7 +21,12 @@ env:
     - CIBW_BEFORE_BUILD="pip install -r requirements_dev.txt"
 
 install:
-  - python3 -m pip install cibuildwheel==1.4.2
+  - |
+    if  [[ "${TRAVIS_OS_NAME:-}" == "windows" ]]; then
+      python -m pip install cibuildwheel==1.4.2
+    else
+      python3 -m pip install cibuildwheel==1.4.2
+    fi
 
 script:
   - python3 -m cibuildwheel --output-dir wheelhouse
