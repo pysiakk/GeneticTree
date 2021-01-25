@@ -134,7 +134,7 @@ def setup_package():
             url="https://github.com/pysiakk/GeneticTree",
             include_dirs=[numpy.get_include()],
             packages=PACKAGES,
-            version="0.1.1",
+            version="0.1.2",
             ext_modules=ext_modules,
             cmdclass={"build_ext": build_ext_subclass},
             python_requires='>=3.6',
@@ -149,45 +149,6 @@ def setup_package():
 if __name__ == "__main__":
     setup_package()
 
-# EXTENSION_LIST = []
-# for module_name in MODULE_NAMES:
-#     module_name = "genetic_tree." + module_name
-#     module_path = module_name.replace(".", "/") + ".pyx"
-#     print(module_name, module_path)
-#     EXTENSION_LIST.append(Extension(module_name, [module_path],
-#                                     extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp'])
-#                           )
-#
-# ext_modules = cythonize(
-#     EXTENSION_LIST,
-#     compiler_directives={'language_level': "3"}
-# )
-
-# setup(
-#     name='Genetic',
-#     ext_modules=ext_modules,
-#     include_dirs=[numpy.get_include()],
-# )
-
-# setuptools.setup(
-#     name="genetic-tree", # Replace with your own username
-#     version="0.1.0",
-#     author="Tomasz Makowski & Karol Pysiak",
-#     author_email="tomasz.tu.tm@gmail.com",
-#     description="A small example package",
-#     long_description=long_description,
-#     long_description_content_type="text/markdown",
-#     url="https://github.com/pypa/sampleproject",
-#     ext_modules=ext_modules,
-#     include_dirs=[numpy.get_include()],
-#     packages=setuptools.find_packages(),
-#     classifiers=[
-#         "Programming Language :: Python :: 3",
-#         "License :: OSI Approved :: MIT License",
-#         "Operating System :: OS Independent",
-#     ],
-#     python_requires='>=3.6',
-# )
 
 # to build cython files run:
 # python setup.py build_ext --inplace
