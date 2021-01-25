@@ -1,34 +1,26 @@
 notifications:
   email: false
-
 matrix:
   include:
-    - sudo: required
-      services:
-        - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
-           PLAT=manylinux1_x86_64
-    - sudo: required
-      services:
-        - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_i686
-           PRE_CMD=linux32
-           PLAT=manylinux1_i686
-    - sudo: required
-      services:
-        - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
-           PLAT=manylinux2010_x86_64
-
+  - sudo: required
+    services:
+    - docker
+    env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64 PLAT=manylinux1_x86_64
+  - sudo: required
+    services:
+    - docker
+    env: DOCKER_IMAGE=quay.io/pypa/manylinux1_i686 PRE_CMD=linux32 PLAT=manylinux1_i686
+  - sudo: required
+    services:
+    - docker
+    env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64 PLAT=manylinux2010_x86_64
 install:
-  - docker pull $DOCKER_IMAGE
-
+- docker pull $DOCKER_IMAGE
 script:
-  - docker run --rm -e PLAT=$PLAT -v `pwd`:/io $DOCKER_IMAGE $PRE_CMD /io/travis/build-wheels.sh
-  - ls wheelhouse/
-
+- docker run --rm -e PLAT=$PLAT -v `pwd`:/io $DOCKER_IMAGE $PRE_CMD /io/travis/build-wheels.sh
+- ls wheelhouse/
 deploy:
   provider: pypi
-  username: "__token__"
+  username: __token__
   password:
-    secure: "Your encrypted token"
+    secure: RsVy6NQBcZED8yK+gr7vs9vxBmoPLVxz0YCO0JbeLF//N55eypPsra4e487sZrQmo8bQRlQ77NkpqDLtdzIXW3FIQcOtzENLa0qTOKOCCqaod8TElc8MkyvNlAbGUCl76HiSj9TMlOcCnIFlS4gtQbWuFDu53eYiWwBo5tZ4onksH4qHO5fRNWhKQH8rjblTz+mFgRPCJ7MGiIis4JPboCl2t1pWHQptz1cCruhALpCoIPmL33ALBFkZwpJgNz5W6wbQXU1SzWB7LK1tOYbQJp+Z1LjjbqG+zBZOvqsR23VwdzrTYv9yocz0pK23oCqLWRTp15JFhyZPQ5ZEOMjU30VBZoSUUR+I1JopSUbDnFPeKvpW9z3OgETwEjP6a5SdTj3wFSu4wzgqat2cdHQ+4pLrd4kTiFHx0EbZsQf66iNGlvwOdtDWGEYDfZApuWFiD4/HEJIIIRZs/+GsdXFPCt5PB1gR4E3BQ/ZHaJWpF0wV2UHjT687jPla0QNZn+deiznWhabH8mHJlqelEs7sotwabf4BQrDqS2Rg9IpL01gtNCua3IPK5iy8SeRmv3Eit/LogDisHa2Nt6AI5uthigeuY+Ogh88S7FCOPAuTMYCMABNu+oBzgABA+nSg7sq+Gh3zZmQ2OUT4rc8sC9c0DXR4krIWxLKIxpmkI+JlNyQ=
