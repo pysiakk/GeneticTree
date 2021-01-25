@@ -6,14 +6,23 @@ matrix:
     services:
     - docker
     env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64 PLAT=manylinux1_x86_64
+    language: python
+    python:
+    - "3.6"  
   - sudo: required
     services:
     - docker
     env: DOCKER_IMAGE=quay.io/pypa/manylinux1_i686 PRE_CMD=linux32 PLAT=manylinux1_i686
+    language: python
+    python:
+    - "3.6"  
   - sudo: required
     services:
     - docker
     env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64 PLAT=manylinux2010_x86_64
+    language: python
+    python:
+    - "3.6"  
 install:
 - docker pull $DOCKER_IMAGE
 script:
