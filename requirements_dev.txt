@@ -14,7 +14,7 @@ imagesize==1.2.0
 iniconfig==1.0.1
 Jinja2==2.11.2
 joblib==0.14.1
-numpy==1.16.6
+numpy==1.19.2
 packaging==20.4
 pluggy==0.13.1
 psutil==5.7.3
