@@ -2,7 +2,6 @@
 
 [![example workflow name](https://github.com/pysiakk/GeneticTree/workflows/GeneticTree/badge.svg)](https://github.com/pysiakk/GeneticTree/actions?query=workflow%3AGeneticTree)
 ![codecov.io](https://codecov.io/github/pysiakk/GeneticTree/coverage.svg?branch=master)
-[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/pysiakk/GeneticTree/blob/master/LICENSE)
 [![travis status](https://www.travis-ci.com/pysiakk/GeneticTree.svg?branch=master&status=failed)](https://www.travis-ci.com/github/pysiakk/GeneticTree)
 
 # Genetic Tree
@@ -43,7 +42,7 @@ The `y_pred` contains an array with classes predicted by the `GeneticTree`
 
 ## License
 
-The work is a banchelor thesis on Warsaw University of Technology. Commercial use forbidden.
+The work is a bachelor thesis on Warsaw University of Technology.
 
 High-level interface of package is inspired by sklearn (https://github.com/scikit-learn/scikit-learn).
 Especially there are methods like: fit(), predict(), predict_proba(), apply(), set_params(), check_X(), check_input() which are inspired and / or copied from sklearn.
